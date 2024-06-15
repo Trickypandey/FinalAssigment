@@ -20,6 +20,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void OnConstruction(const FTransform& Transform) override;
+	
 
 public:	
 	// Called every frame
@@ -48,6 +49,17 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TArray<FVector> Normals;
 
-	UPROPERTY(EditAnywhere)
-	bool IsDoorAdded = false;
+	UPROPERTY(EditAnywhere, Category = "Door")
+	bool IsDoorAdded;
+
+	UPROPERTY(EditAnywhere, Category = "Door")
+	float DoorWidth;
+
+	UPROPERTY(EditAnywhere, Category = "Door")
+	float DoorHeight;
+
+	UPROPERTY(EditAnywhere, Category = "Door")
+	UMaterialInterface* CapMaterial;
+
+	void SliceDoor();
 };

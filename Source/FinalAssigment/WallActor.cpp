@@ -1,4 +1,6 @@
 #include "WallActor.h"
+#include "KismetProceduralMeshLibrary.h"
+
 
 // Sets default values
 AWallActor::AWallActor()
@@ -6,6 +8,9 @@ AWallActor::AWallActor()
     PrimaryActorTick.bCanEverTick = true;
     ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ProceduralMesh"));
     RootComponent = ProceduralMesh;
+    IsDoorAdded = false;
+    DoorWidth = 100.0f;
+    DoorHeight = 200.0f;
 }
 
 // Called when the game starts or when spawned
@@ -176,6 +181,7 @@ void AWallActor::CreateWallMesh(float Length, float Breath, float Height)
 
     }
 
+
     AddNormals();
     AddUVs();
 
@@ -304,4 +310,10 @@ void AWallActor::AddNormals()
 		    FVector(0, 1, 0), FVector(0, 1, 0), FVector(0, 1, 0), FVector(0, 1, 0)
         };
     }
+}
+
+void AWallActor::SliceDoor()
+{
+    // Slice along the Z-axis (vertical plane)
+    
 }
