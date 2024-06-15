@@ -50,6 +50,9 @@ private:
 	TArray<FVector> Normals;
 
 	UPROPERTY(EditAnywhere, Category = "Door")
+	FVector DoorLocation;
+
+	UPROPERTY(EditAnywhere, Category = "Door")
 	bool IsDoorAdded;
 
 	UPROPERTY(EditAnywhere, Category = "Door")
