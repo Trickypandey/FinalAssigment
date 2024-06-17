@@ -48,6 +48,8 @@ void AArchVizPlayerController::LeftClickProcess()
 
     if (auto [WallActor , LocalClickLocation] = IsWallWallActor(HitResult); WallActor)
     {
+        WallActor->SetDoorLocartion(LocalClickLocation.X);
+        WallActor->CreateWallMesh();
 
 
         GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Local Clicked Location: X=%f, Y=%f, Z=%f"), LocalClickLocation.X, LocalClickLocation.Y, LocalClickLocation.Z));

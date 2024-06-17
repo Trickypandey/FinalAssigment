@@ -26,12 +26,13 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void CreateWallMesh(float Length, float Breath, float Height);
+	void CreateWallMesh();
 
 	void ResetArrays();
 	void AddQuad(int32 V0, int32 V1, int32 V2, int32 V3);
 	void AddUVs();
 	void AddNormals();
+	void SetDoorLocartion(float x);
 
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -48,6 +49,15 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<FVector> Normals;
+
+	UPROPERTY(EditAnywhere, Category = "Wall Peoperty")
+	int32 WallLength;
+
+	UPROPERTY(EditAnywhere, Category = "Wall Peoperty")
+	int32 WallWidth;
+
+	UPROPERTY(EditAnywhere, Category = "Wall Peoperty")
+	int32 WallHeight;
 
 	UPROPERTY(EditAnywhere, Category = "Door")
 	FVector DoorLocation;

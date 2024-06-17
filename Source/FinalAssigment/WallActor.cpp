@@ -9,6 +9,9 @@ AWallActor::AWallActor()
     ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ProceduralMesh"));
     RootComponent = ProceduralMesh;
     IsDoorAdded = false;
+    WallHeight = 100;
+    WallWidth; 20;
+    WallLength = 500;
     DoorWidth = 50.0f;
     DoorLocation = FVector::ZeroVector;
 
@@ -19,13 +22,13 @@ AWallActor::AWallActor()
 void AWallActor::BeginPlay()
 {
     Super::BeginPlay();
-    CreateWallMesh(500, 10, 100);
+    CreateWallMesh();
 }
 
 void AWallActor::OnConstruction(const FTransform& Transform)
 {
     Super::OnConstruction(Transform);
-    CreateWallMesh(500, 10, 100);
+    CreateWallMesh();
 }
 
 // Called every frame
@@ -34,14 +37,14 @@ void AWallActor::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 }
 
-void AWallActor::CreateWallMesh(float Length, float Breath, float Height)
+void AWallActor::CreateWallMesh()
 {
     ProceduralMesh->ClearAllMeshSections();
     ResetArrays();
 
-    float L = Length;  // Full width
-    float W = Breath;  // Full depth
-    float H = Height;  // Full height
+    float L = WallLength;  // Full width
+    float W = WallWidth;  // Full depth
+    float H = WallHeight;  // Full height
     DoorHeight = ((H * 2) / 3);
 
     Vertices.Add(FVector(-L / 2, -W / 2, 0));  // 0
@@ -289,6 +292,11 @@ void AWallActor::AddNormals()
             FVector(0, 1, 0), FVector(0, 1, 0), FVector(0, 1, 0), FVector(0, 1, 0)
         };
     }
+}
+
+void AWallActor::SetDoorLocartion(float x)
+{
+    DoorLocation.X = x;
 }
 
 
