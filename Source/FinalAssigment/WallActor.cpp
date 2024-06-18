@@ -13,6 +13,7 @@ AWallActor::AWallActor()
     WallWidth; 20;
     WallLength = 500;
     DoorWidth = 50.0f;
+    DoorHeight = ((WallHeight * 2) / 3);
     DoorLocation = FVector::ZeroVector;
 
     
@@ -39,13 +40,25 @@ void AWallActor::Tick(float DeltaTime)
 
 void AWallActor::CreateWallMesh()
 {
-    ProceduralMesh->ClearAllMeshSections();
-    ResetArrays();
+
 
     float L = WallLength;  // Full width
     float W = WallWidth;  // Full depth
     float H = WallHeight;  // Full height
-    DoorHeight = ((H * 2) / 3);
+    float DoorLeft = DoorLocation.X - DoorWidth / 2;
+    float DoorRight = DoorLocation.X + DoorWidth / 2;
+    DoorWidth = FMath::Min(DoorWidth, WallHeight);
+    DoorHeight = FMath::Min(DoorHeight, WallHeight - 10);
+
+    // Ensure the door cut is within the wall bounds
+    if (DoorLeft < -L / 2 || DoorRight > L / 2 || DoorHeight  > WallHeight )
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Door location is out of bounds!"));
+        return;
+    }
+
+    ProceduralMesh->ClearAllMeshSections();
+    ResetArrays();
 
     Vertices.Add(FVector(-L / 2, -W / 2, 0));  // 0
     Vertices.Add(FVector(-L / 2, W / 2, 0));   // 1
@@ -69,16 +82,7 @@ void AWallActor::CreateWallMesh()
 
     if (IsDoorAdded)
     {
-        float DoorLeft = DoorLocation.X - DoorWidth / 2;
-        float DoorRight = DoorLocation.X + DoorWidth / 2;
-
-        // Ensure the door cut is within the wall bounds
-        if (DoorLeft < -L / 2 || DoorRight > L / 2)
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Door location is out of bounds!"));
-            return;
-        }
-
+       
         Vertices.Add(FVector(-L / 2, -W / 2, H));   // 16
         Vertices.Add(FVector(DoorLeft, -W / 2, H));   // 17
         Vertices.Add(FVector(-L / 2, -W / 2, 0));   // 18
