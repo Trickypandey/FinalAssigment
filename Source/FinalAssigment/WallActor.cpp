@@ -8,9 +8,18 @@ AWallActor::AWallActor()
     PrimaryActorTick.bCanEverTick = true;
     ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ProceduralMesh"));
     RootComponent = ProceduralMesh;
+
+    SnapPointStart = CreateDefaultSubobject<USceneComponent>(TEXT("SnapPointStart"));
+    SnapPointStart->SetupAttachment(RootComponent);
+    SnapPointStart->SetRelativeLocation(FVector(-WallLength / 2, 0, 0));
+
+    SnapPointEnd = CreateDefaultSubobject<USceneComponent>(TEXT("SnapPointEnd"));
+    SnapPointEnd->SetupAttachment(RootComponent);
+    SnapPointEnd->SetRelativeLocation(FVector(WallLength / 2, 0, 0));
+
     IsDoorAdded = false;
     WallHeight = 100;
-    WallWidth; 20;
+    WallWidth = 20;
     WallLength = 500;
     DoorWidth = 50.0f;
     DoorHeight = ((WallHeight * 2) / 3);
@@ -36,11 +45,48 @@ void AWallActor::OnConstruction(const FTransform& Transform)
 void AWallActor::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+    CheckForSnapping();
 }
+
+void AWallActor::CheckForSnapping()
+{
+    TArray<AActor*> OverlappingActors;
+    GetOverlappingActors(OverlappingActors, TSubclassOf<AWallActor>());
+
+    for (AActor* Actor : OverlappingActors)
+    {
+        AWallActor* OtherWall = Cast<AWallActor>(Actor);
+        if (OtherWall && OtherWall != this)
+        {
+            SnapToActor(OtherWall);
+        }
+    }
+}
+
+void AWallActor::SnapToActor(AWallActor* OtherWall)
+{
+    float SnapDistanceThreshold = 100.0f; // Define a suitable threshold
+
+    FVector StartSnapPoint = SnapPointStart->GetComponentLocation();
+    FVector EndSnapPoint = SnapPointEnd->GetComponentLocation();
+    FVector OtherStartSnapPoint = OtherWall->SnapPointStart->GetComponentLocation();
+    FVector OtherEndSnapPoint = OtherWall->SnapPointEnd->GetComponentLocation();
+
+    if (FVector::Dist(EndSnapPoint, OtherStartSnapPoint) <= SnapDistanceThreshold)
+    {
+        FVector Offset = OtherStartSnapPoint - EndSnapPoint;
+        SetActorLocation(GetActorLocation() + Offset);
+    }
+    else if (FVector::Dist(StartSnapPoint, OtherEndSnapPoint) <= SnapDistanceThreshold)
+    {
+        FVector Offset = OtherEndSnapPoint - StartSnapPoint;
+        SetActorLocation(GetActorLocation() + Offset);
+    }
+}
+
 
 void AWallActor::CreateWallMesh()
 {
-
 
     float L = WallLength;  // Full width
     float W = WallWidth;  // Full depth
@@ -239,7 +285,6 @@ void AWallActor::AddUVs()
         };
     }
 }
-
 
 
 void AWallActor::AddNormals()

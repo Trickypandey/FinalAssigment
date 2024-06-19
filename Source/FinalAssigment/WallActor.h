@@ -25,6 +25,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	void CheckForSnapping();
+	void SnapToActor(AWallActor* OtherWall);
 
 	void CreateWallMesh();
 
@@ -39,6 +41,12 @@ private:
 	UProceduralMeshComponent* ProceduralMesh;
 
 	UPROPERTY(VisibleAnywhere)
+	USceneComponent* SnapPointStart;
+
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* SnapPointEnd;
+
+	UPROPERTY(VisibleAnywhere)
 	TArray<FVector2D> UVs;
 
 	UPROPERTY(VisibleAnywhere)
@@ -50,28 +58,28 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TArray<FVector> Normals;
 
-	UPROPERTY(EditAnywhere, Category = "Wall Peoperty")
+	UPROPERTY(EditAnywhere, Category = "Property")
 	int32 WallLength;
 
-	UPROPERTY(EditAnywhere, Category = "Wall Peoperty")
+	UPROPERTY(EditAnywhere, Category = "Property")
 	int32 WallWidth;
 
-	UPROPERTY(EditAnywhere, Category = "Wall Peoperty")
+	UPROPERTY(EditAnywhere, Category = "Property")
 	int32 WallHeight;
 
-	UPROPERTY(EditAnywhere, Category = "Door")
+	UPROPERTY(EditAnywhere, Category = "Property")
 	FVector DoorLocation;
 
-	UPROPERTY(EditAnywhere, Category = "Door")
+	UPROPERTY(EditAnywhere, Category = "Property")
 	bool IsDoorAdded;
 
-	UPROPERTY(EditAnywhere, Category = "Door")
+	UPROPERTY(EditAnywhere, Category = "Property")
 	float DoorWidth;
 
-	UPROPERTY(EditAnywhere, Category = "Door")
+	UPROPERTY(EditAnywhere, Category = "Property")
 	float DoorHeight;
 
-	UPROPERTY(EditAnywhere, Category = "Door")
+	UPROPERTY(EditAnywhere, Category = "Property")
 	UMaterialInterface* CapMaterial;
 
 	void SliceDoor();

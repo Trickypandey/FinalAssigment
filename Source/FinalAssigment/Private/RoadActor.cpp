@@ -54,7 +54,7 @@ void ARoadActor::GenerateRoadMesh()
         FVector UpVector = FVector::UpVector;
 
         // Create vertices for this segment
-        Vertices.Add(StartLocation - RightVector * RoadWidth / 2);
+        Vertices.Add(StartLocation - RightVector * 1 / 2);
         Vertices.Add(StartLocation + RightVector * RoadWidth / 2);
         Vertices.Add(EndLocation - RightVector * RoadWidth / 2);
         Vertices.Add(EndLocation + RightVector * RoadWidth / 2);
@@ -62,12 +62,12 @@ void ARoadActor::GenerateRoadMesh()
         int32 VertexIndex = Vertices.Num();
 
         // Create triangles
-        Triangles.Add(VertexIndex - 4);
-        Triangles.Add(VertexIndex - 3);
         Triangles.Add(VertexIndex - 2);
-
         Triangles.Add(VertexIndex - 3);
+        Triangles.Add(VertexIndex - 4);
+
         Triangles.Add(VertexIndex - 1);
+        Triangles.Add(VertexIndex - 3);
         Triangles.Add(VertexIndex - 2);
 
         // Create normals

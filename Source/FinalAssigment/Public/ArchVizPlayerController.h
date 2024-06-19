@@ -1,38 +1,54 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
-
 #include "CoreMinimal.h"
-#include "InputMappingContext.h"
+#include "GameFramework/PlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "GameFramework/PlayerController.h"
+#include "InputMappingContext.h"
+#include "InputAction.h"
 #include "ArchVizPlayerController.generated.h"
 
 class AWallActor;
-/**
- * 
- */
+
 UCLASS()
 class FINALASSIGMENT_API AArchVizPlayerController : public APlayerController
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	AArchVizPlayerController();
-	virtual void SetupInputComponent() override;
-	void SetupEnhancedInputBindings();
-	void LeftClickProcess();
+    AArchVizPlayerController();
 
-	TPair<AWallActor*, FVector> IsWallWallActor(const FHitResult& HitResult);
+protected:
+    virtual void SetupInputComponent() override;
+    void SnapWall();
+    virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY()
-	UInputMappingContext* MappingContext;
+private:
+    void SetupEnhancedInputBindings();
+    void AddCurrentModeMappingContext() const;
+    void LeftClickProcess();
+    void RightClickProcess();
+    void RotateSelectedActor();
 
-	UPROPERTY(EditDefaultsOnly, Category = "Controller")
-	UInputAction* OnLeftClick;
+    TPair<AWallActor*, FVector> IsWallWallActor(const FHitResult& HitResult);
 
+    UPROPERTY()
+    UInputMappingContext* WallMappingContext;
 
-	
-	
+    UPROPERTY()
+    UInputMappingContext* RoadMappingContext;
+
+    UPROPERTY()
+    UInputAction* OnLeftClick;
+
+    UPROPERTY()
+    UInputAction* OnRightClick;
+
+    UPROPERTY()
+    UInputAction* OnRotate;
+
+    bool bIsWallCrationMode;
+    bool bIsRoadConstructionMode;
+    float WallSnapValue = 20;
+
+    AActor* SelectedActor;
+    FVector OriginalLocation;
 };
