@@ -1,4 +1,5 @@
 #include "CoreMinimal.h"
+#include "CubeActor.h"
 #include "GameFramework/PlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -17,8 +18,10 @@ class FINALASSIGMENT_API AArchVizPlayerController : public APlayerController
 public:
     AArchVizPlayerController();
     void SetIsAddingDoor(bool);
-
+   
     void ModeChangeHandle(const FString&);
+    void SpawnSelectedActor(EObjectType  Type);
+
 
 protected:
     virtual void SetupInputComponent() override;
@@ -33,7 +36,7 @@ private:
     void RightClickProcess();
     void RotateSelectedActor();
 
-    TPair<AWallActor*, FVector> IsWallWallActor(const FHitResult& HitResult);
+    TPair<ACubeActor*, FVector> IsWallWallActor(const FHitResult& HitResult);
 
     UPROPERTY()
     UInputMappingContext* WallMappingContext;
@@ -73,4 +76,9 @@ private:
     UPROPERTY()
     AActor* SelectedActor;
     FVector OriginalLocation;
+	UPROPERTY()
+    AActor* HoveringActor;
+
+    EObjectType SelectedActorType;
+   
 };

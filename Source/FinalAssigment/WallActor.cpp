@@ -1,35 +1,19 @@
 #include "WallActor.h"
-#include "KismetProceduralMeshLibrary.h"
 
-
-// Sets default values
 AWallActor::AWallActor()
 {
     PrimaryActorTick.bCanEverTick = true;
-    ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ProceduralMesh"));
-    RootComponent = ProceduralMesh;
 
-    SnapPointStart = CreateDefaultSubobject<USceneComponent>(TEXT("SnapPointStart"));
-    SnapPointStart->SetupAttachment(RootComponent);
-    SnapPointStart->SetRelativeLocation(FVector(-WallLength / 2, 0, 0));
-
-    SnapPointEnd = CreateDefaultSubobject<USceneComponent>(TEXT("SnapPointEnd"));
-    SnapPointEnd->SetupAttachment(RootComponent);
-    SnapPointEnd->SetRelativeLocation(FVector(WallLength / 2, 0, 0));
+    Length = 500;
+    Width = 20;
+    Height = 100;
 
     IsDoorAdded = false;
-    WallHeight = 100;
-    WallWidth = 20;
-    WallLength = 500;
     DoorWidth = 50.0f;
-    DoorHeight = ((WallHeight * 2) / 3);
-    bIsSlab = false;
-    DoorLocation = FVector::ZeroVector;
-
-    
+    DoorHeight = 66.0f; // Approximately 2 meters
+    DoorLocation = FVector(100.0f, 0.0f, 0.0f);
 }
 
-// Called when the game starts or when spawned
 void AWallActor::BeginPlay()
 {
     Super::BeginPlay();
@@ -42,63 +26,43 @@ void AWallActor::OnConstruction(const FTransform& Transform)
     CreateWallMesh();
 }
 
-// Called every frame
 void AWallActor::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    CheckForSnapping();
+   
 }
 
-void AWallActor::CheckForSnapping()
+void AWallActor::SetDoorLocation(float X)
 {
-    TArray<AActor*> OverlappingActors;
-    GetOverlappingActors(OverlappingActors, TSubclassOf<AWallActor>());
-
-    for (AActor* Actor : OverlappingActors)
-    {
-        AWallActor* OtherWall = Cast<AWallActor>(Actor);
-        if (OtherWall && OtherWall != this)
-        {
-            SnapToActor(OtherWall);
-        }
-    }
+    DoorLocation.X = X;
+    CreateWallMesh();
 }
 
-void AWallActor::SnapToActor(AWallActor* OtherWall)
+void AWallActor::SetIsDoorAdded(bool Flag)
 {
-    float SnapDistanceThreshold = 100.0f; // Define a suitable threshold
-
-    FVector StartSnapPoint = SnapPointStart->GetComponentLocation();
-    FVector EndSnapPoint = SnapPointEnd->GetComponentLocation();
-    FVector OtherStartSnapPoint = OtherWall->SnapPointStart->GetComponentLocation();
-    FVector OtherEndSnapPoint = OtherWall->SnapPointEnd->GetComponentLocation();
-
-    if (FVector::Dist(EndSnapPoint, OtherStartSnapPoint) <= SnapDistanceThreshold)
-    {
-        FVector Offset = OtherStartSnapPoint - EndSnapPoint;
-        SetActorLocation(GetActorLocation() + Offset);
-    }
-    else if (FVector::Dist(StartSnapPoint, OtherEndSnapPoint) <= SnapDistanceThreshold)
-    {
-        FVector Offset = OtherEndSnapPoint - StartSnapPoint;
-        SetActorLocation(GetActorLocation() + Offset);
-    }
+    IsDoorAdded = Flag;
+    CreateWallMesh();
 }
 
+void AWallActor::SetDimension(int32 _Length, int32 _Width)
+{
+    this->Length = _Length;
+    this->Width = _Width;
+    CreateWallMesh();
+}
 
 void AWallActor::CreateWallMesh()
 {
-
-    float L = WallLength;  // Full width
-    float W = WallWidth;  // Full depth
-    float H = WallHeight;  // Full height
+    float L = Length;  // Full width
+    float W = Width;  // Full depth
+    float H = Height;  // Full height
     float DoorLeft = DoorLocation.X - DoorWidth / 2;
     float DoorRight = DoorLocation.X + DoorWidth / 2;
-    DoorWidth = FMath::Min(DoorWidth, WallHeight);
-    DoorHeight = FMath::Min(DoorHeight, WallHeight - 10);
+    DoorWidth = FMath::Min(DoorWidth, Height);
+    DoorHeight = FMath::Min(DoorHeight, Height - 10);
 
     // Ensure the door cut is within the wall bounds
-    if (DoorLeft < -L / 2 || DoorRight > L / 2 || DoorHeight  > WallHeight )
+    if (DoorLeft < -L / 2 || DoorRight > L / 2 || DoorHeight > Height)
     {
         UE_LOG(LogTemp, Warning, TEXT("Door location is out of bounds!"));
         return;
@@ -107,29 +71,29 @@ void AWallActor::CreateWallMesh()
     ProceduralMesh->ClearAllMeshSections();
     ResetArrays();
 
-    Vertices.Add(FVector(-L / 2, -W / 2, 0));  // 0
-    Vertices.Add(FVector(-L / 2, W / 2, 0));   // 1
-    Vertices.Add(FVector(-L / 2, W / 2, H));   // 2
-    Vertices.Add(FVector(-L / 2, -W / 2, H));  // 3
-
-    Vertices.Add(FVector(-L / 2, -W / 2, 0));  // 4
-    Vertices.Add(FVector(L / 2, -W / 2, 0));   // 5
-    Vertices.Add(FVector(L / 2, W / 2, 0));    // 6
-    Vertices.Add(FVector(-L / 2, W / 2, 0));   // 7
-
-    Vertices.Add(FVector(L / 2, -W / 2, 0));   // 8
-    Vertices.Add(FVector(L / 2, -W / 2, H));   // 9
-    Vertices.Add(FVector(L / 2, W / 2, H));    // 10
-    Vertices.Add(FVector(L / 2, W / 2, 0));    // 11
-
-    Vertices.Add(FVector(L / 2, -W / 2, H));   // 12
-    Vertices.Add(FVector(-L / 2, -W / 2, H));  // 13
-    Vertices.Add(FVector(-L / 2, W / 2, H));   // 14
-    Vertices.Add(FVector(L / 2, W / 2, H));    // 15
 
     if (IsDoorAdded)
     {
-       
+	    Vertices.Add(FVector(-L / 2, -W / 2, 0));  // 0
+	    Vertices.Add(FVector(-L / 2, W / 2, 0));   // 1
+	    Vertices.Add(FVector(-L / 2, W / 2, H));   // 2
+	    Vertices.Add(FVector(-L / 2, -W / 2, H));  // 3
+
+	    Vertices.Add(FVector(-L / 2, -W / 2, 0));  // 4
+	    Vertices.Add(FVector(L / 2, -W / 2, 0));   // 5
+	    Vertices.Add(FVector(L / 2, W / 2, 0));    // 6
+	    Vertices.Add(FVector(-L / 2, W / 2, 0));   // 7
+
+	    Vertices.Add(FVector(L / 2, -W / 2, 0));   // 8
+	    Vertices.Add(FVector(L / 2, -W / 2, H));   // 9
+	    Vertices.Add(FVector(L / 2, W / 2, H));    // 10
+	    Vertices.Add(FVector(L / 2, W / 2, 0));    // 11
+
+	    Vertices.Add(FVector(L / 2, -W / 2, H));   // 12
+	    Vertices.Add(FVector(-L / 2, -W / 2, H));  // 13
+	    Vertices.Add(FVector(-L / 2, W / 2, H));   // 14
+	    Vertices.Add(FVector(L / 2, W / 2, H));    // 15
+
         Vertices.Add(FVector(-L / 2, -W / 2, H));   // 16
         Vertices.Add(FVector(DoorLeft, -W / 2, H));   // 17
         Vertices.Add(FVector(-L / 2, -W / 2, 0));   // 18
@@ -179,24 +143,8 @@ void AWallActor::CreateWallMesh()
     }
     else
     {
-        Vertices.Add(FVector(-L / 2, -W / 2, H));  // 16
-        Vertices.Add(FVector(L / 2, -W / 2, H));   // 17
-        Vertices.Add(FVector(L / 2, -W / 2, 0));   // 18
-        Vertices.Add(FVector(-L / 2, -W / 2, 0));  // 19
-
-        Vertices.Add(FVector(-L / 2, W / 2, H));   // 20
-        Vertices.Add(FVector(-L / 2, W / 2, 0));   // 21
-        Vertices.Add(FVector(L / 2, W / 2, 0));    // 22
-        Vertices.Add(FVector(L / 2, W / 2, H));    // 23
-
-        Triangles = {
-            0, 1, 3, 1, 2, 3,
-            4, 5, 7, 5, 6, 7,
-            8, 9, 11, 9, 10, 11,
-            12, 13, 15, 13, 14, 15,
-            16, 17, 19, 17, 18, 19,
-            20, 21, 23, 21, 22, 23
-        };
+        
+        CreateCubeMesh();
     }
 
     AddNormals();
@@ -208,10 +156,10 @@ void AWallActor::CreateWallMesh()
 
 void AWallActor::ResetArrays()
 {
-    UVs.Empty();
     Vertices.Empty();
     Triangles.Empty();
     Normals.Empty();
+    UVs.Empty();
 }
 
 void AWallActor::AddQuad(int32 V0, int32 V1, int32 V2, int32 V3)
@@ -226,8 +174,6 @@ void AWallActor::AddQuad(int32 V0, int32 V1, int32 V2, int32 V3)
 
 void AWallActor::AddUVs()
 {
-    UVs.Empty();
-
     if (IsDoorAdded)
     {
         UVs = {
@@ -276,21 +222,13 @@ void AWallActor::AddUVs()
     }
     else
     {
-        UVs = {
-            FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1),
-            FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1),
-            FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1),
-            FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1),
-            FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1),
-            FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1)
-        };
+        Super::AddUVs();
+
     }
 }
 
-
 void AWallActor::AddNormals()
 {
-    Normals.Empty();
     if (IsDoorAdded)
     {
         Normals = {
@@ -333,36 +271,6 @@ void AWallActor::AddNormals()
     }
     else
     {
-        Normals = {
-            FVector(-1, 0, 0), FVector(-1, 0, 0), FVector(-1, 0, 0), FVector(-1, 0, 0),
-            FVector(0, 0, -1), FVector(0, 0, -1), FVector(0, 0, -1), FVector(0, 0, -1),
-            FVector(1, 0, 0), FVector(1, 0, 0), FVector(1, 0, 0), FVector(1, 0, 0),
-            FVector(0, 0, 1), FVector(0, 0, 1), FVector(0, 0, 1), FVector(0, 0, 1),
-            FVector(0, -1, 0), FVector(0, -1, 0), FVector(0, -1, 0), FVector(0, -1, 0),
-            FVector(0, 1, 0), FVector(0, 1, 0), FVector(0, 1, 0), FVector(0, 1, 0)
-        };
+        Super::AddNormals();
     }
 }
-
-void AWallActor::SetDoorLocation(float x)
-{
-    DoorLocation.X = x;
-}
-
-void AWallActor::SetIsDoorAdded(bool flag)
-{
-    IsDoorAdded = flag;
-}
-
-void AWallActor::SetDimension(int32 length, int32 width)
-{
-    WallHeight = 10;
-    WallLength = length;
-    WallWidth = width;
-}
-
-
-/*
- *add the slab and floor
- *complete the road
- */

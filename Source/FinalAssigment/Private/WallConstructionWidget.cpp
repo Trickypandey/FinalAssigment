@@ -4,6 +4,8 @@
 #include "WallConstructionWidget.h"
 
 #include "ArchVizPlayerController.h"
+#include "SlabActor.h"
+#include "FinalAssigment/WallActor.h"
 
 void UWallConstructionWidget::NativeConstruct()
 {
@@ -14,6 +16,39 @@ void UWallConstructionWidget::NativeConstruct()
 	{
 		ToggleDoorButton->OnClicked.AddDynamic(this, &UWallConstructionWidget::OnToggleDoorClicked);
 	}
+
+	if (Wall)
+	{
+		Wall->OnClicked.AddDynamic(this, &UWallConstructionWidget::SpawnWall);
+
+	}
+
+	if (Slab)
+	{
+		Slab->OnClicked.AddDynamic(this, &UWallConstructionWidget::SpawnSlab);
+
+	}
+	if (LengthInput)
+	{
+		LengthInput->OnValueChanged.AddDynamic(this, &UWallConstructionWidget::LengthInputChangeHandle);
+	}
+}
+
+
+void UWallConstructionWidget::SpawnWall()
+{
+	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
+	{
+		PlayerController->SpawnSelectedActor(EObjectType::Wall);
+	}
+}
+
+void UWallConstructionWidget::SpawnSlab()
+{
+	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
+	{
+		PlayerController->SpawnSelectedActor(EObjectType::Slab);
+	}
 }
 
 void UWallConstructionWidget::OnToggleDoorClicked()
@@ -22,5 +57,13 @@ void UWallConstructionWidget::OnToggleDoorClicked()
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
 		PlayerController->SetIsAddingDoor(bIsAddingDoor);
+	}
+}
+
+void UWallConstructionWidget::LengthInputChangeHandle(float InputValue)
+{
+	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
+	{
+		
 	}
 }

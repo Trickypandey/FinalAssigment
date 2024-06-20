@@ -4,6 +4,7 @@
 #include "GameFramework/PlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "SlabActor.h"
 #include "UiWidget.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -16,12 +17,40 @@ AArchVizPlayerController::AArchVizPlayerController()
     bIsActorSpawning = false;
     bIsAddingDoor = true;
     SelectedActor = nullptr;
-   /* static ConstructorHelpers::FClassFinder<UUiWidget> UiWidgetObj(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/BluePrints/BP_UIWidget.BP_UIWidget'"));  
-    if (UiWidgetObj.Succeeded())
-    {
-        UiWidgetClass = UiWidgetObj.Class;
-    }*/
+    SelectedActorType = EObjectType::Wall;
+   
 }
+
+void AArchVizPlayerController::SpawnSelectedActor(EObjectType Type)
+{
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+    // Destroy previous selected actor if exists
+    if (SelectedActor)
+    {
+        SelectedActor->Destroy();
+    }
+
+    switch (Type) {
+    case EObjectType::Wall: {
+        SelectedActorType = EObjectType::Wall; 
+        SelectedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+        break;
+    }
+    case EObjectType::Slab: {
+        SelectedActorType = EObjectType::Slab; 
+        SelectedActor = GetWorld()->SpawnActor<ASlabActor>(ASlabActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+        break;
+    }
+    default: {
+        SelectedActorType = EObjectType::Wall; 
+        SelectedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+        break;
+    }
+    }
+}
+
 
 void AArchVizPlayerController::SetupInputComponent()
 {
@@ -105,10 +134,10 @@ void AArchVizPlayerController::Tick(float DeltaTime)
         FVector CursorWorldDirection;
         DeprojectMousePositionToWorld(CursorWorldLocation, CursorWorldDirection);
 
-        if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams)) {
+        if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams))
+        {
             FVector NewLocation = HitResult.Location;
-            //NewLocation.Z = 0;
-            SelectedActor->SetActorRelativeLocation(NewLocation);
+            SelectedActor->SetActorLocation(NewLocation);
             SnapWall();
         }
     }
@@ -140,13 +169,13 @@ void AArchVizPlayerController::LeftClickProcess()
     {
         // Clicked on a wall actor, update the selected actor
         SelectedActor = WallActor;
-
-        if (bIsAddingDoor)
+        AWallActor* tempwallactor= Cast<AWallActor>(WallActor);
+        if (bIsAddingDoor && tempwallactor)
         {
             // If adding a door is requested, update the wall actor
-            WallActor->SetIsDoorAdded(bIsAddingDoor);
-            WallActor->SetDoorLocation(LocalClickLocation.X);
-            WallActor->CreateWallMesh();
+            tempwallactor->SetIsDoorAdded(bIsAddingDoor);
+            tempwallactor->SetDoorLocation(LocalClickLocation.X);
+            tempwallactor->CreateWallMesh();
         }
     }
     else if (SelectedActor)
@@ -167,8 +196,17 @@ void AArchVizPlayerController::RightClickProcess()
         FVector spawnLocation = HitResult.Location;
         FActorSpawnParameters SpawnParams;
         SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-        auto* SpawnedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), spawnLocation, FRotator::ZeroRotator, SpawnParams);
-        SelectedActor = SpawnedActor;
+        if (SelectedActorType == EObjectType::Wall)
+        {
+	        
+			SelectedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), spawnLocation, FRotator::ZeroRotator, SpawnParams);
+        }
+        if (SelectedActorType == EObjectType::Slab)
+        {
+			SelectedActor = GetWorld()->SpawnActor<ASlabActor>(ASlabActor::StaticClass(), spawnLocation, FRotator::ZeroRotator, SpawnParams);
+	        
+        }
+        
         GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Actor spawned at cursor location"));
     }
 }
@@ -203,18 +241,21 @@ void AArchVizPlayerController::ModeChangeHandle(const FString& Mode)
     }
 }
 
-TPair<AWallActor*, FVector> AArchVizPlayerController::IsWallWallActor(const FHitResult& HitResult)
+
+
+TPair<ACubeActor*, FVector> AArchVizPlayerController::IsWallWallActor(const FHitResult& HitResult)
 {
     if (HitResult.bBlockingHit)
     {
         const FVector ClickLocation = HitResult.Location;
 
-        if (AWallActor* WallActor = Cast<AWallActor>(HitResult.GetActor()))
+        if (auto* WallActor = Cast<ACubeActor>(HitResult.GetActor()))
         {
             FVector LocalClickLocation = WallActor->GetTransform().InverseTransformPosition(ClickLocation);
             GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("World Clicked Location: X=%f, Y=%f, Z=%f"), ClickLocation.X, ClickLocation.Y, ClickLocation.Z));
-            return TPair<AWallActor*, FVector>(WallActor, LocalClickLocation);
+            return TPair<ACubeActor*, FVector>(WallActor, LocalClickLocation);
         }
     }
-    return TPair<AWallActor*, FVector>(nullptr, FVector::ZeroVector);
+    return TPair<ACubeActor*, FVector>(nullptr, FVector::ZeroVector);
 }
+

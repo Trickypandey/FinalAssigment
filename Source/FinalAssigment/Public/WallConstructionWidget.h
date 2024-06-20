@@ -7,6 +7,7 @@
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/EditableTextBox.h"
+#include "Utility.h"
 #include "Components/SpinBox.h"
 #include "WallConstructionWidget.generated.h"
 
@@ -37,9 +38,23 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	USpinBox* HeightInput;
 
-	// Event handler for toggling add door flag
+	UPROPERTY(meta = (BindWidget))
+	UButton* Wall;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* Slab;
+
+	UFUNCTION()
+	void SpawnWall();
+
+	UFUNCTION()
+	void SpawnSlab();
+
 	UFUNCTION()
 	void OnToggleDoorClicked();
+
+	UFUNCTION()
+	void LengthInputChangeHandle(float InputValue);
 
 	private:
 	bool bIsAddingDoor = false;
