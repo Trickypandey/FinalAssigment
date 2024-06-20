@@ -17,6 +17,16 @@ void ACubeActor::SetLength(float length)
     this->Length = length;
 }
 
+float ACubeActor::GetLength()
+{
+    return Length;
+}
+
+float ACubeActor::GetWidth()
+{
+    return Width;
+}
+
 void ACubeActor::SetWidth(float width)
 {
     this->Width = width;
@@ -25,13 +35,13 @@ void ACubeActor::SetWidth(float width)
 void ACubeActor::BeginPlay()
 {
     Super::BeginPlay();
-    CreateCubeMesh();
+    CreateMesh();
 }
 
 void ACubeActor::OnConstruction(const FTransform& Transform)
 {
     Super::OnConstruction(Transform);
-    CreateCubeMesh();
+    CreateMesh();
 }
 
 void ACubeActor::Tick(float DeltaTime)
@@ -39,7 +49,7 @@ void ACubeActor::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 }
 
-void ACubeActor::CreateCubeMesh()
+void ACubeActor::CreateMesh()
 {
     ProceduralMesh->ClearAllMeshSections();
     ResetArrays();

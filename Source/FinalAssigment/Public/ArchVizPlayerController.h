@@ -22,6 +22,7 @@ public:
     void ModeChangeHandle(const FString&);
     void SpawnSelectedActor(EObjectType  Type);
 
+	ACubeActor& GetSelectedActor();
 
 protected:
     virtual void SetupInputComponent() override;
@@ -45,10 +46,10 @@ private:
     UInputMappingContext* RoadMappingContext;
 
     UPROPERTY()
-    UUserWidget* UiWidgetInstance;
+    UUiWidget* UiWidgetInstance;
 
 	UPROPERTY()
-    UUserWidget* WallWidgetInstance;
+    UWallConstructionWidget* WallWidgetInstance;
 
     UPROPERTY(EditAnywhere, Category = "UI")
     TSubclassOf<UUserWidget> UiWidgetClass;
@@ -71,10 +72,10 @@ private:
     bool bIsActorSpawning;
     bool bIsAddingDoor;;
     bool IsSlapOrFloor = false;
-    float WallSnapValue = 20;
+    float WallSnapValue = 15;
 
     UPROPERTY()
-    AActor* SelectedActor;
+    ACubeActor* SelectedActor;
     FVector OriginalLocation;
 	UPROPERTY()
     AActor* HoveringActor;

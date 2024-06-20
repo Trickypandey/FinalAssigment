@@ -15,7 +15,7 @@ AArchVizPlayerController::AArchVizPlayerController()
     bIsWallCreationMode = false;
     bIsRoadConstructionMode = false;
     bIsActorSpawning = false;
-    bIsAddingDoor = true;
+    bIsAddingDoor = false;
     SelectedActor = nullptr;
     SelectedActorType = EObjectType::Wall;
    
@@ -27,9 +27,13 @@ void AArchVizPlayerController::SpawnSelectedActor(EObjectType Type)
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
     // Destroy previous selected actor if exists
-    if (SelectedActor)
+    if (SelectedActor && bIsActorSpawning)
     {
         SelectedActor->Destroy();
+    }
+    else
+    {
+        SelectedActor = nullptr;
     }
 
     switch (Type) {
@@ -49,6 +53,11 @@ void AArchVizPlayerController::SpawnSelectedActor(EObjectType Type)
         break;
     }
     }
+}
+
+ACubeActor& AArchVizPlayerController::GetSelectedActor()
+{
+    return *SelectedActor;
 }
 
 
@@ -164,7 +173,6 @@ void AArchVizPlayerController::LeftClickProcess()
 
     // Reset actor spawning state since we are interacting with existing actors
     bIsActorSpawning = false;
-
     if (auto [WallActor, LocalClickLocation] = IsWallWallActor(HitResult); WallActor)
     {
         // Clicked on a wall actor, update the selected actor
@@ -175,15 +183,31 @@ void AArchVizPlayerController::LeftClickProcess()
             // If adding a door is requested, update the wall actor
             tempwallactor->SetIsDoorAdded(bIsAddingDoor);
             tempwallactor->SetDoorLocation(LocalClickLocation.X);
-            tempwallactor->CreateWallMesh();
+            tempwallactor->CreateMesh();
         }
+        WallWidgetInstance->LengthInput->SetValue(SelectedActor->GetLength());
     }
     else if (SelectedActor)
     {
         // Clicked on empty space, move the selected actor to the hit location
         //SelectedActor->SetActorLocation(HitResult.Location);
-        bIsActorSpawning = true;
+        WallWidgetInstance->LengthInput->SetValue(SelectedActor->GetLength());
+    	bIsActorSpawning = true;
     }
+
+    if (Cast<AWallActor>(SelectedActor))
+    {
+        WallWidgetInstance->LengthInput->SetVisibility(ESlateVisibility::Visible);
+        WallWidgetInstance->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
+	    
+    }
+    if (Cast<ASlabActor>(SelectedActor))
+    {
+        WallWidgetInstance->LengthInput->SetVisibility(ESlateVisibility::Visible);
+        WallWidgetInstance->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
+        WallWidgetInstance->WidthInput->SetValue(SelectedActor->GetWidth());
+    }
+   
 }
 
 void AArchVizPlayerController::RightClickProcess()
@@ -258,4 +282,3 @@ TPair<ACubeActor*, FVector> AArchVizPlayerController::IsWallWallActor(const FHit
     }
     return TPair<ACubeActor*, FVector>(nullptr, FVector::ZeroVector);
 }
-

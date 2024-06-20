@@ -24,6 +24,6 @@ public:
     virtual void Tick(float DeltaTime) override;
 
 private:
-    void CreateSlabMesh();
+	virtual void CreateMesh() override;
 	
 };

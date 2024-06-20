@@ -32,12 +32,20 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Wall")
     void SetDimension(int32 _Length, int32 _Width);
 
-    void CreateWallMesh();
+    void AttachDoor(UStaticMesh*& DoorStaticMesh);
+
+	virtual void CreateMesh() override;
 private:
 	virtual void ResetArrays() override;
 	virtual void AddQuad(int32 V0, int32 V1, int32 V2, int32 V3) override;
 	virtual void AddUVs() override;
 	virtual void AddNormals() override;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Components")
+    UStaticMeshComponent* DoorMeshComponent;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components",meta = (AllowPrivateAccess))
+    UStaticMesh* DoorMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall", meta = (AllowPrivateAccess = "true"))
     FVector DoorLocation;

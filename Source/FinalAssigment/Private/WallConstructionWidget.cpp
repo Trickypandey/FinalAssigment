@@ -32,6 +32,11 @@ void UWallConstructionWidget::NativeConstruct()
 	{
 		LengthInput->OnValueChanged.AddDynamic(this, &UWallConstructionWidget::LengthInputChangeHandle);
 	}
+
+	if (WidthInput)
+	{
+		WidthInput->OnValueChanged.AddDynamic(this,&UWallConstructionWidget::WidthInputChangeHandle );
+	}
 }
 
 
@@ -64,6 +69,20 @@ void UWallConstructionWidget::LengthInputChangeHandle(float InputValue)
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		
+		// there is a case where it could be  null if occur go for pointer  int getselected actor 
+		PlayerController->GetSelectedActor().SetLength(InputValue);
+		PlayerController->GetSelectedActor().CreateMesh();
+
+	}
+}
+
+void UWallConstructionWidget::WidthInputChangeHandle(float InputValue)
+{
+	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
+	{
+		// there is a case where it could be  null if occur go for pointer  int getselected actor 
+		PlayerController->GetSelectedActor().SetWidth(InputValue);
+		PlayerController->GetSelectedActor().CreateMesh();
+
 	}
 }

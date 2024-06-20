@@ -6,24 +6,36 @@ AWallActor::AWallActor()
 
     Length = 500;
     Width = 20;
-    Height = 100;
+    Height = 400;
 
     IsDoorAdded = false;
-    DoorWidth = 50.0f;
-    DoorHeight = 66.0f; // Approximately 2 meters
+    DoorWidth = 90.0f;
+    DoorHeight = 200.0f; 
     DoorLocation = FVector(100.0f, 0.0f, 0.0f);
+    DoorMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorMesh"));
+    DoorMeshComponent->SetupAttachment(RootComponent);
+
+    DoorMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/StarterContent/Props/SM_Door.SM_Door"));
 }
 
 void AWallActor::BeginPlay()
 {
     Super::BeginPlay();
-    CreateWallMesh();
+    CreateMesh();
+    if (DoorMesh)
+    {
+        AttachDoor(DoorMesh);
+    }
 }
 
 void AWallActor::OnConstruction(const FTransform& Transform)
 {
     Super::OnConstruction(Transform);
-    CreateWallMesh();
+    CreateMesh();
+    if (DoorMesh)
+    {
+        AttachDoor(DoorMesh);
+    }
 }
 
 void AWallActor::Tick(float DeltaTime)
@@ -35,23 +47,31 @@ void AWallActor::Tick(float DeltaTime)
 void AWallActor::SetDoorLocation(float X)
 {
     DoorLocation.X = X;
-    CreateWallMesh();
+    CreateMesh();
 }
 
 void AWallActor::SetIsDoorAdded(bool Flag)
 {
     IsDoorAdded = Flag;
-    CreateWallMesh();
+    CreateMesh();
 }
 
 void AWallActor::SetDimension(int32 _Length, int32 _Width)
 {
     this->Length = _Length;
     this->Width = _Width;
-    CreateWallMesh();
+    CreateMesh();
 }
 
-void AWallActor::CreateWallMesh()
+void AWallActor::AttachDoor(UStaticMesh*& DoorStaticMesh)
+{
+    if (DoorStaticMesh)
+    {
+        DoorMeshComponent->SetStaticMesh(DoorStaticMesh);
+    }
+}
+
+void AWallActor::CreateMesh()
 {
     float L = Length;  // Full width
     float W = Width;  // Full depth
@@ -70,7 +90,8 @@ void AWallActor::CreateWallMesh()
 
     ProceduralMesh->ClearAllMeshSections();
     ResetArrays();
-
+    DoorMeshComponent->SetRelativeLocation(FVector(DoorRight,DoorLocation.Y,DoorLocation.Z));
+    DoorMeshComponent->SetRelativeRotation(FRotator(0, -90, 0));
 
     if (IsDoorAdded)
     {
@@ -140,17 +161,19 @@ void AWallActor::CreateWallMesh()
             16, 20, 34, 16, 34, 35,
             16, 35, 18, 18, 35, 19
         };
+
     }
     else
     {
         
-        CreateCubeMesh();
+        Super::CreateMesh();
     }
 
     AddNormals();
     AddUVs();
 
     ProceduralMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, TArray<FLinearColor>(), TArray<FProcMeshTangent>(), true);
+    
 }
 
 

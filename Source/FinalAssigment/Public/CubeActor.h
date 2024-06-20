@@ -16,13 +16,15 @@ public:
     ACubeActor();
 
     void SetLength(float length);
-    void SetWidth(float width);
+    float GetLength();
+	float GetWidth();
+	void SetWidth(float width);
+    virtual void CreateMesh();
 
 protected:
     virtual void BeginPlay() override;
     virtual void OnConstruction(const FTransform& Transform) override;
 
-    void CreateCubeMesh();
 
 public:
     virtual void Tick(float DeltaTime) override;

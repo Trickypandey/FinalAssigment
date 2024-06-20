@@ -56,6 +56,9 @@ public:
 	UFUNCTION()
 	void LengthInputChangeHandle(float InputValue);
 
+	UFUNCTION()
+	void WidthInputChangeHandle(float InputValue);
+
 	private:
 	bool bIsAddingDoor = false;
 
