@@ -4,6 +4,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "InputAction.h"
+#include "UiWidget.h"
 #include "ArchVizPlayerController.generated.h"
 
 class AWallActor;
@@ -15,11 +16,15 @@ class FINALASSIGMENT_API AArchVizPlayerController : public APlayerController
 
 public:
     AArchVizPlayerController();
+    void SetIsAddingDoor(bool);
+
+    void ModeChangeHandle(const FString&);
 
 protected:
     virtual void SetupInputComponent() override;
     void SnapWall();
     virtual void Tick(float DeltaTime) override;
+    virtual void BeginPlay() override;
 
 private:
     void SetupEnhancedInputBindings();
@@ -37,6 +42,18 @@ private:
     UInputMappingContext* RoadMappingContext;
 
     UPROPERTY()
+    UUserWidget* UiWidgetInstance;
+
+	UPROPERTY()
+    UUserWidget* WallWidgetInstance;
+
+    UPROPERTY(EditAnywhere, Category = "UI")
+    TSubclassOf<UUserWidget> UiWidgetClass;
+
+    UPROPERTY(EditAnywhere, Category = "UI")
+    TSubclassOf<UUserWidget> WallWidgetClass;
+
+    UPROPERTY()
     UInputAction* OnLeftClick;
 
     UPROPERTY()
@@ -45,10 +62,15 @@ private:
     UPROPERTY()
     UInputAction* OnRotate;
 
-    bool bIsWallCrationMode;
+
+    bool bIsWallCreationMode;
     bool bIsRoadConstructionMode;
+    bool bIsActorSpawning;
+    bool bIsAddingDoor;;
+    bool IsSlapOrFloor = false;
     float WallSnapValue = 20;
 
+    UPROPERTY()
     AActor* SelectedActor;
     FVector OriginalLocation;
 };

@@ -343,9 +343,14 @@ void AWallActor::AddNormals()
     }
 }
 
-void AWallActor::SetDoorLocartion(float x)
+void AWallActor::SetDoorLocation(float x)
 {
     DoorLocation.X = x;
+}
+
+void AWallActor::SetIsDoorAdded(bool flag)
+{
+    IsDoorAdded = flag;
 }
 
 

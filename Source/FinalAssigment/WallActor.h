@@ -34,7 +34,8 @@ public:
 	void AddQuad(int32 V0, int32 V1, int32 V2, int32 V3);
 	void AddUVs();
 	void AddNormals();
-	void SetDoorLocartion(float x);
+	void SetDoorLocation(float x);
+	void SetIsDoorAdded(bool);
 
 private:
 	UPROPERTY(VisibleAnywhere)

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "WallConstructionWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/CanvasPanel.h"
 #include "Components/ComboBoxString.h"
@@ -23,4 +24,13 @@ public:
 	
 	UPROPERTY(meta = (BindWidget))
 	UComboBoxString* ComboBoxMode;
+
+	
+
+private:
+	UPROPERTY()
+	UWallConstructionWidget* WallConstructionWidgetInstance;
+
+	UFUNCTION()
+	void OnComboBoxSelectionChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
 };
