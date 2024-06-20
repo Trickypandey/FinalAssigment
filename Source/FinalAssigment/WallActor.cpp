@@ -23,6 +23,7 @@ AWallActor::AWallActor()
     WallLength = 500;
     DoorWidth = 50.0f;
     DoorHeight = ((WallHeight * 2) / 3);
+    bIsSlab = false;
     DoorLocation = FVector::ZeroVector;
 
     
@@ -353,9 +354,15 @@ void AWallActor::SetIsDoorAdded(bool flag)
     IsDoorAdded = flag;
 }
 
-
-void AWallActor::SliceDoor()
+void AWallActor::SetDimension(int32 length, int32 width)
 {
-    // Slice along the Z-axis (vertical plane)
-    
+    WallHeight = 10;
+    WallLength = length;
+    WallWidth = width;
 }
+
+
+/*
+ *add the slab and floor
+ *complete the road
+ */

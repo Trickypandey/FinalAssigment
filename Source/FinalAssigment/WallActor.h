@@ -36,7 +36,7 @@ public:
 	void AddNormals();
 	void SetDoorLocation(float x);
 	void SetIsDoorAdded(bool);
-
+	void SetDimension(int32 length , int32 width);
 private:
 	UPROPERTY(VisibleAnywhere)
 	UProceduralMeshComponent* ProceduralMesh;
@@ -59,6 +59,9 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	TArray<FVector> Normals;
 
+	UPROPERTY(VisibleAnywhere)
+	bool bIsSlab;
+
 	UPROPERTY(EditAnywhere, Category = "Property")
 	int32 WallLength;
 
@@ -79,9 +82,8 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Property")
 	float DoorHeight;
+	
 
 	UPROPERTY(EditAnywhere, Category = "Property")
-	UMaterialInterface* CapMaterial;
-
-	void SliceDoor();
+	UMaterialInterface* CapMaterial;;
 };
