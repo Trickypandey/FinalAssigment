@@ -22,8 +22,8 @@ protected:
 
 public:
     virtual void Tick(float DeltaTime) override;
+	virtual void CreateMesh() override;
 
 private:
-	virtual void CreateMesh() override;
 	
 };

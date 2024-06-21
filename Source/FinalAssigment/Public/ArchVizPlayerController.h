@@ -20,6 +20,7 @@ public:
     void SetIsAddingDoor(bool);
    
     void ModeChangeHandle(const FString&);
+    void DeleteSelectedActor();
     void SpawnSelectedActor(EObjectType  Type);
 
 	ACubeActor& GetSelectedActor();
@@ -65,6 +66,9 @@ private:
 
     UPROPERTY()
     UInputAction* OnRotate;
+
+	UPROPERTY()
+    UInputAction* OnDelete;
 
 
     bool bIsWallCreationMode;

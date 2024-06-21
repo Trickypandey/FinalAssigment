@@ -117,17 +117,26 @@ void AArchVizPlayerController::SetupEnhancedInputBindings()
     OnRotate = NewObject<UInputAction>(this);
     OnRotate->ValueType = EInputActionValueType::Boolean;
 
+	OnDelete= NewObject<UInputAction>(this);
+    OnDelete->ValueType = EInputActionValueType::Boolean;
+
     // Set up input actions within the mapping contexts
-    WallMappingContext->MapKey(OnLeftClick, EKeys::LeftMouseButton);
-    WallMappingContext->MapKey(OnRightClick, EKeys::RightMouseButton);
-    WallMappingContext->MapKey(OnRotate, EKeys::R);
 
     // Ensure the enhanced input component is valid before binding actions
     check(Eic);
     Eic->BindAction(OnLeftClick, ETriggerEvent::Started, this, &AArchVizPlayerController::LeftClickProcess);
     Eic->BindAction(OnRightClick, ETriggerEvent::Started, this, &AArchVizPlayerController::RightClickProcess);
     Eic->BindAction(OnRotate, ETriggerEvent::Started, this, &AArchVizPlayerController::RotateSelectedActor);
+    Eic->BindAction(OnDelete, ETriggerEvent::Started, this, &AArchVizPlayerController::DeleteSelectedActor);
 
+    if (WallMappingContext)
+    {
+	    
+	    WallMappingContext->MapKey(OnLeftClick, EKeys::LeftMouseButton);
+	    WallMappingContext->MapKey(OnRightClick, EKeys::RightMouseButton);
+	    WallMappingContext->MapKey(OnRotate, EKeys::R);
+	    WallMappingContext->MapKey(OnDelete, EKeys::Delete);
+    }
 }
 
 void AArchVizPlayerController::Tick(float DeltaTime)
@@ -177,26 +186,30 @@ void AArchVizPlayerController::LeftClickProcess()
     {
         // Clicked on a wall actor, update the selected actor
         SelectedActor = WallActor;
-        AWallActor* tempwallactor= Cast<AWallActor>(WallActor);
-        if (bIsAddingDoor && tempwallactor)
+        if (AWallActor* tempwallactor= Cast<AWallActor>(WallActor); bIsAddingDoor && tempwallactor)
         {
             // If adding a door is requested, update the wall actor
             tempwallactor->SetIsDoorAdded(bIsAddingDoor);
             tempwallactor->SetDoorLocation(LocalClickLocation.X);
             tempwallactor->CreateMesh();
         }
-        WallWidgetInstance->LengthInput->SetValue(SelectedActor->GetLength());
+        if (ASlabActor* tempwallactor = Cast<ASlabActor>(WallActor); tempwallactor)
+        {
+            tempwallactor->CreateMesh();
+	        
+			
+        }
     }
     else if (SelectedActor)
     {
         // Clicked on empty space, move the selected actor to the hit location
         //SelectedActor->SetActorLocation(HitResult.Location);
-        WallWidgetInstance->LengthInput->SetValue(SelectedActor->GetLength());
     	bIsActorSpawning = true;
     }
 
     if (Cast<AWallActor>(SelectedActor))
     {
+        WallWidgetInstance->LengthInput->SetValue(SelectedActor->GetLength());
         WallWidgetInstance->LengthInput->SetVisibility(ESlateVisibility::Visible);
         WallWidgetInstance->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
 	    
@@ -265,6 +278,14 @@ void AArchVizPlayerController::ModeChangeHandle(const FString& Mode)
     }
 }
 
+void AArchVizPlayerController::DeleteSelectedActor()
+{
+    if (SelectedActor)
+    {
+        SelectedActor->Destroy();
+        SelectedActor = nullptr;
+    }
+}
 
 
 TPair<ACubeActor*, FVector> AArchVizPlayerController::IsWallWallActor(const FHitResult& HitResult)
