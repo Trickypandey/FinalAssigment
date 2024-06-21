@@ -7,6 +7,8 @@
 #include "SlabActor.h"
 #include "FinalAssigment/WallActor.h"
 
+
+
 void UWallConstructionWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -36,6 +38,11 @@ void UWallConstructionWidget::NativeConstruct()
 	if (WidthInput)
 	{
 		WidthInput->OnValueChanged.AddDynamic(this,&UWallConstructionWidget::WidthInputChangeHandle );
+	}
+
+	if (SelectionWidgetInstance)
+	{
+		SelectionWidgetInstance->OnMaterialAssetThumbnailSelected.AddDynamic(this, &UWallConstructionWidget::MaterialChangeHandler);
 	}
 }
 
@@ -84,5 +91,14 @@ void UWallConstructionWidget::WidthInputChangeHandle(float InputValue)
 		PlayerController->GetSelectedActor().SetWidth(InputValue);
 		PlayerController->GetSelectedActor().CreateMesh();
 
+	}
+}
+
+void UWallConstructionWidget::MaterialChangeHandler(const FMaterialData& MeshData)
+{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Material Click"));
+	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
+	{
+		PlayerController->ApplyMaterialToProceduralMesh(MeshData);
 	}
 }

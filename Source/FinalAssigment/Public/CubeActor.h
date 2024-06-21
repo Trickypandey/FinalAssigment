@@ -18,6 +18,8 @@ public:
     void SetLength(float length);
     float GetLength();
 	float GetWidth();
+    UProceduralMeshComponent* GetProceduralMeshComponent();
+
 	void SetWidth(float width);
     virtual void CreateMesh();
 
@@ -51,5 +53,6 @@ protected:
 	virtual void AddQuad(int32 V0, int32 V1, int32 V2, int32 V3);
 	virtual void AddUVs();
 	virtual void AddNormals();
+    
 
 };

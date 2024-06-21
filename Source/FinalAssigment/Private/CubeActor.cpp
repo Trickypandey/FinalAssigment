@@ -27,6 +27,11 @@ float ACubeActor::GetWidth()
     return Width;
 }
 
+UProceduralMeshComponent* ACubeActor::GetProceduralMeshComponent()
+{
+    return ProceduralMesh;
+}
+
 void ACubeActor::SetWidth(float width)
 {
     this->Width = width;

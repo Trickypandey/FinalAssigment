@@ -60,6 +60,22 @@ ACubeActor& AArchVizPlayerController::GetSelectedActor()
     return *SelectedActor;
 }
 
+void AArchVizPlayerController::ApplyMaterialToProceduralMesh(const FMaterialData& MeshData)
+{
+    UMaterialInterface* BaseMaterial = MeshData.Type; 
+    if (!BaseMaterial)
+    {
+        UE_LOG(LogTemp, Error, TEXT("BaseMaterial is nullptr in AArchVizPlayerController"));
+        return;
+    }
+
+    UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+    if (DynamicMaterial && SelectedActor)
+    {
+        SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
+    }
+}
+
 
 void AArchVizPlayerController::SetupInputComponent()
 {
@@ -159,6 +175,7 @@ void AArchVizPlayerController::Tick(float DeltaTime)
             SnapWall();
         }
     }
+
 }
 
 void AArchVizPlayerController::BeginPlay()
@@ -173,6 +190,7 @@ void AArchVizPlayerController::BeginPlay()
             UiWidgetInstance->AddToViewport();
         }
     }
+   
 }
 
 void AArchVizPlayerController::LeftClickProcess()

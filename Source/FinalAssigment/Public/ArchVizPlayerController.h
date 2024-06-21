@@ -24,6 +24,8 @@ public:
     void SpawnSelectedActor(EObjectType  Type);
 
 	ACubeActor& GetSelectedActor();
+    UFUNCTION()
+    void ApplyMaterialToProceduralMesh(const FMaterialData& MeshData);
 
 protected:
     virtual void SetupInputComponent() override;

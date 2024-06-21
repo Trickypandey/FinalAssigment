@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "USelectionScrollBox.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
@@ -19,6 +20,8 @@ class FINALASSIGMENT_API UWallConstructionWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
+	UFUNCTION()
+	void MaterialChangeHandler(const FMaterialData& MeshData);
 	virtual void NativeConstruct() override;
 
 	UPROPERTY(meta = (BindWidget))
@@ -61,6 +64,10 @@ public:
 
 	private:
 	bool bIsAddingDoor = false;
+
+public:
+	UPROPERTY(meta = (BindWidget))
+	UUSelectionScrollBox* SelectionWidgetInstance;
 
 	
 };
