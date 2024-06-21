@@ -23,7 +23,7 @@ public:
     void DeleteSelectedActor();
     void SpawnSelectedActor(EObjectType  Type);
 
-	ACubeActor& GetSelectedActor();
+	ACubeActor* GetSelectedActor();
     UFUNCTION()
     void ApplyMaterialToProceduralMesh(const FMaterialData& MeshData);
 

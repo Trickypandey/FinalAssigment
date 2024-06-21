@@ -115,51 +115,78 @@ void AWallActor::CreateMesh()
 	    Vertices.Add(FVector(-L / 2, W / 2, H));   // 14
 	    Vertices.Add(FVector(L / 2, W / 2, H));    // 15
 
-        Vertices.Add(FVector(-L / 2, -W / 2, H));   // 16
-        Vertices.Add(FVector(DoorLeft, -W / 2, H));   // 17
-        Vertices.Add(FVector(-L / 2, -W / 2, 0));   // 18
-        Vertices.Add(FVector(DoorLeft, -W / 2, 0));   // 19
 
-        Vertices.Add(FVector(L / 2, -W / 2, H));   // 20
-        Vertices.Add(FVector(DoorRight, -W / 2, H));   // 21
-        Vertices.Add(FVector(L / 2, -W / 2, 0));   // 22
-        Vertices.Add(FVector(DoorRight, -W / 2, 0));//23
+        // door left
+        Vertices.Add(FVector(-L / 2, W / 2, DoorHeight));   // 16
+        Vertices.Add(FVector(DoorLeft, W / 2, DoorHeight));   // 17
+        Vertices.Add(FVector(DoorLeft, W / 2, 0));   // 18
+        Vertices.Add(FVector(-L/2 , W / 2, 0));   // 19
 
-        Vertices.Add(FVector(-L / 2, W / 2, H));   // 24
-        Vertices.Add(FVector(DoorLeft, W / 2, H));   // 25
-        Vertices.Add(FVector(-L / 2, W / 2, 0));   // 26
-        Vertices.Add(FVector(DoorLeft, W / 2, 0));   // 27
 
-        Vertices.Add(FVector(L / 2, W / 2, H));   // 28
-        Vertices.Add(FVector(DoorRight, W / 2, H));   // 29
-        Vertices.Add(FVector(L / 2, W / 2, 0));   // 30
-        Vertices.Add(FVector(DoorRight, W / 2, 0));//31
+        // door top
+        Vertices.Add(FVector(-L / 2, W / 2, H));   // 20
+        Vertices.Add(FVector(L / 2, W / 2, H));   // 21
+        Vertices.Add(FVector(L / 2, W / 2, DoorHeight));   // 22
+        Vertices.Add(FVector(-L / 2, W / 2, DoorHeight));//23
 
-        Vertices.Add(FVector(DoorRight, -W / 2, H));   // 32
-        Vertices.Add(FVector(DoorLeft, -W / 2, H));   // 33
-        Vertices.Add(FVector(DoorRight, -W / 2, DoorHeight));   // 34
-        Vertices.Add(FVector(DoorLeft, -W / 2, DoorHeight));//35
+        // door right 
+        Vertices.Add(FVector(DoorRight, W / 2, DoorHeight));   // 24
+        Vertices.Add(FVector(L/2, W / 2, DoorHeight));   // 25
+        Vertices.Add(FVector(L / 2, W / 2, 0));   // 26
+        Vertices.Add(FVector(DoorRight, W / 2, 0));   // 27
 
-        Vertices.Add(FVector(DoorRight, W / 2, H));   // 36
-        Vertices.Add(FVector(DoorLeft, W / 2, H));   // 37
-        Vertices.Add(FVector(DoorRight, W / 2, DoorHeight));   // 38
-        Vertices.Add(FVector(DoorLeft, W / 2, DoorHeight));//39
+        // BACK LEFT 
+        Vertices.Add(FVector(-L / 2, -W / 2, DoorHeight));   // 28
+        Vertices.Add(FVector(DoorLeft, -W / 2, DoorHeight));   // 29
+        Vertices.Add(FVector(DoorLeft, -W / 2, 0));   // 30
+        Vertices.Add(FVector(-L/2, -W / 2, 0));//31
+
+
+        // BACK RIGHT
+        Vertices.Add(FVector(DoorRight, -W / 2, DoorHeight));   // 32
+        Vertices.Add(FVector(L/2, -W / 2, DoorHeight));   // 33
+        Vertices.Add(FVector(L/2, -W / 2, 0));   // 34
+        Vertices.Add(FVector(DoorRight, -W / 2, 0));//35
+
+        // back top
+
+        Vertices.Add(FVector(-L/2, -W / 2, H));   // 36
+        Vertices.Add(FVector(L/2, -W / 2, H));   // 37
+        Vertices.Add(FVector(L/2,- W / 2, DoorHeight));   // 38
+        Vertices.Add(FVector(-L/2, -W / 2, DoorHeight));//39
 
         Triangles = {
             0, 1, 3, 1, 2, 3,
             4, 5, 7, 5, 6, 7,
             8, 9, 11, 9, 10, 11,
             12, 13, 15, 13, 14, 15,
+// door left
+         16,19,18,16,18,17,
 
-            // front portion
-            24, 26, 39, 39, 26, 27,
+            // door top
+            20,23,22,20,22,21,
+
+            // door ight
+            24,27,26,24,26,25,
+
+            // BACK LEFT
+
+            30,31,28,29,30,28,
+
+            // back right
+            34,35,32,33,34,32,
+
+            // back top
+
+            38,39,36,37,38,36
+
+           /* 24, 26, 39, 39, 26, 27,
             24, 39, 28, 39, 38, 28,
             28, 38, 30, 38, 31, 30,
 
-            // back portion
             22, 34, 20, 23, 34, 22,
             16, 20, 34, 16, 34, 35,
-            16, 35, 18, 18, 35, 19
+            16, 35, 18, 18, 35, 19*/
         };
 
     }
@@ -199,101 +226,75 @@ void AWallActor::AddUVs()
 {
     if (IsDoorAdded)
     {
-        UVs = {
-            // Left face
-            FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1),
+        // Front face
+        UVs.Add(FVector2D(0.0f, 0.0f)); // 0
+        UVs.Add(FVector2D(1.0f, 0.0f)); // 1
+        UVs.Add(FVector2D(1.0f, 1.0f)); // 2
+        UVs.Add(FVector2D(0.0f, 1.0f)); // 3
 
-            // Bottom face
-            FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1),
+        // Bottom face
+        UVs.Add(FVector2D(0.0f, 0.0f)); // 4
+        UVs.Add(FVector2D(1.0f, 0.0f)); // 5
+        UVs.Add(FVector2D(1.0f, 1.0f)); // 6
+        UVs.Add(FVector2D(0.0f, 1.0f)); // 7
 
-            // Right face
-            FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1),
+        // Right face
+        UVs.Add(FVector2D(0.0f, 0.0f)); // 8
+        UVs.Add(FVector2D(1.0f, 0.0f)); // 9
+        UVs.Add(FVector2D(1.0f, 1.0f)); // 10
+        UVs.Add(FVector2D(0.0f, 1.0f)); // 11
 
-            // Top face
-            FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1),
+        // Top face
+        UVs.Add(FVector2D(0.0f, 0.0f)); // 12
+        UVs.Add(FVector2D(1.0f, 0.0f)); // 13
+        UVs.Add(FVector2D(1.0f, 1.0f)); // 14
+        UVs.Add(FVector2D(0.0f, 1.0f)); // 15
 
-            // Back left face
-            FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1),
+        // Door left
+        UVs.Add(FVector2D(0.0f, 0.0f)); // 16
+        UVs.Add(FVector2D(1.0f, 0.0f)); // 17
+        UVs.Add(FVector2D(1.0f, 1.0f)); // 18
+        UVs.Add(FVector2D(0.0f, 1.0f)); // 19
 
-            // Back right face
-            FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1),
+        // Door top
+        UVs.Add(FVector2D(0.0f, 0.0f)); // 20
+        UVs.Add(FVector2D(1.0f, 0.0f)); // 21
+        UVs.Add(FVector2D(1.0f, 1.0f)); // 22
+        UVs.Add(FVector2D(0.0f, 1.0f)); // 23
 
-            // Front left face
-            FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1),
+        // Door right
+        UVs.Add(FVector2D(0.0f, 0.0f)); // 24
+        UVs.Add(FVector2D(1.0f, 0.0f)); // 25
+        UVs.Add(FVector2D(1.0f, 1.0f)); // 26
+        UVs.Add(FVector2D(0.0f, 1.0f)); // 27
 
-            // Front right face
-            FVector2D(0, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0, 1),
+        // Back right
+        UVs.Add(FVector2D(1.0f, 1.0f)); // 25
+        UVs.Add(FVector2D(0.0f, 1.0f)); // 24
+        UVs.Add(FVector2D(1.0f, 0.0f)); // 26
+        UVs.Add(FVector2D(0.0f, 0.0f)); // 27
 
-            // Door top back face
-            FVector2D(0, 0), FVector2D(0.5, 0), FVector2D(0.5, 1), FVector2D(0, 1),
+        // Back left
+        UVs.Add(FVector2D(0.0f, 1.0f)); // 28
+        UVs.Add(FVector2D(1.0f, 1.0f)); // 29
+        UVs.Add(FVector2D(1.0f, 0.0f)); // 30
+        UVs.Add(FVector2D(0.0f, 0.0f)); // 31
 
-            // Door top front face
-            FVector2D(0.5, 0), FVector2D(1, 0), FVector2D(1, 1), FVector2D(0.5, 1)
-        };
-
-        // Door bottom back face
-        UVs.Add(FVector2D(0, 0));
-        UVs.Add(FVector2D(0.5, 0));
-        UVs.Add(FVector2D(0, 1));
-        UVs.Add(FVector2D(0.5, 1));
-
-        // Door bottom front face
-        UVs.Add(FVector2D(0.5, 0));
-        UVs.Add(FVector2D(1, 0));
-        UVs.Add(FVector2D(0.5, 1));
-        UVs.Add(FVector2D(1, 1));
+        // Back top
+        UVs.Add(FVector2D(0.0f, 1.0f)); // 32
+        UVs.Add(FVector2D(1.0f, 1.0f)); // 33
+        UVs.Add(FVector2D(1.0f, 0.0f)); // 34
+        UVs.Add(FVector2D(0.0f, 0.0f)); // 35
     }
     else
     {
         Super::AddUVs();
-
     }
 }
 
+
+
 void AWallActor::AddNormals()
 {
-    if (IsDoorAdded)
-    {
-        Normals = {
-            // Left face
-            FVector(-1, 0, 0), FVector(-1, 0, 0), FVector(-1, 0, 0), FVector(-1, 0, 0),
-
-            // Bottom face
-            FVector(0, 0, -1), FVector(0, 0, -1), FVector(0, 0, -1), FVector(0, 0, -1),
-
-            // Right face
-            FVector(1, 0, 0), FVector(1, 0, 0), FVector(1, 0, 0), FVector(1, 0, 0),
-
-            // Top face
-            FVector(0, 0, 1), FVector(0, 0, 1), FVector(0, 0, 1), FVector(0, 0, 1),
-
-            // Back left face
-            FVector(0, -1, 0), FVector(0, -1, 0), FVector(0, -1, 0), FVector(0, -1, 0),
-
-            // Back right face
-            FVector(0, -1, 0), FVector(0, -1, 0), FVector(0, -1, 0), FVector(0, -1, 0),
-
-            // Front left face
-            FVector(0, 1, 0), FVector(0, 1, 0), FVector(0, 1, 0), FVector(0, 1, 0),
-
-            // Front right face
-            FVector(0, 1, 0), FVector(0, 1, 0), FVector(0, 1, 0), FVector(0, 1, 0),
-
-            // Door top back face
-            FVector(0, 0, 1), FVector(0, 0, 1), FVector(0, 0, 1), FVector(0, 0, 1),
-
-            // Door top front face
-            FVector(0, 0, 1), FVector(0, 0, 1), FVector(0, 0, 1), FVector(0, 0, 1),
-
-            // Door bottom back face
-            FVector(0, 0, -1), FVector(0, 0, -1), FVector(0, 0, -1), FVector(0, 0, -1),
-
-            // Door bottom front face
-            FVector(0, 0, -1), FVector(0, 0, -1), FVector(0, 0, -1), FVector(0, 0, -1)
-        };
-    }
-    else
-    {
-        Super::AddNormals();
-    }
+    Super::AddNormals();
 }

@@ -76,10 +76,14 @@ void UWallConstructionWidget::LengthInputChangeHandle(float InputValue)
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		// there is a case where it could be  null if occur go for pointer  int getselected actor 
-		PlayerController->GetSelectedActor().SetLength(InputValue);
-		PlayerController->GetSelectedActor().CreateMesh();
+		// there is a case where it could be  null if occur go for pointer  int getselected actor
+		if (auto Actor = PlayerController->GetSelectedActor())
+		{
+			
+			Actor->SetLength(InputValue);
+			Actor->CreateMesh();
 
+		}
 	}
 }
 
@@ -87,16 +91,21 @@ void UWallConstructionWidget::WidthInputChangeHandle(float InputValue)
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		// there is a case where it could be  null if occur go for pointer  int getselected actor 
-		PlayerController->GetSelectedActor().SetWidth(InputValue);
-		PlayerController->GetSelectedActor().CreateMesh();
+		// there is a case where it could be  null if occur go for pointer  int getselected actor
+		if (auto Actor = PlayerController->GetSelectedActor())
+		{
+
+			Actor->SetWidth(InputValue);
+			Actor->CreateMesh();
+
+		}
+		
 
 	}
 }
 
 void UWallConstructionWidget::MaterialChangeHandler(const FMaterialData& MeshData)
 {
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Material Click"));
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
 		PlayerController->ApplyMaterialToProceduralMesh(MeshData);

@@ -47,6 +47,7 @@ protected:
     TArray<FVector> Vertices;
     TArray<int32> Triangles;
     TArray<FVector> Normals;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh Property")
     TArray<FVector2D> UVs;
 
 	virtual void ResetArrays();

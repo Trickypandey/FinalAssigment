@@ -55,9 +55,9 @@ void AArchVizPlayerController::SpawnSelectedActor(EObjectType Type)
     }
 }
 
-ACubeActor& AArchVizPlayerController::GetSelectedActor()
+ACubeActor* AArchVizPlayerController::GetSelectedActor()
 {
-    return *SelectedActor;
+    return SelectedActor;
 }
 
 void AArchVizPlayerController::ApplyMaterialToProceduralMesh(const FMaterialData& MeshData)
