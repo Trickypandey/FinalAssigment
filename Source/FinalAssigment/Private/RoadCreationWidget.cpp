@@ -3,6 +3,8 @@
 
 #include "RoadCreationWidget.h"
 
+#include "ArchVizPlayerController.h"
+
 
 void URoadCreationWidget::NativeConstruct()
 {
@@ -15,5 +17,8 @@ void URoadCreationWidget::NativeConstruct()
 
 void URoadCreationWidget::MaterialChangeHandler(const FMaterialData& MeshData)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Road Material CHange"));
+	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
+	{
+		PlayerController->AddMaterialToRoad(MeshData);
+	}
 }

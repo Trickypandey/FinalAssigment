@@ -108,6 +108,6 @@ void UWallConstructionWidget::MaterialChangeHandler(const FMaterialData& MeshDat
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		PlayerController->ApplyMaterialToProceduralMesh(MeshData);
+		PlayerController->ApplyMaterialWallProceduralMesh(MeshData);
 	}
 }

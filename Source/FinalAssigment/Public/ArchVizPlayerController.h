@@ -5,6 +5,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "InputAction.h"
+#include "RoadActor.h"
 #include "RoadCreationWidget.h"
 #include "UiWidget.h"
 #include "ArchVizPlayerController.generated.h"
@@ -26,7 +27,10 @@ public:
 
 	ACubeActor* GetSelectedActor();
     UFUNCTION()
-    void ApplyMaterialToProceduralMesh(const FMaterialData& MeshData);
+    void ApplyMaterialWallProceduralMesh(const FMaterialData& MeshData);
+
+    UFUNCTION()
+    void AddMaterialToRoad(const FMaterialData& MeshData);
 
 protected:
     virtual void SetupInputComponent() override;
@@ -36,6 +40,7 @@ protected:
 
 private:
     void RoadLeftClick();
+    void RoadRightClick();
     void SetupEnhancedInputBindings();
     void AddCurrentModeMappingContext() const;
     void WallLeftClickProcess();
@@ -83,6 +88,9 @@ private:
 	UPROPERTY()
     UInputAction* OnRoadAddPoint;
 
+    UPROPERTY()
+    UInputAction* OnRoadRightClick;
+
 
     bool bIsWallCreationMode;
     bool bIsRoadConstructionMode;
@@ -104,5 +112,10 @@ private:
     AActor* HoveringActor;
 
     EObjectType SelectedActorType;
-   
+
+    UPROPERTY()
+    TArray<ARoadActor*> RoadArray;
+
+    UPROPERTY()
+    ARoadActor* CurrentRoadActor;
 };
