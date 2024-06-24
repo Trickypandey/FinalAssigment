@@ -13,11 +13,13 @@ AArchVizPlayerController::AArchVizPlayerController()
     PrimaryActorTick.bCanEverTick = true;
     bShowMouseCursor = true;
     bIsWallCreationMode = false;
-    bIsRoadConstructionMode = false;
+    bIsRoadConstructionMode = true;
     bIsActorSpawning = false;
     bIsAddingDoor = false;
     SelectedActor = nullptr;
     SelectedActorType = EObjectType::Wall;
+
+ 
    
 }
 
@@ -37,22 +39,24 @@ void AArchVizPlayerController::SpawnSelectedActor(EObjectType Type)
     }
 
     switch (Type) {
-    case EObjectType::Wall: {
-        SelectedActorType = EObjectType::Wall; 
-        SelectedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-        break;
+	    case EObjectType::Wall: {
+	        SelectedActorType = EObjectType::Wall; 
+	        SelectedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+	        break;
+	    }
+	    case EObjectType::Slab: {
+	        SelectedActorType = EObjectType::Slab; 
+	        SelectedActor = GetWorld()->SpawnActor<ASlabActor>(ASlabActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+	        break;
+	    }
+	    default: {
+	        SelectedActorType = EObjectType::Wall; 
+	        SelectedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+	        break;
+	    }
     }
-    case EObjectType::Slab: {
-        SelectedActorType = EObjectType::Slab; 
-        SelectedActor = GetWorld()->SpawnActor<ASlabActor>(ASlabActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-        break;
-    }
-    default: {
-        SelectedActorType = EObjectType::Wall; 
-        SelectedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-        break;
-    }
-    }
+
+    
 }
 
 ACubeActor* AArchVizPlayerController::GetSelectedActor()
@@ -69,7 +73,7 @@ void AArchVizPlayerController::ApplyMaterialToProceduralMesh(const FMaterialData
         return;
     }
 
-    UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+    DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this);
     if (DynamicMaterial && SelectedActor)
     {
         SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
@@ -99,24 +103,50 @@ void AArchVizPlayerController::SnapWall()
 void AArchVizPlayerController::AddCurrentModeMappingContext() const
 {
     auto* SubSystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-    if (!SubSystem || (bIsWallCreationMode && bIsRoadConstructionMode))
+    if (!SubSystem)
     {
+        UE_LOG(LogTemp, Warning, TEXT("EnhancedInputLocalPlayerSubsystem is not available."));
         return;
     }
+
+    // Clear all mappings initially
     SubSystem->ClearAllMappings();
+    UE_LOG(LogTemp, Log, TEXT("Cleared all input mappings."));
 
-    UInputMappingContext* ContextToRemove = bIsWallCreationMode ? WallMappingContext : RoadMappingContext;
-    UInputMappingContext* ContextToAdd = bIsRoadConstructionMode ? RoadMappingContext : WallMappingContext;
+    UInputMappingContext* ContextToRemove = nullptr;
+    UInputMappingContext* ContextToAdd = nullptr;
 
+    if (bIsWallCreationMode)
+    {
+        ContextToAdd = WallMappingContext;
+        ContextToRemove = RoadMappingContext; // Explicitly set the context to remove
+       
+        UE_LOG(LogTemp, Log, TEXT("Wall Creation Mode activated."));
+    }
+    else if (bIsRoadConstructionMode)
+    {
+        ContextToAdd = RoadMappingContext;
+        ContextToRemove = WallMappingContext; // Explicitly set the context to remove
+        
+        UE_LOG(LogTemp, Log, TEXT("Road Construction Mode activated."));
+    }
+  
+
+    // Remove the context to remove, if any
     if (ContextToRemove)
     {
         SubSystem->RemoveMappingContext(ContextToRemove);
+        UE_LOG(LogTemp, Log, TEXT("Removed input mapping context: %s"), *ContextToRemove->GetName());
     }
+
+    // Add the context to add, if any
     if (ContextToAdd)
     {
         SubSystem->AddMappingContext(ContextToAdd, 0);
+        UE_LOG(LogTemp, Log, TEXT("Added input mapping context: %s"), *ContextToAdd->GetName());
     }
 }
+
 
 void AArchVizPlayerController::SetupEnhancedInputBindings()
 {
@@ -124,35 +154,47 @@ void AArchVizPlayerController::SetupEnhancedInputBindings()
     WallMappingContext = NewObject<UInputMappingContext>(this);
     RoadMappingContext = NewObject<UInputMappingContext>(this);
 
-    OnLeftClick = NewObject<UInputAction>(this);
-    OnLeftClick->ValueType = EInputActionValueType::Boolean;
+    OnWallLeftClick = NewObject<UInputAction>(this);
+    OnWallLeftClick->ValueType = EInputActionValueType::Boolean;
 
-    OnRightClick = NewObject<UInputAction>(this);
-    OnRightClick->ValueType = EInputActionValueType::Boolean;
+    OnWallRightClick = NewObject<UInputAction>(this);
+    OnWallRightClick->ValueType = EInputActionValueType::Boolean;
 
-    OnRotate = NewObject<UInputAction>(this);
-    OnRotate->ValueType = EInputActionValueType::Boolean;
+    OnWallRotate = NewObject<UInputAction>(this);
+    OnWallRotate->ValueType = EInputActionValueType::Boolean;
 
-	OnDelete= NewObject<UInputAction>(this);
-    OnDelete->ValueType = EInputActionValueType::Boolean;
+	OnWallDelete= NewObject<UInputAction>(this);
+    OnWallDelete->ValueType = EInputActionValueType::Boolean;
+
+
+    OnRoadAddPoint = NewObject<UInputAction>(this);
+    OnRoadAddPoint->ValueType = EInputActionValueType::Boolean;
 
     // Set up input actions within the mapping contexts
 
     // Ensure the enhanced input component is valid before binding actions
     check(Eic);
-    Eic->BindAction(OnLeftClick, ETriggerEvent::Started, this, &AArchVizPlayerController::LeftClickProcess);
-    Eic->BindAction(OnRightClick, ETriggerEvent::Started, this, &AArchVizPlayerController::RightClickProcess);
-    Eic->BindAction(OnRotate, ETriggerEvent::Started, this, &AArchVizPlayerController::RotateSelectedActor);
-    Eic->BindAction(OnDelete, ETriggerEvent::Started, this, &AArchVizPlayerController::DeleteSelectedActor);
+    Eic->BindAction(OnWallLeftClick, ETriggerEvent::Started, this, &AArchVizPlayerController::WallLeftClickProcess);
+    Eic->BindAction(OnWallRightClick, ETriggerEvent::Started, this, &AArchVizPlayerController::WallRightClickProcess);
+    Eic->BindAction(OnWallRotate, ETriggerEvent::Started, this, &AArchVizPlayerController::RotateSelectedActor);
+    Eic->BindAction(OnWallDelete, ETriggerEvent::Started, this, &AArchVizPlayerController::DeleteSelectedActor);
+
+    Eic->BindAction(OnRoadAddPoint, ETriggerEvent::Started, this, &AArchVizPlayerController::RoadLeftClick);
 
     if (WallMappingContext)
     {
 	    
-	    WallMappingContext->MapKey(OnLeftClick, EKeys::LeftMouseButton);
-	    WallMappingContext->MapKey(OnRightClick, EKeys::RightMouseButton);
-	    WallMappingContext->MapKey(OnRotate, EKeys::R);
-	    WallMappingContext->MapKey(OnDelete, EKeys::Delete);
+	    WallMappingContext->MapKey(OnWallLeftClick, EKeys::LeftMouseButton);
+	    WallMappingContext->MapKey(OnWallRightClick, EKeys::RightMouseButton);
+	    WallMappingContext->MapKey(OnWallRotate, EKeys::R);
+	    WallMappingContext->MapKey(OnWallDelete, EKeys::Delete);
     }
+
+    if (RoadMappingContext)
+    {
+	    WallMappingContext->MapKey(OnRoadAddPoint, EKeys::LeftMouseButton);
+    }
+    AddCurrentModeMappingContext();
 }
 
 void AArchVizPlayerController::Tick(float DeltaTime)
@@ -182,7 +224,9 @@ void AArchVizPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-    if (!UiWidgetInstance && UiWidgetClass )
+
+    // Initialize UiWidgetInstance
+    if (!UiWidgetInstance && UiWidgetClass)
     {
         UiWidgetInstance = CreateWidget<UUiWidget>(this, UiWidgetClass);
         if (UiWidgetInstance)
@@ -190,10 +234,34 @@ void AArchVizPlayerController::BeginPlay()
             UiWidgetInstance->AddToViewport();
         }
     }
-   
+
+    // Initialize RoadWidgetInstance
+    if (RoadWidgetClass && !RoadWidgetInstance)
+    {
+        RoadWidgetInstance = CreateWidget<URoadCreationWidget>(this, RoadWidgetClass);
+        if (RoadWidgetInstance)
+        {
+            
+            RoadWidgetInstance->AddToViewport();
+        }
+        
+    }
+
+  
+    if (WallWidgetClass && !WallWidgetInstance)
+    {
+        WallWidgetInstance = CreateWidget<UWallConstructionWidget>(this, WallWidgetClass);
+       
+    }
+
 }
 
-void AArchVizPlayerController::LeftClickProcess()
+void AArchVizPlayerController::RoadLeftClick()
+{
+    GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Road Widget"));
+}
+
+void AArchVizPlayerController::WallLeftClickProcess()
 {
     FHitResult HitResult;
     GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
@@ -204,7 +272,25 @@ void AArchVizPlayerController::LeftClickProcess()
     {
         // Clicked on a wall actor, update the selected actor
         SelectedActor = WallActor;
-        if (AWallActor* tempwallactor= Cast<AWallActor>(WallActor); bIsAddingDoor && tempwallactor)
+
+        // Highlight the selected actor
+        if (SelectedActor)
+        {
+            SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
+            SelectedActor->GetProceduralMeshComponent()->CustomDepthStencilValue = 2.0;
+        }
+
+        // Unhighlight previously selected actor if exists
+        if (PreviousSelectedActor && PreviousSelectedActor != SelectedActor)
+        {
+            PreviousSelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+        }
+
+        // Update the previously selected actor to the current one
+        PreviousSelectedActor = SelectedActor;
+
+        // Additional logic as needed
+        if (AWallActor* tempwallactor = Cast<AWallActor>(WallActor); bIsAddingDoor && tempwallactor)
         {
             // If adding a door is requested, update the wall actor
             tempwallactor->SetIsDoorAdded(bIsAddingDoor);
@@ -214,34 +300,31 @@ void AArchVizPlayerController::LeftClickProcess()
         if (ASlabActor* tempwallactor = Cast<ASlabActor>(WallActor); tempwallactor)
         {
             tempwallactor->CreateMesh();
-	        
-			
         }
     }
     else if (SelectedActor)
     {
         // Clicked on empty space, move the selected actor to the hit location
         //SelectedActor->SetActorLocation(HitResult.Location);
-    	bIsActorSpawning = true;
+        bIsActorSpawning = true;
     }
 
+    // Additional logic based on selected actor type
     if (Cast<AWallActor>(SelectedActor))
     {
         WallWidgetInstance->LengthInput->SetValue(SelectedActor->GetLength());
         WallWidgetInstance->LengthInput->SetVisibility(ESlateVisibility::Visible);
         WallWidgetInstance->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
-	    
     }
-    if (Cast<ASlabActor>(SelectedActor))
+    else if (Cast<ASlabActor>(SelectedActor))
     {
         WallWidgetInstance->LengthInput->SetVisibility(ESlateVisibility::Visible);
         WallWidgetInstance->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
         WallWidgetInstance->WidthInput->SetValue(SelectedActor->GetWidth());
     }
-   
 }
 
-void AArchVizPlayerController::RightClickProcess()
+void AArchVizPlayerController::WallRightClickProcess()
 {
     FHitResult HitResult;
     GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
@@ -251,15 +334,24 @@ void AArchVizPlayerController::RightClickProcess()
         FVector spawnLocation = HitResult.Location;
         FActorSpawnParameters SpawnParams;
         SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        ACubeActor* SpwanedActor = nullptr;
         if (SelectedActorType == EObjectType::Wall)
         {
 	        
-			SelectedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), spawnLocation, FRotator::ZeroRotator, SpawnParams);
+            SpwanedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), spawnLocation, FRotator::ZeroRotator, SpawnParams);
         }
         if (SelectedActorType == EObjectType::Slab)
         {
-			SelectedActor = GetWorld()->SpawnActor<ASlabActor>(ASlabActor::StaticClass(), spawnLocation, FRotator::ZeroRotator, SpawnParams);
+            SpwanedActor = GetWorld()->SpawnActor<ASlabActor>(ASlabActor::StaticClass(), spawnLocation, FRotator::ZeroRotator, SpawnParams);
 	        
+        }
+        if (SpwanedActor)
+        {
+            if(DynamicMaterial)
+            {
+				SpwanedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
+            }
+            SelectedActor = SpwanedActor;
         }
         
         GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Actor spawned at cursor location"));
@@ -285,23 +377,52 @@ void AArchVizPlayerController::ModeChangeHandle(const FString& Mode)
 {
     if (Mode == "Wall Creation Mode")
     {
-        if(WallWidgetClass)
+       
+        if (WallWidgetInstance)
         {
-	        WallWidgetInstance=CreateWidget<UWallConstructionWidget>(this, WallWidgetClass);
             WallWidgetInstance->AddToViewport();
-            bIsWallCreationMode = true;
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("asdfasdfasfdasdfas"));
-            AddCurrentModeMappingContext();
         }
+
+        // Hide Road Widget instance if it exists
+        if (RoadWidgetInstance)
+        {
+            RoadWidgetInstance->RemoveFromViewport();
+        }
+
+        bIsWallCreationMode = true;
+        bIsRoadConstructionMode = false;
     }
+    else if (Mode == "Road Creation Mode")
+    {
+        
+        if (RoadWidgetInstance)
+        {
+            // Set visibility to visible if already exists
+            RoadWidgetInstance->AddToViewport();
+        }
+
+        // Hide Wall Widget instance if it exists
+        if (WallWidgetInstance)
+        {
+            WallWidgetInstance->RemoveFromViewport();
+        }
+
+        bIsWallCreationMode = false;
+        bIsRoadConstructionMode = true;
+       
+    }
+        AddCurrentModeMappingContext();
 }
+
 
 void AArchVizPlayerController::DeleteSelectedActor()
 {
     if (SelectedActor)
     {
+        SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
         SelectedActor->Destroy();
         SelectedActor = nullptr;
+
     }
 }
 

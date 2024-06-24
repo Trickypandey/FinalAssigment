@@ -5,6 +5,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "InputAction.h"
+#include "RoadCreationWidget.h"
 #include "UiWidget.h"
 #include "ArchVizPlayerController.generated.h"
 
@@ -34,10 +35,11 @@ protected:
     virtual void BeginPlay() override;
 
 private:
+    void RoadLeftClick();
     void SetupEnhancedInputBindings();
     void AddCurrentModeMappingContext() const;
-    void LeftClickProcess();
-    void RightClickProcess();
+    void WallLeftClickProcess();
+    void WallRightClickProcess();
     void RotateSelectedActor();
 
     TPair<ACubeActor*, FVector> IsWallWallActor(const FHitResult& HitResult);
@@ -54,35 +56,50 @@ private:
 	UPROPERTY()
     UWallConstructionWidget* WallWidgetInstance;
 
+	UPROPERTY()
+    URoadCreationWidget* RoadWidgetInstance;
+
     UPROPERTY(EditAnywhere, Category = "UI")
     TSubclassOf<UUserWidget> UiWidgetClass;
 
     UPROPERTY(EditAnywhere, Category = "UI")
     TSubclassOf<UUserWidget> WallWidgetClass;
 
-    UPROPERTY()
-    UInputAction* OnLeftClick;
+	UPROPERTY(EditAnywhere, Category = "UI")
+    TSubclassOf<UUserWidget> RoadWidgetClass;
 
     UPROPERTY()
-    UInputAction* OnRightClick;
+    UInputAction* OnWallLeftClick;
 
     UPROPERTY()
-    UInputAction* OnRotate;
+    UInputAction* OnWallRightClick;
+
+    UPROPERTY()
+    UInputAction* OnWallRotate;
 
 	UPROPERTY()
-    UInputAction* OnDelete;
+    UInputAction* OnWallDelete;
+
+	UPROPERTY()
+    UInputAction* OnRoadAddPoint;
 
 
     bool bIsWallCreationMode;
     bool bIsRoadConstructionMode;
     bool bIsActorSpawning;
-    bool bIsAddingDoor;;
+    bool bIsAddingDoor;
     bool IsSlapOrFloor = false;
-    float WallSnapValue = 15;
+    float WallSnapValue = 20;
+
+    FVector OriginalLocation;
+    UMaterialInstanceDynamic* DynamicMaterial;;
 
     UPROPERTY()
     ACubeActor* SelectedActor;
-    FVector OriginalLocation;
+
+	UPROPERTY()
+    ACubeActor* PreviousSelectedActor;
+
 	UPROPERTY()
     AActor* HoveringActor;
 

@@ -9,7 +9,10 @@
 void UUiWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	ComboBoxMode->OnSelectionChanged.AddDynamic(this,&UUiWidget::OnComboBoxSelectionChanged);
+	if (ComboBoxMode)
+	{
+		ComboBoxMode->OnSelectionChanged.AddDynamic(this,&UUiWidget::OnComboBoxSelectionChanged);
+	}
 
 }
 
