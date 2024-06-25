@@ -3,8 +3,8 @@
 AWallActor::AWallActor()
 {
     PrimaryActorTick.bCanEverTick = true;
-
-    Length = 500;
+    ConstructionType = EObjectType::Wall;
+    Length = 400;
     Width = 20;
     Height = 400;
 

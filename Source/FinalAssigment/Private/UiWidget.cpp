@@ -21,6 +21,25 @@ void UUiWidget::OnComboBoxSelectionChanged(FString SelectedItem, ESelectInfo::Ty
 	AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer());
 	if (PlayerController)
 	{
-		PlayerController->ModeChangeHandle(SelectedItem);
+
+        // Map the selected item to the enum value
+        EModes SelectedMode ;
+
+        if (SelectedItem == "Road Creation Mode")
+        {
+            SelectedMode = EModes::RoadConstruction;
+        }
+        else if (SelectedItem == "Wall Creation Mode")
+        {
+            SelectedMode = EModes::WallCreation;
+        }
+        else if (SelectedItem == "Interior Design Mode")
+        {
+            SelectedMode = EModes::InteriorDesign;
+        }
+
+        // Call the method to change the mode
+        
+		PlayerController->ModeChangeHandle(SelectedMode);
 	}
 }

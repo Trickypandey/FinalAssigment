@@ -6,6 +6,7 @@
 #include "CubeActor.h"
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
+#include "Utility.h"
 #include "WallActor.generated.h"
 
 UCLASS()
@@ -35,6 +36,9 @@ public:
     void AttachDoor(UStaticMesh*& DoorStaticMesh);
 
 	virtual void CreateMesh() override;
+
+    UPROPERTY()
+    TEnumAsByte<EObjectType> ConstructionType;
 private:
 	virtual void ResetArrays() override;
 	virtual void AddQuad(int32 V0, int32 V1, int32 V2, int32 V3) override;

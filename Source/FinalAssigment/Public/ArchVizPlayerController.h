@@ -21,7 +21,7 @@ public:
     AArchVizPlayerController();
     void SetIsAddingDoor(bool);
    
-    void ModeChangeHandle(const FString&);
+    void ModeChangeHandle(EModes Mode);
     void DeleteSelectedActor();
     void SpawnSelectedActor(EObjectType  Type);
 
@@ -48,13 +48,16 @@ private:
     void WallRightClickProcess();
     void RotateSelectedActor();
 
-    TPair<ACubeActor*, FVector> IsWallWallActor(const FHitResult& HitResult);
+    TPair<ACubeActor*, FVector> IsWallActor(const FHitResult& HitResult);
 
     UPROPERTY()
     UInputMappingContext* WallMappingContext;
 
     UPROPERTY()
     UInputMappingContext* RoadMappingContext;
+
+	UPROPERTY()
+    UInputMappingContext* InteriorMappingContext;
 
     UPROPERTY()
     UUiWidget* UiWidgetInstance;
@@ -115,7 +118,8 @@ private:
 	UPROPERTY()
     AActor* HoveringActor;
 
-    EObjectType SelectedActorType;
+    TEnumAsByte<EObjectType> SelectedActorType;
+    TEnumAsByte<EModes> CurrentMode;
 
     UPROPERTY()
     TArray<ARoadActor*> RoadArray;

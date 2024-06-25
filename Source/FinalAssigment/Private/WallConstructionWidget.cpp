@@ -5,7 +5,7 @@
 
 #include "ArchVizPlayerController.h"
 #include "SlabActor.h"
-#include "FinalAssigment/WallActor.h"
+#include "WallActor.h"
 
 
 
@@ -25,11 +25,17 @@ void UWallConstructionWidget::NativeConstruct()
 
 	}
 
-	if (Slab)
+	if (Floor)
 	{
-		Slab->OnClicked.AddDynamic(this, &UWallConstructionWidget::SpawnSlab);
+		Floor->OnClicked.AddDynamic(this, &UWallConstructionWidget::SpawnFloor);
 
 	}
+	if (Ceiling)
+	{
+		Ceiling->OnClicked.AddDynamic(this, &UWallConstructionWidget::SpawnCeiling);
+		
+	}
+
 	if (LengthInput)
 	{
 		LengthInput->OnValueChanged.AddDynamic(this, &UWallConstructionWidget::LengthInputChangeHandle);
@@ -55,11 +61,19 @@ void UWallConstructionWidget::SpawnWall()
 	}
 }
 
-void UWallConstructionWidget::SpawnSlab()
+void UWallConstructionWidget::SpawnFloor()
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		PlayerController->SpawnSelectedActor(EObjectType::Slab);
+		PlayerController->SpawnSelectedActor(EObjectType::Floor);
+	}
+}
+
+void UWallConstructionWidget::SpawnCeiling()
+{
+	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
+	{
+		PlayerController->SpawnSelectedActor(EObjectType::Ceiling);
 	}
 }
 

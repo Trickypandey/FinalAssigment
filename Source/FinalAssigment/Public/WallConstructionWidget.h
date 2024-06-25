@@ -22,6 +22,7 @@ class FINALASSIGMENT_API UWallConstructionWidget : public UUserWidget
 public:
 	UFUNCTION()
 	void MaterialChangeHandler(const FMaterialData& MeshData);
+
 	virtual void NativeConstruct() override;
 
 	UPROPERTY(meta = (BindWidget))
@@ -45,13 +46,19 @@ public:
 	UButton* Wall;
 
 	UPROPERTY(meta = (BindWidget))
-	UButton* Slab;
+	UButton* Floor;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* Ceiling;
 
 	UFUNCTION()
 	void SpawnWall();
 
 	UFUNCTION()
-	void SpawnSlab();
+	void SpawnFloor();
+
+	UFUNCTION()
+	void SpawnCeiling();
 
 	UFUNCTION()
 	void OnToggleDoorClicked();

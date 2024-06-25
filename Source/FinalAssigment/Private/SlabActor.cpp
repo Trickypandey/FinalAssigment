@@ -6,8 +6,8 @@
 ASlabActor::ASlabActor()
 {
     PrimaryActorTick.bCanEverTick = true;
-    Length = 500.0f;
-    Width = 500.0f;
+    Length = 400.0f;
+    Width = 400.0f;
     Height = 10.0f; // Typical slab thickness
 }
 
