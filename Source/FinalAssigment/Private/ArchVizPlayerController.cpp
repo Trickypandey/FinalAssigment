@@ -19,8 +19,6 @@ AArchVizPlayerController::AArchVizPlayerController()
     SelectedActor = nullptr;
     SelectedActorType = EObjectType::Wall;
 
- 
-   
 }
 
 ACubeActor* AArchVizPlayerController::GetSelectedActor()
@@ -61,8 +59,12 @@ void AArchVizPlayerController::SetupEnhancedInputBindings()
     OnRoadAddPoint = NewObject<UInputAction>(this);
     OnRoadAddPoint->ValueType = EInputActionValueType::Boolean;
 
+    OnDeSelectWall = NewObject<UInputAction>(this);
+    OnDeSelectWall->ValueType = EInputActionValueType::Boolean;
+
     OnRoadRightClick = NewObject<UInputAction>(this);
     OnRoadRightClick->ValueType = EInputActionValueType::Boolean;
+
 
     // Ensure the enhanced input component is valid before binding actions
     check(Eic);
@@ -72,6 +74,7 @@ void AArchVizPlayerController::SetupEnhancedInputBindings()
     Eic->BindAction(OnWallRightClick, ETriggerEvent::Started, this, &AArchVizPlayerController::WallRightClickProcess);
     Eic->BindAction(OnWallRotate, ETriggerEvent::Started, this, &AArchVizPlayerController::RotateSelectedActor);
     Eic->BindAction(OnWallDelete, ETriggerEvent::Started, this, &AArchVizPlayerController::DeleteSelectedActor);
+    Eic->BindAction(OnDeSelectWall, ETriggerEvent::Started, this, &AArchVizPlayerController::DeSelectedSelectedActor);
 
 
     // Bind road actions
@@ -86,6 +89,7 @@ void AArchVizPlayerController::SetupEnhancedInputBindings()
         WallMappingContext->MapKey(OnWallRightClick, EKeys::RightMouseButton);
         WallMappingContext->MapKey(OnWallRotate, EKeys::R);
         WallMappingContext->MapKey(OnWallDelete, EKeys::Delete);
+        WallMappingContext->MapKey(OnDeSelectWall, EKeys::Tab);
     }
 
     if (RoadMappingContext)
@@ -161,6 +165,8 @@ void AArchVizPlayerController::Tick(float DeltaTime)
         if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams))
         {
             FVector NewLocation = HitResult.Location;
+            NewLocation.X += 1;
+            NewLocation.Y += 1;
             SelectedActor->SetActorLocation(NewLocation);
             SnapWall();
         }
@@ -284,6 +290,31 @@ void AArchVizPlayerController::RoadRightClick()
     }
 }
 
+void AArchVizPlayerController::DeSelectedSelectedActor()
+{
+    if (SelectedActor)
+    {
+	    if (UProceduralMeshComponent* MeshComponent = SelectedActor->GetProceduralMeshComponent())
+        {
+            MeshComponent->SetRenderCustomDepth(false);
+            MeshComponent->CustomDepthStencilValue = 0; // Resetting to default
+        }
+
+        if (Cast<AWallActor>(SelectedActor))
+        {
+            WallWidgetInstance->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
+           
+        }
+        else if (Cast<ASlabActor>(SelectedActor))
+        {
+            WallWidgetInstance->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
+            WallWidgetInstance->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
+        }
+        SelectedActor = nullptr;
+    }
+}
+
+
 void AArchVizPlayerController::WallLeftClickProcess()
 {
     FHitResult HitResult;
@@ -336,13 +367,14 @@ void AArchVizPlayerController::WallLeftClickProcess()
     if (Cast<AWallActor>(SelectedActor))
     {
         WallWidgetInstance->LengthInput->SetValue(SelectedActor->GetLength());
-        WallWidgetInstance->LengthInput->SetVisibility(ESlateVisibility::Visible);
+        WallWidgetInstance->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
         WallWidgetInstance->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
     }
     else if (Cast<ASlabActor>(SelectedActor))
     {
-        WallWidgetInstance->LengthInput->SetVisibility(ESlateVisibility::Visible);
+        WallWidgetInstance->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
         WallWidgetInstance->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
+        WallWidgetInstance->LengthInput->SetValue(SelectedActor->GetLength());
         WallWidgetInstance->WidthInput->SetValue(SelectedActor->GetWidth());
     }
 }
@@ -434,6 +466,7 @@ void AArchVizPlayerController::ModeChangeHandle(const FString& Mode)
         bIsRoadConstructionMode = true;
        
     }
+		DynamicMaterial = nullptr;
         AddCurrentModeMappingContext();
 }
 
@@ -477,21 +510,21 @@ void AArchVizPlayerController::SpawnSelectedActor(EObjectType Type)
     }
 
     switch (Type) {
-    case EObjectType::Wall: {
-        SelectedActorType = EObjectType::Wall;
-        SelectedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-        break;
-    }
-    case EObjectType::Slab: {
-        SelectedActorType = EObjectType::Slab;
-        SelectedActor = GetWorld()->SpawnActor<ASlabActor>(ASlabActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-        break;
-    }
-    default: {
-        SelectedActorType = EObjectType::Wall;
-        SelectedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-        break;
-    }
+	    case EObjectType::Wall: {
+	        SelectedActorType = EObjectType::Wall;
+	        SelectedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+	        break;
+	    }
+	    case EObjectType::Slab: {
+	        SelectedActorType = EObjectType::Slab;
+	        SelectedActor = GetWorld()->SpawnActor<ASlabActor>(ASlabActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+	        break;
+	    }
+	    default: {
+	        SelectedActorType = EObjectType::Wall;
+	        SelectedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+	        break;
+	    }
     }
 
 

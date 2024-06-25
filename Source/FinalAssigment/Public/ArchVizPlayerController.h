@@ -41,6 +41,7 @@ protected:
 private:
     void RoadLeftClick();
     void RoadRightClick();
+    void DeSelectedSelectedActor();
     void SetupEnhancedInputBindings();
     void AddCurrentModeMappingContext() const;
     void WallLeftClickProcess();
@@ -84,6 +85,9 @@ private:
 
 	UPROPERTY()
     UInputAction* OnWallDelete;
+
+	UPROPERTY()
+    UInputAction* OnDeSelectWall;
 
 	UPROPERTY()
     UInputAction* OnRoadAddPoint;

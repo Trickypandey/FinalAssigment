@@ -19,6 +19,7 @@ void URoadCreationWidget::MaterialChangeHandler(const FMaterialData& MeshData)
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
+
 		PlayerController->AddMaterialToRoad(MeshData);
 	}
 }
