@@ -9,7 +9,6 @@
 #include "FloorActor.h"
 #include "SlabActor.h"
 #include "UiWidget.h"
-#include "Kismet/GameplayStatics.h"
 
 AArchVizPlayerController::AArchVizPlayerController()
 {
@@ -34,8 +33,6 @@ void AArchVizPlayerController::SetupInputComponent()
     Super::SetupInputComponent();
     SetupEnhancedInputBindings();
 }
-
-
 
 void AArchVizPlayerController::SetupEnhancedInputBindings()
 {
@@ -250,7 +247,7 @@ void AArchVizPlayerController::RoadLeftClick()
 
         if (CurrentRoadActor)
         {
-            FVector ClickLocation = HitResult.Location;
+	        const FVector ClickLocation = HitResult.Location;
             CurrentRoadActor->AddSplinePoint(ClickLocation);
 
             if (DynamicMaterial)

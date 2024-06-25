@@ -90,7 +90,7 @@ void UWallConstructionWidget::LengthInputChangeHandle(float InputValue)
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		// there is a case where it could be  null if occur go for pointer  int getselected actor
+		
 		if (auto Actor = PlayerController->GetSelectedActor())
 		{
 			
@@ -105,7 +105,7 @@ void UWallConstructionWidget::WidthInputChangeHandle(float InputValue)
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		// there is a case where it could be  null if occur go for pointer  int getselected actor
+		
 		if (auto Actor = PlayerController->GetSelectedActor())
 		{
 

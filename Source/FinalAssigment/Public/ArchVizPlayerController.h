@@ -1,3 +1,5 @@
+#pragma once
+
 #include "CoreMinimal.h"
 #include "CubeActor.h"
 #include "GameFramework/PlayerController.h"
