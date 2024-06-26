@@ -10,6 +10,8 @@
 #include "RoadActor.h"
 #include "RoadCreationWidget.h"
 #include "UiWidget.h"
+#include "FinalAssigment/Modes/BaseMode.h"
+#include "FinalAssigment/Modes/RoadCreationMode.h"
 #include "ArchVizPlayerController.generated.h"
 
 class AWallActor;
@@ -51,6 +53,7 @@ private:
     void RotateSelectedActor();
 
     TPair<ACubeActor*, FVector> IsWallActor(const FHitResult& HitResult);
+    void SetArchVizMode(UBaseMode* NewArchVizMode);
 
     UPROPERTY()
     UInputMappingContext* WallMappingContext;
@@ -109,7 +112,10 @@ private:
     float WallSnapValue = 20;
 
     FVector OriginalLocation;
-    UMaterialInstanceDynamic* DynamicMaterial;;
+    UMaterialInstanceDynamic* DynamicMaterial;
+
+    UPROPERTY()
+    UBaseMode* CurrentModeClass;
 
     UPROPERTY()
     ACubeActor* SelectedActor;
@@ -128,4 +134,13 @@ private:
 
     UPROPERTY()
     ARoadActor* CurrentRoadActor;
+
+
+    FInputModeGameAndUI InputMode;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RoadConstruction | Mode", meta = (AllowPrivateAccess = "true"))
+    TSubclassOf<URoadCreationMode> RoadConstructionModeRef;
+
+    UPROPERTY(VisibleDefaultsOnly, Category = "RoadConstruction | Mode")
+    URoadCreationMode* RoadConstructionMode;
 };

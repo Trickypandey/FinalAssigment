@@ -9,6 +9,7 @@
 #include "FloorActor.h"
 #include "SlabActor.h"
 #include "UiWidget.h"
+#include "FinalAssigment/Modes/BaseMode.h"
 
 AArchVizPlayerController::AArchVizPlayerController()
 {
@@ -36,7 +37,7 @@ void AArchVizPlayerController::SetupInputComponent()
 
 void AArchVizPlayerController::SetupEnhancedInputBindings()
 {
-    UEnhancedInputComponent* Eic = Cast<UEnhancedInputComponent>(InputComponent);
+    /*UEnhancedInputComponent* Eic = Cast<UEnhancedInputComponent>(InputComponent);
     WallMappingContext = NewObject<UInputMappingContext>(this);
     RoadMappingContext = NewObject<UInputMappingContext>(this);
     InteriorMappingContext = NewObject<UInputMappingContext>(this);
@@ -90,7 +91,7 @@ void AArchVizPlayerController::SetupEnhancedInputBindings()
         RoadMappingContext->MapKey(OnRoadRightClick, EKeys::RightMouseButton);
     }
 
-    AddCurrentModeMappingContext();
+    AddCurrentModeMappingContext();*/
 }
 
 void AArchVizPlayerController::AddCurrentModeMappingContext() const
@@ -189,7 +190,10 @@ void AArchVizPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-    if (!UiWidgetInstance && UiWidgetClass)
+    SetShowMouseCursor(true);
+    SetInputMode(InputMode);
+
+   if (!UiWidgetInstance && UiWidgetClass)
     {
         UiWidgetInstance = CreateWidget<UUiWidget>(this, UiWidgetClass);
         if (UiWidgetInstance)
@@ -197,7 +201,13 @@ void AArchVizPlayerController::BeginPlay()
             UiWidgetInstance->AddToViewport();
         }
     }
-
+   if (IsValid(RoadConstructionModeRef)) {
+       RoadConstructionMode = NewObject<URoadCreationMode>(this, RoadConstructionModeRef);
+       RoadConstructionMode->InitParam(this);
+       RoadConstructionMode->Setup();
+       RoadConstructionMode->SetupInputMapping();
+   }
+   /*
     if (RoadWidgetClass && !RoadWidgetInstance)
     {
         RoadWidgetInstance = CreateWidget<URoadCreationWidget>(this, RoadWidgetClass);
@@ -212,7 +222,7 @@ void AArchVizPlayerController::BeginPlay()
     {
         WallWidgetInstance = CreateWidget<UWallConstructionWidget>(this, WallWidgetClass);
        
-    }
+    }*/
 }
 
 void AArchVizPlayerController::AddMaterialToRoad(const FMaterialData& MeshData)
@@ -458,6 +468,7 @@ void AArchVizPlayerController::SetIsAddingDoor(bool DoorFlag)
 
 void AArchVizPlayerController::ModeChangeHandle(EModes Mode)
 {
+    
 	switch (Mode) {
 		case EModes::WallCreation:
 			{
@@ -478,7 +489,7 @@ void AArchVizPlayerController::ModeChangeHandle(EModes Mode)
 			break;
 		case EModes::RoadConstruction:
 			{
-	            if (RoadWidgetInstance)
+	           /* if (RoadWidgetInstance)
 	            {
 	               
 	                RoadWidgetInstance->AddToViewport();
@@ -491,7 +502,9 @@ void AArchVizPlayerController::ModeChangeHandle(EModes Mode)
 	            }
 
 	            bIsWallCreationMode = false;
-	            bIsRoadConstructionMode = true;
+	            bIsRoadConstructionMode = true;*/
+            SetArchVizMode(RoadConstructionMode);
+
 			}
 			break;
 		case EModes::InteriorDesign:
@@ -504,7 +517,7 @@ void AArchVizPlayerController::ModeChangeHandle(EModes Mode)
 
 		CurrentMode = Mode;
 		DynamicMaterial = nullptr;
-        AddCurrentModeMappingContext();
+        //AddCurrentModeMappingContext();
 }
 
 void AArchVizPlayerController::DeleteSelectedActor()
@@ -603,4 +616,17 @@ TPair<ACubeActor*, FVector> AArchVizPlayerController::IsWallActor(const FHitResu
         }
     }
     return TPair<ACubeActor*, FVector>(nullptr, FVector::ZeroVector);
+}
+
+
+void AArchVizPlayerController::SetArchVizMode(UBaseMode* NewArchVizMode) {
+    if (CurrentModeClass) {
+        CurrentModeClass->ExitMode();
+    }
+
+    CurrentModeClass = NewArchVizMode;
+
+    if (CurrentModeClass) {
+        CurrentModeClass->EnterMode();
+    }
 }
