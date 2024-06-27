@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CubeActor.h"
+#include "Utility.h"
 #include "SlabActor.generated.h"
 
 /**
@@ -21,8 +22,13 @@ protected:
     virtual void OnConstruction(const FTransform& Transform) override;
 
 public:
+	void HandlePlacedState();
+	void HandleMovingState();
     virtual void Tick(float DeltaTime) override;
 	virtual void CreateMesh() override;
+
+    UPROPERTY()
+    EBuildingSubModeState WallState;
 
 	
 };

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "CubeActor.h"
 #include "InputMappingContext.h"
+#include "WallConstructionWidget.h"
 #include "UObject/NoExportTypes.h"
 #include "UBuildingCreationSubMode.generated.h"
 
@@ -20,8 +21,9 @@ public:
 	virtual void Setup() PURE_VIRTUAL(UBuildingCreationSubMode::Setup(), );
 	virtual void Cleanup() PURE_VIRTUAL(UBuildingCreationSubMode::Cleanup(), );
 	virtual void SetupInputMapping() PURE_VIRTUAL(UBuildingCreationSubMode::SetupInputMapping(), );
-	virtual void EnterSubMode() PURE_VIRTUAL(UBuildingCreationSubMode::EnterSubMode(), );
-	virtual void ExitSubMode() PURE_VIRTUAL(UBuildingCreationSubMode::ExitSubMode(), );
+	virtual void EnterSubMode(UWallConstructionWidget*) PURE_VIRTUAL(UBuildingCreationSubMode::EnterSubMode, );
+	virtual void ExitSubMode(UWallConstructionWidget*) PURE_VIRTUAL(UBuildingCreationSubMode::ExitSubMode, );
+
 	virtual void InitParams(APlayerController* Controller);
 	void SetMaterial(UMaterialInstanceDynamic* Material);
 

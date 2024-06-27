@@ -9,7 +9,7 @@ void UUBuildingCreationSubMode::InitParams(APlayerController* Controller) {
 
 void UUBuildingCreationSubMode::SetMaterial(UMaterialInstanceDynamic* Material)
 {
-	this->DynamicMaterial = Material;
+	SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, Material);
 }
 
 ACubeActor*& UUBuildingCreationSubMode::GetSelectedActor()

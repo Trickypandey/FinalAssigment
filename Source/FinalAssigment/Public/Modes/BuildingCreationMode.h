@@ -50,6 +50,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "BuildingCreationMode | Roof")
 	TSubclassOf<USubModeCeilingCreation> CeilingModeRef;
 
+	UPROPERTY(VisibleDefaultsOnly, Category = "BuildingCreationMode | Wall")
+	USubModeWallCreation* WallCreationMode;
 
 private:
 	UUBuildingCreationSubMode* CurrentBuildingCreationSubMode;
@@ -57,8 +59,6 @@ private:
 	UPROPERTY()
 	EBuildingCreationType BuildingModeEntity;
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "BuildingCreationMode | Wall")
-	USubModeWallCreation* WallCreationMode;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "BuildingCreationMode | Floor")
 	USubModeFloorCreation* FloorCreationMode;

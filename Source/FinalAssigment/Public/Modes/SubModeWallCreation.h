@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "WallActor.h"
+#include "WallConstructionWidget.h"
 #include "Modes/UBuildingCreationSubMode.h"
 #include "SubModeWallCreation.generated.h"
 
@@ -21,19 +22,18 @@ public:
 	virtual void Setup() override;
 	virtual void Cleanup() override;
 	virtual void SetupInputMapping() override;
-	virtual void EnterSubMode() override;
-	virtual void ExitSubMode() override;
+	virtual void EnterSubMode(UWallConstructionWidget* Widget) override;
+	virtual void ExitSubMode(UWallConstructionWidget* Widget) override;
 
 	void WallRightClickProcess();
 	void RotateSelectedActor();
 	void WallLeftClickProcess();
 	void DeleteSelectedWallActor();
 
+	bool bIsDoorAdding = false;
 
 private:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Wall" , meta =(AllowPrivateAccess))
-	TSubclassOf<AWallActor> WallActorRef;
-
+	
 	UPROPERTY()
 	UInputAction* OnWallLeftClick;
 
@@ -45,5 +45,6 @@ private:
 
 	UPROPERTY()
 	UInputAction* OnWallDelete;
+
 	
 };

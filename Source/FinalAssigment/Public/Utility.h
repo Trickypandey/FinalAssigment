@@ -28,12 +28,13 @@ enum class EBuildingSubModeState : uint8 {
 
 namespace Utility
 {
-	inline FVector SnapToGrid(const FVector& WorldLocation, const FVector& GridSize, bool bSnapZ = false) {
-	    float SnappedX = FMath::RoundToFloat(WorldLocation.X / GridSize.X) * GridSize.X;
-	    float SnappedY = FMath::RoundToFloat(WorldLocation.Y / GridSize.Y) * GridSize.Y;
-	    float SnappedZ = bSnapZ ? FMath::RoundToFloat(WorldLocation.Z / GridSize.Z) * GridSize.Z : WorldLocation.Z;
+	inline FVector SnapToGrid(const FVector& WorldLocation, const FVector& GridSize)
+	{
+		float SnappedX = FMath::RoundToFloat(WorldLocation.X / GridSize.X) * GridSize.X;
+		float SnappedY = FMath::RoundToFloat(WorldLocation.Y / GridSize.Y) * GridSize.Y;
+		float SnappedZ = FMath::RoundToFloat(WorldLocation.Z / GridSize.Z) * GridSize.Z;
 
-	    return FVector(SnappedX, SnappedY, SnappedZ);
+		return FVector(SnappedX, SnappedY, SnappedZ);
 	}
 }
 

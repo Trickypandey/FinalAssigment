@@ -63,7 +63,7 @@ void USubModeWallCreation::SetupInputMapping()
 	}
 }
 
-void USubModeWallCreation::EnterSubMode()
+void USubModeWallCreation::EnterSubMode(UWallConstructionWidget* Widget)
 {
 	if (PlayerController) {
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) {
@@ -71,16 +71,26 @@ void USubModeWallCreation::EnterSubMode()
 
 			Setup();
 		}
+		if (Widget)
+		{
+			Widget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
+			//Widget->WidthInput->SetVisibility(ESlateVisibility::Visible);
+		}
 	}
 }
 
-void USubModeWallCreation::ExitSubMode()
+void USubModeWallCreation::ExitSubMode(UWallConstructionWidget* Widget)
 {
 	if (PlayerController) {
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) {
 			Subsystem->RemoveMappingContext(InputMappingContext);
 
 			//Cleanup();
+		}
+		if (Widget)
+		{
+			Widget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
+			//Widget->WidthInput->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
 }
@@ -99,50 +109,100 @@ void USubModeWallCreation::WallLeftClickProcess()
 	{
 		const FVector ClickLocation = HitResult.Location;
 
-		if (auto* WallActor = Cast<AWallActor>(HitResult.GetActor()))
+
+		if (SelectedActor && Cast<AWallActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving && !bIsDoorAdding)
+		{
+			Cast<AWallActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
+			FVector SnappedLocation = Utility::SnapToGrid(ClickLocation, FVector(20));
+			SelectedActor->SetActorLocation(SnappedLocation);
+		}
+		// Check if the clicked actor is a wall
+		else if (AWallActor* WallActor = Cast<AWallActor>(HitResult.GetActor()))
 		{
 			FVector LocalClickLocation = WallActor->GetTransform().InverseTransformPosition(ClickLocation);
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("World Clicked Location: X=%f, Y=%f, Z=%f"), ClickLocation.X, ClickLocation.Y, ClickLocation.Z));
-			SelectedActor = WallActor;
-		}
-		else
-		{
+
+			// Deselect the previously selected actor if there is one
 			if (SelectedActor)
 			{
-				
-				SelectedActor->SetActorLocation(ClickLocation);
+				SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+			}
+
+			SelectedActor = WallActor;
+
+			if (bIsDoorAdding)
+			{
+				// If adding a door is requested, update the wall actor
+				WallActor->SetIsDoorAdded(true);
+				WallActor->SetDoorLocation(LocalClickLocation.X);
+				WallActor->CreateMesh();
+			}
+			else
+			{
+				// Select the wall actor for movement
+				WallActor->WallState = EBuildingSubModeState::Moving;
 			}
 		}
-	}
-}
 
-void USubModeWallCreation::WallRightClickProcess()
-{
-	if (SelectedActor && Cast<AWallActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
-	{
-		SelectedActor->Destroy();
-	}
-	FHitResult HitResult;
-	PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
-	if (HitResult.bBlockingHit)
-	{
-		FVector spawnLocation = HitResult.Location;
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-		if (AWallActor* SpwanedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), spawnLocation, FRotator::ZeroRotator, SpawnParams))
+		// Highlight the selected actor
+		if (SelectedActor)
 		{
-			SpwanedActor->WallState = EBuildingSubModeState::Placed;
-			SelectedActor = SpwanedActor;
-
+			SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
 			if (DynamicMaterial)
 			{
 				SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
 			}
 		}
-		
 	}
 }
+
+
+
+void USubModeWallCreation::WallRightClickProcess()
+{
+	// Deselect the current actor if it is in moving state
+	if (SelectedActor && Cast<AWallActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
+	{
+		SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		Cast<AWallActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
+		SelectedActor = nullptr;
+	}
+	else
+	{
+		if (SelectedActor)
+		{
+			SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		}
+		// If no actor is being moved, create a new wall
+		FHitResult HitResult;
+		PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
+		if (HitResult.bBlockingHit)
+		{
+			FVector spawnLocation = HitResult.Location;
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+			if (AWallActor* SpwanedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), spawnLocation, FRotator::ZeroRotator, SpawnParams))
+			{
+				SpwanedActor->SetIsDoorAdded(bIsDoorAdding);
+				SpwanedActor->WallState = EBuildingSubModeState::Moving;
+				SelectedActor = SpwanedActor;
+
+				if (SelectedActor)
+				{
+					SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
+					SelectedActor->GetProceduralMeshComponent()->CustomDepthStencilValue = 2.0;
+				}
+
+				if (DynamicMaterial)
+				{
+					SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
+				}
+			}
+		}
+	}
+}
+
 
 void USubModeWallCreation::RotateSelectedActor()
 {

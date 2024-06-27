@@ -78,6 +78,7 @@ void UWallConstructionWidget::SpawnCeiling()
 
 void UWallConstructionWidget::OnToggleDoorClicked()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Toggle hit"));
 	bIsAddingDoor = !bIsAddingDoor;
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{

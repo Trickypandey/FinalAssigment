@@ -18,7 +18,7 @@ void UBuildingCreationMode::Setup()
         WallCreationMode->Setup();
     }
  
-    /*if (IsValid(FloorCreationModeRef)) {
+    if (IsValid(FloorCreationModeRef)) {
         FloorCreationMode = NewObject<USubModeFloorCreation>(this, FloorCreationModeRef);
         FloorCreationMode->InitParams(PlayerController);
         FloorCreationMode->Setup();
@@ -27,7 +27,7 @@ void UBuildingCreationMode::Setup()
         CeilingCreationMode = NewObject<USubModeCeilingCreation>(this, CeilingModeRef);
         CeilingCreationMode->InitParams(PlayerController);
         CeilingCreationMode->Setup();
-    }*/
+    }
     if (IsValid(WidgetRef) && !IsValid(Widget)) {
         Widget = CreateWidget<UWallConstructionWidget>(PlayerController, WidgetRef);
     }
@@ -35,13 +35,13 @@ void UBuildingCreationMode::Setup()
 
 void UBuildingCreationMode::SetSubMode(UUBuildingCreationSubMode* NewSubMode) {
     if (CurrentBuildingCreationSubMode) {
-        CurrentBuildingCreationSubMode->ExitSubMode();
+        CurrentBuildingCreationSubMode->ExitSubMode(Cast<UWallConstructionWidget>(Widget));
     }
 
     CurrentBuildingCreationSubMode = NewSubMode;
 
     if (CurrentBuildingCreationSubMode) {
-        CurrentBuildingCreationSubMode->EnterSubMode();
+        CurrentBuildingCreationSubMode->EnterSubMode(Cast<UWallConstructionWidget>(Widget));
     }
 }
 
@@ -280,13 +280,14 @@ void UBuildingCreationMode::SpawnSelectedActor(EBuildingCreationType Type)
 
     switch (Type) {
 	    case EBuildingCreationType::Wall:
-            SetSubMode(WallCreationMode);
+				SetSubMode(WallCreationMode);
+        
 		    break;
 	    case EBuildingCreationType::Floor:
-            SetSubMode(FloorCreationMode);
+				SetSubMode(FloorCreationMode);
 		    break;
 	    case EBuildingCreationType::Ceiling:
-            SetSubMode(CeilingCreationMode);
+				SetSubMode(CeilingCreationMode);
 		    break;
     }
 }
@@ -301,6 +302,9 @@ void UBuildingCreationMode::ApplyMaterialWallProceduralMesh(const FMaterialData&
 
     if (auto DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this))
     {
-    	CurrentBuildingCreationSubMode->SetMaterial(DynamicMaterial);
+	    if (CurrentBuildingCreationSubMode)
+	    {
+    		CurrentBuildingCreationSubMode->SetMaterial(DynamicMaterial);
+	    }
     }
 }

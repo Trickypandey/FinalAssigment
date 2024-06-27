@@ -13,5 +13,14 @@ UCLASS(Blueprintable)
 class FINALASSIGMENT_API USubModeCeilingCreation : public UUBuildingCreationSubMode
 {
 	GENERATED_BODY()
+public:
+
+	USubModeCeilingCreation();
+
+	virtual void Setup() override;
+	virtual void Cleanup() override;
+	virtual void SetupInputMapping() override;
+	virtual void EnterSubMode(UWallConstructionWidget*) override;
+	virtual void ExitSubMode(UWallConstructionWidget*) override;
 	
 };
