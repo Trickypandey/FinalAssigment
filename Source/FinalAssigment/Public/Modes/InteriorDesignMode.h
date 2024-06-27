@@ -3,7 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AssertManager.h"
 #include "BaseMode.h"
+#include "InputAction.h"
+#include "InteriorDesignActor.h"
 #include "InteriorDesignMode.generated.h"
 
 /**
@@ -21,8 +24,18 @@ public:
 	virtual void EnterMode() override;
 	virtual void ExitMode() override;
 
+	void SetMeshData(const FFurnitureData& FurnitureData);
+
 private:
 	UFUNCTION()
 	void HandleLeftClickAction();
-	
+
+	UPROPERTY()
+	AInteriorDesignActor* InteriorDesignActor;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "InteriorDesign | Actor", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AInteriorDesignActor> InteriorDesignActorRef;
+
+	UPROPERTY()
+	UInputAction* OnLeftClickAction;
 };

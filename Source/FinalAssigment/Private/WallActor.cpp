@@ -4,7 +4,7 @@ AWallActor::AWallActor()
 {
     PrimaryActorTick.bCanEverTick = true;
     ConstructionType = EBuildingCreationType::Wall;
-    WallState = EBuildingSubModeState::Moving;
+    WallState = EBuildingSubModeState::Placed;
     Length = 400;
     Width = 20;
     Height = 400;

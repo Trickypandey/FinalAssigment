@@ -10,6 +10,18 @@ enum class EBuildingCreationType : uint8
     Ceiling
 };
 
+
+UENUM(BlueprintType)
+enum class EBuildingAttachable : uint8
+{
+	WallAttachable UMETA(DisplayName = "Wall Attachable"),
+	FloorAttachable  UMETA(DisplayName = "Floor Attachable"),
+	CeilingAttachable  UMETA(DisplayName = "Ceiling Attachable")
+};
+
+
+
+
 UENUM(BlueprintType)
 enum class EModes : uint8
 {

@@ -45,9 +45,9 @@ void UWallConstructionWidget::NativeConstruct()
 		WidthInput->OnValueChanged.AddDynamic(this,&UWallConstructionWidget::WidthInputChangeHandle );
 	}
 
-	if (SelectionWidgetInstance)
+	if (WallMaterialSelectionWidgetInstance)
 	{
-		SelectionWidgetInstance->OnMaterialAssetThumbnailSelected.AddDynamic(this, &UWallConstructionWidget::MaterialChangeHandler);
+		WallMaterialSelectionWidgetInstance->OnMaterialAssetThumbnailSelected.AddDynamic(this, &UWallConstructionWidget::MaterialChangeHandler);
 	}
 }
 

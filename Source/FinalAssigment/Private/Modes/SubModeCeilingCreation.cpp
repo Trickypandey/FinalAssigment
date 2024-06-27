@@ -3,6 +3,8 @@
 
 #include "Modes/SubModeCeilingCreation.h"
 
+#include "CeilingActor.h"
+#include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
 USubModeCeilingCreation::USubModeCeilingCreation()
@@ -17,12 +19,54 @@ void USubModeCeilingCreation::Setup()
 void USubModeCeilingCreation::Cleanup()
 {
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Cleanup Happen"));
+	if (auto* ActorToDestroy = Cast<ACeilingActor>(SelectedActor))
+	{
+		if (ActorToDestroy->WallState == EBuildingSubModeState::Moving)
+		{
+			SelectedActor = nullptr;
+			ActorToDestroy->Destroy(); 
+		}
+	}
+	else
+	{
+		SelectedActor = nullptr;
+	}
 }
 
 void USubModeCeilingCreation::SetupInputMapping()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Ceiling Setup Input Mapping"));
+	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent);
+	InputMappingContext = NewObject<UInputMappingContext>(this);
+
+	OnWallLeftClick = NewObject<UInputAction>(this);
+	OnWallLeftClick->ValueType = EInputActionValueType::Boolean;
+
+	OnWallRightClick = NewObject<UInputAction>(this);
+	OnWallRightClick->ValueType = EInputActionValueType::Boolean;
+
+
+	if (InputMappingContext)
+	{
+
+		InputMappingContext->MapKey(OnWallLeftClick, EKeys::LeftMouseButton);
+		InputMappingContext->MapKey(OnWallRightClick, EKeys::RightMouseButton);
+
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("InputMappingContext Not Populated"));
+	}
+
+	if (EnhancedInputComponent)
+	{
+		EnhancedInputComponent->BindAction(OnWallLeftClick, ETriggerEvent::Started, this, &USubModeCeilingCreation::WallLeftClickProcess);
+		EnhancedInputComponent->BindAction(OnWallRightClick, ETriggerEvent::Started, this, &USubModeCeilingCreation::WallRightClickProcess);
+
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("EnhancedInputComponent Not Populated"));
+	}
 	
 }
 
@@ -48,7 +92,7 @@ void USubModeCeilingCreation::ExitSubMode(UWallConstructionWidget* WallConstruct
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) {
 			Subsystem->RemoveMappingContext(InputMappingContext);
 
-			//Cleanup();
+			Cleanup();
 		}
 		if (WallConstructionWidget)
 		{
@@ -57,3 +101,69 @@ void USubModeCeilingCreation::ExitSubMode(UWallConstructionWidget* WallConstruct
 		}
 	}
 }
+
+void USubModeCeilingCreation::WallLeftClickProcess()
+{
+	FHitResult HitResult;
+	PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
+	if (HitResult.bBlockingHit)
+	{
+		const FVector ClickLocation = HitResult.Location;
+
+		if (SelectedActor && Cast<ACeilingActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
+		{
+			Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
+			FVector SnappedLocation = Utility::SnapToGrid(ClickLocation, FVector(20));
+			SelectedActor->SetActorLocation(SnappedLocation);
+
+		}
+		else
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+			if (ACeilingActor* SpawnedActor = Cast<ACeilingActor>(HitResult.GetActor()))
+			{
+				SpawnedActor->WallState = EBuildingSubModeState::Moving;
+				SelectedActor = SpawnedActor;
+				if (DynamicMaterial)
+				{
+					SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
+				}
+				SpawnedActor->WallState = EBuildingSubModeState::Moving;
+			}
+
+		}
+
+	}
+}
+
+
+void USubModeCeilingCreation::WallRightClickProcess()
+{
+	if (SelectedActor)
+	{
+		Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
+		SelectedActor = nullptr;
+	}
+	FHitResult HitResult;
+	PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
+	if (HitResult.bBlockingHit)
+	{
+		FVector SpawnLocation = Utility::SnapToGrid(HitResult.Location, FVector(20.0f, 20.0f, 0.0f));
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		if (ACeilingActor* SpawnedActor = GetWorld()->SpawnActor<ACeilingActor>(ACeilingActor::StaticClass(), SpawnLocation, FRotator::ZeroRotator, SpawnParams))
+		{
+			SpawnedActor->WallState = EBuildingSubModeState::Moving;
+			SelectedActor = SpawnedActor;
+			if (DynamicMaterial)
+			{
+				SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
+			}
+		}
+	}
+
+}
+

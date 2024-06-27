@@ -91,8 +91,7 @@ void USubModeFloorCreation::ExitSubMode(UWallConstructionWidget* Widget)
 	if (PlayerController) {
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) {
 			Subsystem->RemoveMappingContext(InputMappingContext);
-
-			//Cleanup();
+			Cleanup();
 		}
 		if (Widget)
 		{
@@ -156,6 +155,7 @@ void USubModeFloorCreation::WallRightClickProcess()
 
 		if (AFloorActor* SpawnedActor = GetWorld()->SpawnActor<AFloorActor>(AFloorActor::StaticClass(), SpawnLocation, FRotator::ZeroRotator, SpawnParams))
 		{
+			SpawnedActor->WallState = EBuildingSubModeState::Moving;
 			SelectedActor = SpawnedActor;
 			if (DynamicMaterial)
 			{

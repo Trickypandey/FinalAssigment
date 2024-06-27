@@ -12,13 +12,16 @@
  * 
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMaterialAssetThumbnailSelectedEvent, const FMaterialData&, MeshData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFurnitureAssetThumbnailSelectedEvent, const FFurnitureData&, MeshData);
 
 UCLASS()
 class FINALASSIGMENT_API UUSelectionScrollBox : public UWidget
 {
 	GENERATED_BODY()
 protected:
-
+	UFUNCTION()
+	void HandleAssetFurnitureThumbnailSelected(const FFurnitureData& FurnitureData);
+	void ReleaseSlateResources(bool bReleaseChildren);
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 
 	virtual const FText GetPaletteCategory() override;
@@ -39,6 +42,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Material Data")
 	float ThumbnailSize = 1;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Material Data")
+	EAssetType AssetType;
+
 	//UPROPERTY(BlueprintAssignable, Category = "Material Data")
 	FMaterialAssetThumbnailSelectedEvent OnMaterialAssetThumbnailSelected;
+	FFurnitureAssetThumbnailSelectedEvent OnFurnitureAssetThumbnailSelected;
 };

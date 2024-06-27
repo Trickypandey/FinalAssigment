@@ -3,11 +3,14 @@
 
 #include "USelectionScrollBox.h"
 
+
+
 TSharedRef<SWidget> UUSelectionScrollBox::RebuildWidget()
 {
 	Super::RebuildWidget();
-	ScrollableAssetBox = SNew(SAssertWidget).InMeshDataAsset(MeshDataAsset).InThumbnailSize(ThumbnailSize);
+	ScrollableAssetBox = SNew(SAssertWidget).InMeshDataAsset(MeshDataAsset).InThumbnailSize(ThumbnailSize).InAssetType(AssetType);
 	ScrollableAssetBox->OnMaterialThumbnailSelected.BindUObject(this, &UUSelectionScrollBox::HandleAssetMaterialThumbnailSelected);
+	ScrollableAssetBox->OnFurnitureThumbnailSelected.BindUObject(this, &UUSelectionScrollBox::HandleAssetFurnitureThumbnailSelected);
 	return ScrollableAssetBox.ToSharedRef();
 }
 
@@ -24,3 +27,17 @@ void UUSelectionScrollBox::SynchronizeProperties()
 void UUSelectionScrollBox::HandleAssetMaterialThumbnailSelected(const FMaterialData& MaterialData){
 	OnMaterialAssetThumbnailSelected.Broadcast(MaterialData);
 }
+void UUSelectionScrollBox::HandleAssetFurnitureThumbnailSelected(const FFurnitureData& FurnitureData)
+{
+	OnFurnitureAssetThumbnailSelected.Broadcast(FurnitureData);
+}
+
+
+void UUSelectionScrollBox::ReleaseSlateResources(bool bReleaseChildren) {
+
+	Super::ReleaseSlateResources(bReleaseChildren);
+
+	ScrollableAssetBox.Reset();
+
+}
+

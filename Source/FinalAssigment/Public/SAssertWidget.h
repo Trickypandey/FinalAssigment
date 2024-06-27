@@ -11,12 +11,14 @@
  * 
  */
 DECLARE_DELEGATE_OneParam(FAssetMaterialThumbnailSelected, const FMaterialData&);
+DECLARE_DELEGATE_OneParam(FAssetFurnitureThumbnailSelected, const FFurnitureData&);
 class FINALASSIGMENT_API SAssertWidget : public SCompoundWidget
 {
 public:
     SLATE_BEGIN_ARGS(SAssertWidget) {}
         SLATE_ARGUMENT(TWeakObjectPtr<UAssertManager>, InMeshDataAsset)
         SLATE_ARGUMENT(float, InThumbnailSize)
+        SLATE_ARGUMENT(EAssetType, InAssetType)
     SLATE_END_ARGS()
 
     void Construct(const FArguments& InArgs);
@@ -28,8 +30,12 @@ private:
 
     void RefreshContent() const;
     void DisplayMaterials(const TArray<FMaterialData>& DataArray) const;
+    void DisplayFurniture(const TArray<FFurnitureData>& DataArray)  const;
 
 public:
     FAssetMaterialThumbnailSelected OnMaterialThumbnailSelected;
+    FAssetFurnitureThumbnailSelected OnFurnitureThumbnailSelected;
+
+    EAssetType AssetType;
 
 };

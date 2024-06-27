@@ -13,7 +13,18 @@ USubModeWallCreation::USubModeWallCreation()
 
 void USubModeWallCreation::Cleanup()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Cleanup Happen"));
+	if (auto* ActorToDestroy = Cast<AWallActor>(SelectedActor))
+	{
+		if (ActorToDestroy->WallState == EBuildingSubModeState::Moving)
+		{
+			SelectedActor = nullptr; // Reset the selected actor
+			ActorToDestroy->Destroy(); // Destroy the actor
+		}
+	}
+	else
+	{
+		SelectedActor = nullptr;
+	}
 }
 
 void USubModeWallCreation::SetupInputMapping()
@@ -85,7 +96,7 @@ void USubModeWallCreation::ExitSubMode(UWallConstructionWidget* Widget)
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) {
 			Subsystem->RemoveMappingContext(InputMappingContext);
 
-			//Cleanup();
+			Cleanup();
 		}
 		if (Widget)
 		{

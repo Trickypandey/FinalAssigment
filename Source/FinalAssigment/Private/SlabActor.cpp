@@ -9,7 +9,7 @@ ASlabActor::ASlabActor()
     Length = 400.0f;
     Width = 400.0f;
     Height = 10.0f;
-    WallState = EBuildingSubModeState::Moving;
+    WallState = EBuildingSubModeState::Placed;
 }
 
 void ASlabActor::BeginPlay()
@@ -66,84 +66,137 @@ void ASlabActor::Tick(float DeltaTime)
 
 void ASlabActor::CreateMesh()
 {
+
+    ProceduralMesh->ClearAllMeshSections();
     ResetArrays();
 
-    TArray<FProcMeshTangent> Tangents;
-    TArray<FLinearColor> VertexColors;
+    float L = Length;
+    float W = Width;
+    float H = Height;
 
-    // Define vertices with the origin at one corner (bottom-left-front corner)
-    Vertices.Add(FVector(0.0f, 0.0f, 0.0f));
-    Vertices.Add(FVector(Length, 0.0f, 0.0f));
-    Vertices.Add(FVector(Length, Width, 0.0f));
-    Vertices.Add(FVector(0.0f, Width, 0.0f));
+    // Adjusted positions with the origin (0, 0, 0) at the bottom-left corner
+    Vertices.Add(FVector(0, 0, 0));         // 0
+    Vertices.Add(FVector(0, W, 0));         // 1
+    Vertices.Add(FVector(0, W, H));         // 2
+    Vertices.Add(FVector(0, 0, H));         // 3
 
-    Vertices.Add(FVector(0.0f, 0.0f, Height));
-    Vertices.Add(FVector(Length, 0.0f, Height));
-    Vertices.Add(FVector(Length, Width, Height));
-    Vertices.Add(FVector(0.0f, Width, Height));
+    Vertices.Add(FVector(0, 0, 0));         // 4
+    Vertices.Add(FVector(L, 0, 0));         // 5
+    Vertices.Add(FVector(L, W, 0));         // 6
+    Vertices.Add(FVector(0, W, 0));         // 7
 
-    // Define triangles (two for each face, 12 in total)
+    Vertices.Add(FVector(L, 0, 0));         // 8
+    Vertices.Add(FVector(L, 0, H));         // 9
+    Vertices.Add(FVector(L, W, H));         // 10
+    Vertices.Add(FVector(L, W, 0));         // 11
+
+    Vertices.Add(FVector(L, 0, H));         // 12
+    Vertices.Add(FVector(0, 0, H));         // 13
+    Vertices.Add(FVector(0, W, H));         // 14
+    Vertices.Add(FVector(L, W, H));         // 15
+
+    Vertices.Add(FVector(0, 0, H));         // 16
+    Vertices.Add(FVector(L, 0, H));         // 17
+    Vertices.Add(FVector(L, 0, 0));         // 18
+    Vertices.Add(FVector(0, 0, 0));         // 19
+
+    Vertices.Add(FVector(0, W, H));         // 20
+    Vertices.Add(FVector(0, W, 0));         // 21
+    Vertices.Add(FVector(L, W, 0));         // 22
+    Vertices.Add(FVector(L, W, H));         // 23
+
     Triangles = {
-        0, 1, 2, 0, 2, 3,  // Bottom face
-        4, 6, 5, 4, 7, 6,  // Top face
-        0, 4, 1, 1, 4, 5,  // Front face
-        1, 5, 2, 2, 5, 6,  // Right face
-        2, 6, 3, 3, 6, 7,  // Back face
-        3, 7, 0, 0, 7, 4   // Left face
+         0, 1, 3, 1, 2, 3,
+         4, 5, 7, 5, 6, 7,
+         8, 9, 11, 9, 10, 11,
+         12, 13, 15, 13, 14, 15,
+         16, 17, 19, 17, 18, 19,
+         20, 21, 23, 21, 22, 23
     };
 
-    // Define normals for each vertex
-    Normals.Add(FVector(0.0f, 0.0f, -1.0f));
-    Normals.Add(FVector(0.0f, 0.0f, -1.0f));
-    Normals.Add(FVector(0.0f, 0.0f, -1.0f));
-    Normals.Add(FVector(0.0f, 0.0f, -1.0f));
+    AddNormals();
+    AddUVs();
 
-    Normals.Add(FVector(0.0f, 0.0f, 1.0f));
-    Normals.Add(FVector(0.0f, 0.0f, 1.0f));
-    Normals.Add(FVector(0.0f, 0.0f, 1.0f));
-    Normals.Add(FVector(0.0f, 0.0f, 1.0f));
+    ProceduralMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, TArray<FLinearColor>(), TArray<FProcMeshTangent>(), true);
 
-    Normals.Add(FVector(0.0f, -1.0f, 0.0f));
-    Normals.Add(FVector(0.0f, -1.0f, 0.0f));
-    Normals.Add(FVector(0.0f, -1.0f, 0.0f));
-    Normals.Add(FVector(0.0f, -1.0f, 0.0f));
+    //ResetArrays();
 
-    Normals.Add(FVector(1.0f, 0.0f, 0.0f));
-    Normals.Add(FVector(1.0f, 0.0f, 0.0f));
-    Normals.Add(FVector(1.0f, 0.0f, 0.0f));
-    Normals.Add(FVector(1.0f, 0.0f, 0.0f));
+    //TArray<FProcMeshTangent> Tangents;
+    //TArray<FLinearColor> VertexColors;
 
-    Normals.Add(FVector(0.0f, 1.0f, 0.0f));
-    Normals.Add(FVector(0.0f, 1.0f, 0.0f));
-    Normals.Add(FVector(0.0f, 1.0f, 0.0f));
-    Normals.Add(FVector(0.0f, 1.0f, 0.0f));
+    //// Define vertices with the origin at one corner (bottom-left-front corner)
+    //Vertices.Add(FVector(0.0f, 0.0f, 0.0f));
+    //Vertices.Add(FVector(Length, 0.0f, 0.0f));
+    //Vertices.Add(FVector(Length, Width, 0.0f));
+    //Vertices.Add(FVector(0.0f, Width, 0.0f));
 
-    Normals.Add(FVector(-1.0f, 0.0f, 0.0f));
-    Normals.Add(FVector(-1.0f, 0.0f, 0.0f));
-    Normals.Add(FVector(-1.0f, 0.0f, 0.0f));
-    Normals.Add(FVector(-1.0f, 0.0f, 0.0f));
+    //Vertices.Add(FVector(0.0f, 0.0f, Height));
+    //Vertices.Add(FVector(Length, 0.0f, Height));
+    //Vertices.Add(FVector(Length, Width, Height));
+    //Vertices.Add(FVector(0.0f, Width, Height));
 
-    // Define UVs
-    UVs.Add(FVector2D(0.0f, 0.0f));
-    UVs.Add(FVector2D(1.0f, 0.0f));
-    UVs.Add(FVector2D(1.0f, 1.0f));
-    UVs.Add(FVector2D(0.0f, 1.0f));
+    //// Define triangles (two for each face, 12 in total)
+    //Triangles = {
+    //    0, 1, 2, 0, 2, 3,  // Bottom face
+    //    4, 6, 5, 4, 7, 6,  // Top face
+    //    0, 4, 1, 1, 4, 5,  // Front face
+    //    1, 5, 2, 2, 5, 6,  // Right face
+    //    2, 6, 3, 3, 6, 7,  // Back face
+    //    3, 7, 0, 0, 7, 4   // Left face
+    //};
 
-    UVs.Add(FVector2D(0.0f, 0.0f));
-    UVs.Add(FVector2D(1.0f, 0.0f));
-    UVs.Add(FVector2D(1.0f, 1.0f));
-    UVs.Add(FVector2D(0.0f, 1.0f));
+    //// Define normals for each vertex
+    //Normals.Add(FVector(0.0f, 0.0f, -1.0f));
+    //Normals.Add(FVector(0.0f, 0.0f, -1.0f));
+    //Normals.Add(FVector(0.0f, 0.0f, -1.0f));
+    //Normals.Add(FVector(0.0f, 0.0f, -1.0f));
 
-    // Define tangents
-    Tangents.Add(FProcMeshTangent(1.0f, 0.0f, 0.0f));
-    Tangents.Add(FProcMeshTangent(1.0f, 0.0f, 0.0f));
-    Tangents.Add(FProcMeshTangent(1.0f, 0.0f, 0.0f));
-    Tangents.Add(FProcMeshTangent(1.0f, 0.0f, 0.0f));
+    //Normals.Add(FVector(0.0f, 0.0f, 1.0f));
+    //Normals.Add(FVector(0.0f, 0.0f, 1.0f));
+    //Normals.Add(FVector(0.0f, 0.0f, 1.0f));
+    //Normals.Add(FVector(0.0f, 0.0f, 1.0f));
 
-    Tangents.Add(FProcMeshTangent(1.0f, 0.0f, 0.0f));
-    Tangents.Add(FProcMeshTangent(1.0f, 0.0f, 0.0f));
-    Tangents.Add(FProcMeshTangent(1.0f, 0.0f, 0.0f));
-    Tangents.Add(FProcMeshTangent(1.0f, 0.0f, 0.0f));
+    //Normals.Add(FVector(0.0f, -1.0f, 0.0f));
+    //Normals.Add(FVector(0.0f, -1.0f, 0.0f));
+    //Normals.Add(FVector(0.0f, -1.0f, 0.0f));
+    //Normals.Add(FVector(0.0f, -1.0f, 0.0f));
 
-    ProceduralMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, VertexColors, Tangents, true);
+    //Normals.Add(FVector(1.0f, 0.0f, 0.0f));
+    //Normals.Add(FVector(1.0f, 0.0f, 0.0f));
+    //Normals.Add(FVector(1.0f, 0.0f, 0.0f));
+    //Normals.Add(FVector(1.0f, 0.0f, 0.0f));
+
+    //Normals.Add(FVector(0.0f, 1.0f, 0.0f));
+    //Normals.Add(FVector(0.0f, 1.0f, 0.0f));
+    //Normals.Add(FVector(0.0f, 1.0f, 0.0f));
+    //Normals.Add(FVector(0.0f, 1.0f, 0.0f));
+
+    //Normals.Add(FVector(-1.0f, 0.0f, 0.0f));
+    //Normals.Add(FVector(-1.0f, 0.0f, 0.0f));
+    //Normals.Add(FVector(-1.0f, 0.0f, 0.0f));
+    //Normals.Add(FVector(-1.0f, 0.0f, 0.0f));
+
+    //// Define UVs
+    //UVs.Add(FVector2D(0.0f, 0.0f));
+    //UVs.Add(FVector2D(1.0f, 0.0f));
+    //UVs.Add(FVector2D(1.0f, 1.0f));
+    //UVs.Add(FVector2D(0.0f, 1.0f));
+
+    //UVs.Add(FVector2D(0.0f, 0.0f));
+    //UVs.Add(FVector2D(1.0f, 0.0f));
+    //UVs.Add(FVector2D(1.0f, 1.0f));
+    //UVs.Add(FVector2D(0.0f, 1.0f));
+
+    //// Define tangents
+    //Tangents.Add(FProcMeshTangent(1.0f, 0.0f, 0.0f));
+    //Tangents.Add(FProcMeshTangent(1.0f, 0.0f, 0.0f));
+    //Tangents.Add(FProcMeshTangent(1.0f, 0.0f, 0.0f));
+    //Tangents.Add(FProcMeshTangent(1.0f, 0.0f, 0.0f));
+
+    //Tangents.Add(FProcMeshTangent(1.0f, 0.0f, 0.0f));
+    //Tangents.Add(FProcMeshTangent(1.0f, 0.0f, 0.0f));
+    //Tangents.Add(FProcMeshTangent(1.0f, 0.0f, 0.0f));
+    //Tangents.Add(FProcMeshTangent(1.0f, 0.0f, 0.0f));
+
+    //ProceduralMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, VertexColors, Tangents, true);
 }

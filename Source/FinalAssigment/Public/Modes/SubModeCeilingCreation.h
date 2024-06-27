@@ -22,5 +22,15 @@ public:
 	virtual void SetupInputMapping() override;
 	virtual void EnterSubMode(UWallConstructionWidget*) override;
 	virtual void ExitSubMode(UWallConstructionWidget*) override;
+
+	void WallLeftClickProcess();
+	void WallRightClickProcess();
+
+private:
+	UPROPERTY()
+	UInputAction* OnWallLeftClick;
+
+	UPROPERTY()
+	UInputAction* OnWallRightClick;
 	
 };
