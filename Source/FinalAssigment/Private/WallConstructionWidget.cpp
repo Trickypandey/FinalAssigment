@@ -4,7 +4,6 @@
 #include "WallConstructionWidget.h"
 
 #include "ArchVizPlayerController.h"
-#include "SlabActor.h"
 #include "WallActor.h"
 
 
@@ -57,7 +56,7 @@ void UWallConstructionWidget::SpawnWall()
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		PlayerController->SpawnSelectedActor(EObjectType::Wall);
+		PlayerController->BuildingConstructionMode->SpawnSelectedActor(EBuildingCreationType::Wall);
 	}
 }
 
@@ -65,7 +64,7 @@ void UWallConstructionWidget::SpawnFloor()
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		PlayerController->SpawnSelectedActor(EObjectType::Floor);
+		PlayerController->BuildingConstructionMode->SpawnSelectedActor(EBuildingCreationType::Floor);
 	}
 }
 
@@ -73,7 +72,7 @@ void UWallConstructionWidget::SpawnCeiling()
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		PlayerController->SpawnSelectedActor(EObjectType::Ceiling);
+		PlayerController->BuildingConstructionMode->SpawnSelectedActor(EBuildingCreationType::Ceiling);
 	}
 }
 
@@ -91,13 +90,13 @@ void UWallConstructionWidget::LengthInputChangeHandle(float InputValue)
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
 		
-		if (auto Actor = PlayerController->GetSelectedActor())
+		/*if (auto Actor = PlayerController->BuildingConstructionMode->GetSelectedActor())
 		{
 			
 			Actor->SetLength(InputValue);
 			Actor->CreateMesh();
 
-		}
+		}*/
 	}
 }
 
@@ -106,13 +105,13 @@ void UWallConstructionWidget::WidthInputChangeHandle(float InputValue)
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
 		
-		if (auto Actor = PlayerController->GetSelectedActor())
+		/*if (auto Actor = PlayerController->BuildingConstructionMode->GetSelectedActor())
 		{
 
 			Actor->SetWidth(InputValue);
 			Actor->CreateMesh();
 
-		}
+		}*/
 		
 
 	}
@@ -122,6 +121,6 @@ void UWallConstructionWidget::MaterialChangeHandler(const FMaterialData& MeshDat
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		PlayerController->ApplyMaterialWallProceduralMesh(MeshData);
+		PlayerController->BuildingConstructionMode->ApplyMaterialWallProceduralMesh(MeshData);
 	}
 }

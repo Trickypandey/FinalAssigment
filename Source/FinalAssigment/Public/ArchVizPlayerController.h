@@ -1,20 +1,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CubeActor.h"
 #include "GameFramework/PlayerController.h"
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
-#include "InputMappingContext.h"
-#include "InputAction.h"
-#include "RoadActor.h"
-#include "RoadCreationWidget.h"
 #include "UiWidget.h"
-#include "FinalAssigment/Modes/BaseMode.h"
-#include "FinalAssigment/Modes/RoadCreationMode.h"
+#include "FinalAssigment/Public/Modes/BaseMode.h"
+#include "FinalAssigment/Public/Modes/BuildingCreationMode.h"
+#include "FinalAssigment/Public/Modes/InteriorDesignMode.h"
+#include "FinalAssigment/Public/Modes/RoadCreationMode.h"
 #include "ArchVizPlayerController.generated.h"
 
-class AWallActor;
+
 
 UCLASS()
 class FINALASSIGMENT_API AArchVizPlayerController : public APlayerController
@@ -26,121 +21,50 @@ public:
     void SetIsAddingDoor(bool);
    
     void ModeChangeHandle(EModes Mode);
-    void DeleteSelectedActor();
-    void SpawnSelectedActor(EObjectType  Type);
-
-	ACubeActor* GetSelectedActor();
-    UFUNCTION()
-    void ApplyMaterialWallProceduralMesh(const FMaterialData& MeshData);
-
-    UFUNCTION()
-    void AddMaterialToRoad(const FMaterialData& MeshData);
-
+  
 protected:
     virtual void SetupInputComponent() override;
-    void SnapWall();
     virtual void Tick(float DeltaTime) override;
     virtual void BeginPlay() override;
 
 private:
-    void RoadLeftClick();
-    void RoadRightClick();
-    void DeSelectedSelectedActor();
-    void SetupEnhancedInputBindings();
-    void AddCurrentModeMappingContext() const;
-    void WallLeftClickProcess();
-    void WallRightClickProcess();
-    void RotateSelectedActor();
 
-    TPair<ACubeActor*, FVector> IsWallActor(const FHitResult& HitResult);
+
     void SetArchVizMode(UBaseMode* NewArchVizMode);
 
-    UPROPERTY()
-    UInputMappingContext* WallMappingContext;
-
-    UPROPERTY()
-    UInputMappingContext* RoadMappingContext;
-
-	UPROPERTY()
-    UInputMappingContext* InteriorMappingContext;
 
     UPROPERTY()
     UUiWidget* UiWidgetInstance;
 
-	UPROPERTY()
-    UWallConstructionWidget* WallWidgetInstance;
-
-	UPROPERTY()
-    URoadCreationWidget* RoadWidgetInstance;
 
     UPROPERTY(EditAnywhere, Category = "UI")
     TSubclassOf<UUserWidget> UiWidgetClass;
 
-    UPROPERTY(EditAnywhere, Category = "UI")
-    TSubclassOf<UUserWidget> WallWidgetClass;
-
-	UPROPERTY(EditAnywhere, Category = "UI")
-    TSubclassOf<UUserWidget> RoadWidgetClass;
-
-    UPROPERTY()
-    UInputAction* OnWallLeftClick;
-
-    UPROPERTY()
-    UInputAction* OnWallRightClick;
-
-    UPROPERTY()
-    UInputAction* OnWallRotate;
-
-	UPROPERTY()
-    UInputAction* OnWallDelete;
-
-	UPROPERTY()
-    UInputAction* OnDeSelectWall;
-
-	UPROPERTY()
-    UInputAction* OnRoadAddPoint;
-
-    UPROPERTY()
-    UInputAction* OnRoadRightClick;
-
-
-    bool bIsWallCreationMode;
-    bool bIsRoadConstructionMode;
-    bool bIsActorSpawning;
-    bool bIsAddingDoor;
-    bool IsSlapOrFloor = false;
-    float WallSnapValue = 20;
-
-    FVector OriginalLocation;
-    UMaterialInstanceDynamic* DynamicMaterial;
 
     UPROPERTY()
     UBaseMode* CurrentModeClass;
 
-    UPROPERTY()
-    ACubeActor* SelectedActor;
-
-	UPROPERTY()
-    ACubeActor* PreviousSelectedActor;
-
-	UPROPERTY()
-    AActor* HoveringActor;
-
-    TEnumAsByte<EObjectType> SelectedActorType;
-    TEnumAsByte<EModes> CurrentMode;
-
-    UPROPERTY()
-    TArray<ARoadActor*> RoadArray;
-
-    UPROPERTY()
-    ARoadActor* CurrentRoadActor;
-
+    
+    EModes CurrentMode;
 
     FInputModeGameAndUI InputMode;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RoadConstruction | Mode", meta = (AllowPrivateAccess = "true"))
+public:
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Mode", meta = (AllowPrivateAccess = "true"))
     TSubclassOf<URoadCreationMode> RoadConstructionModeRef;
 
-    UPROPERTY(VisibleDefaultsOnly, Category = "RoadConstruction | Mode")
+    UPROPERTY(VisibleDefaultsOnly, Category = "Mode")
     URoadCreationMode* RoadConstructionMode;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Mode", meta = (AllowPrivateAccess = "true"))
+    TSubclassOf<UBuildingCreationMode> BuildingConstructionModeRef;
+
+    UPROPERTY(VisibleDefaultsOnly, Category = "Mode")
+    UBuildingCreationMode* BuildingConstructionMode;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Mode", meta = (AllowPrivateAccess = "true"))
+    TSubclassOf<UInteriorDesignMode> InteriorDesignModeRef;
+
+    UPROPERTY(VisibleDefaultsOnly, Category = "Mode")
+    UInteriorDesignMode* InteriorDesignMode;
 };

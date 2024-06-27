@@ -19,6 +19,6 @@ public:
 	ACeilingActor();
 
 	UPROPERTY()
-	TEnumAsByte<EObjectType> ConstructionType;
+	EBuildingCreationType ConstructionType;
 	
 };

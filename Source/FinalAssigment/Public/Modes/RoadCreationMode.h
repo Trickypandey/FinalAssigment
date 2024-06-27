@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AssertManager.h"
 #include "BaseMode.h"
 #include "InputAction.h"
 #include "RoadActor.h"
@@ -24,16 +25,13 @@ public:
 	virtual void EnterMode() override;
 	virtual void ExitMode() override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RoadConstrcution | Actor")
-	TSubclassOf<ARoadActor> RoadActorRef;
-	
-	UPROPERTY()
-	UInputAction* OnLeftClickAction;
 
-	UPROPERTY()
-	UInputAction* OnRoadRightClick;
+	void AddMaterialToRoad(const FMaterialData& MeshData);
 
 private:
+
+
+
 	UFUNCTION()
 	void HandleLeftClickAction();
 
@@ -43,5 +41,16 @@ private:
 	UPROPERTY(VisibleDefaultsOnly, Category = "RoadConstrcution | Actor")
 	ARoadActor* CurrentRoadActor;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "RoadConstrcution | Actor", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<ARoadActor> RoadActorRef;
+	
+	UPROPERTY()
+	UInputAction* OnLeftClickAction;
+
+	UPROPERTY()
+	UInputAction* OnRoadRightClick;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* DynamicMaterial;
 	
 };

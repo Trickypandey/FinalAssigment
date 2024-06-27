@@ -1,14 +1,15 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "RoadCreationMode.h"
+#include "Modes/RoadCreationMode.h"
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "RoadCreationWidget.h"
 
-URoadCreationMode::URoadCreationMode() : CurrentRoadActor{nullptr}
+URoadCreationMode::URoadCreationMode() : CurrentRoadActor{nullptr}, OnLeftClickAction(nullptr),
+                                         OnRoadRightClick(nullptr), DynamicMaterial(nullptr)
 {
 }
 
@@ -99,9 +100,9 @@ void URoadCreationMode::HandleLeftClickAction() {
 				const FVector ClickLocation = HitResult.Location;
 				CurrentRoadActor->AddSplinePoint(ClickLocation);
 
-				/*if (DynamicMaterial) {
+				if (DynamicMaterial) {
 					CurrentRoadActor->ProceduralMeshComponent->SetMaterial(0, DynamicMaterial);
-				}*/
+				}
 
 				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Added spline point at location: %s"), *ClickLocation.ToString()));
 			}
@@ -137,5 +138,22 @@ void URoadCreationMode::HandleRightClickAction()
 	else
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("No hit detected"));
+	}
+}
+
+
+void URoadCreationMode::AddMaterialToRoad(const FMaterialData& MeshData)
+{
+	UMaterialInterface* BaseMaterial = MeshData.Type;
+	if (!BaseMaterial)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BaseMaterial is nullptr in AArchVizPlayerController"));
+		return;
+	}
+
+	DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this);
+	if (DynamicMaterial && CurrentRoadActor)
+	{
+		CurrentRoadActor->ProceduralMeshComponent->SetMaterial(0, DynamicMaterial);
 	}
 }

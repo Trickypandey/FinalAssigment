@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BaseMode.h"
-#include "BuildingCreationMode.generated.h"
+#include "Modes/UBuildingCreationSubMode.h"
+#include "SubModeFloorCreation.generated.h"
 
 /**
  * 
  */
 UCLASS(Blueprintable)
-class FINALASSIGMENT_API UBuildingCreationMode : public UBaseMode
+class FINALASSIGMENT_API USubModeFloorCreation : public UUBuildingCreationSubMode
 {
 	GENERATED_BODY()
 	

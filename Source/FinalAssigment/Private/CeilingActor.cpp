@@ -5,5 +5,5 @@
 
 ACeilingActor::ACeilingActor()
 {
-	ConstructionType = EObjectType::Ceiling;
+	ConstructionType = EBuildingCreationType::Ceiling;
 }

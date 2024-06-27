@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "InteriorDesignMode.h"
+#include "Modes/InteriorDesignMode.h"
 
 UInteriorDesignMode::UInteriorDesignMode()
 {

@@ -18,7 +18,7 @@ public:
 	AFloorActor();
 
 	UPROPERTY()
-	TEnumAsByte<EObjectType> ConstructionType;
+	EBuildingCreationType ConstructionType;
 
 	
 };

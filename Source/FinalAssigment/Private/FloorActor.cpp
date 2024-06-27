@@ -5,5 +5,5 @@
 
 AFloorActor::AFloorActor()
 {
-	ConstructionType = EObjectType::Floor;
+	ConstructionType = EBuildingCreationType::Floor;
 }

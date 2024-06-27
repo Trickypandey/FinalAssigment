@@ -3,11 +3,11 @@
 AWallActor::AWallActor()
 {
     PrimaryActorTick.bCanEverTick = true;
-    ConstructionType = EObjectType::Wall;
+    ConstructionType = EBuildingCreationType::Wall;
+    WallState = EBuildingSubModeState::Moving;
     Length = 400;
     Width = 20;
     Height = 400;
-
     IsDoorAdded = false;
     DoorWidth = 90.0f;
     DoorHeight = 200.0f; 
@@ -41,6 +41,16 @@ void AWallActor::OnConstruction(const FTransform& Transform)
 void AWallActor::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+
+    switch (WallState) {
+	    case EBuildingSubModeState::Placed:
+	        HandlePlacedState();
+	        break;
+	    case EBuildingSubModeState::Moving:
+	        HandleMovingState();
+	        break;
+    }
+
    
 }
 
@@ -69,6 +79,34 @@ void AWallActor::AttachDoor(UStaticMesh*& DoorStaticMesh)
     {
         DoorMeshComponent->SetStaticMesh(DoorStaticMesh);
     }
+}
+
+void AWallActor::HandleMovingState()
+{
+    APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+    if (PlayerController)
+    {
+        
+        FHitResult HitResult;
+        FCollisionQueryParams TraceParams(FName(TEXT("LineTrace")), true,this);
+
+        FVector CursorWorldLocation;
+        FVector CursorWorldDirection;
+        PlayerController->DeprojectMousePositionToWorld(CursorWorldLocation, CursorWorldDirection);
+
+        if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams))
+        {
+            FVector NewLocation = HitResult.Location;
+
+            SetActorLocation(NewLocation);
+        }
+        
+    }
+}
+
+
+void AWallActor::HandlePlacedState()
+{
 }
 
 void AWallActor::CreateMesh()
