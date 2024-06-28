@@ -31,6 +31,8 @@ public:
 	void DeleteSelectedWallActor();
 
 	bool bIsDoorAdding = false;
+	UPROPERTY()
+	UWallConstructionWidget* CurrentWidget;
 
 private:
 	

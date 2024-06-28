@@ -22,6 +22,9 @@ protected:
     virtual void OnConstruction(const FTransform& Transform) override;
 
 public:
+	void HandlePlacedState();
+	void HandleMovingState();
+    virtual void Tick(float DeltaTime) override;
 	virtual void CreateMesh() override;
 
     UPROPERTY()

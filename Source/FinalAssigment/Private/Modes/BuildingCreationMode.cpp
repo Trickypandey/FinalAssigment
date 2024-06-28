@@ -79,9 +79,13 @@ void UBuildingCreationMode::CleanUp()
     CurrentBuildingCreationSubMode = nullptr;
 }
 
-ACubeActor*& UBuildingCreationMode::GetSelectedActor()
+ACubeActor* UBuildingCreationMode::GetSelectedActor()
 {
-    return CurrentBuildingCreationSubMode->GetSelectedActor();
+	if (CurrentBuildingCreationSubMode)
+	{
+		return CurrentBuildingCreationSubMode->GetSelectedActor();
+	}
+    return  nullptr;
 }
 
 

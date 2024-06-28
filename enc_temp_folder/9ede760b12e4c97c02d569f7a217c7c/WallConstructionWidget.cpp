@@ -90,36 +90,15 @@ void UWallConstructionWidget::LengthInputChangeHandle(float InputValue)
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		if (PlayerController && PlayerController->BuildingConstructionMode)
+		
+		if (PlayerController->BuildingConstructionMode && PlayerController->BuildingConstructionMode->GetSelectedActor())
 		{
-			UBuildingCreationMode* BuildingCreationMode = PlayerController->BuildingConstructionMode;
 
-			if (BuildingCreationMode && BuildingCreationMode->GetSelectedActor())
-			{
-				ACubeActor* Actor = BuildingCreationMode->GetSelectedActor();
-				if (Actor)
-				{
-					Actor->SetLength(InputValue);
-					Actor->CreateMesh();
-				}
-				else
-				{
-					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Selected actor is null."));
-				}
-			}
-			else
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("No selected actor found or BuildingCreationMode is not valid."));
-			}
+			PlayerController->BuildingConstructionMode->GetSelectedActor()->SetLength(InputValue);
+			PlayerController->BuildingConstructionMode->GetSelectedActor()->CreateMesh();
+
 		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("BuildingConstructionMode is not initialized or PlayerController is not valid."));
-		}
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("PlayerController is not valid."));
+
 	}
 }
 

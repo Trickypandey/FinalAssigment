@@ -20,7 +20,7 @@ void USubModeWallCreation::Cleanup()
 			SelectedActor = nullptr;
 			ActorToDestroy->Destroy(); 
 		}
-		SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		ActorToDestroy->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
 	}
 	else
 	{
@@ -85,8 +85,16 @@ void USubModeWallCreation::EnterSubMode(UWallConstructionWidget* Widget)
 		}
 		if (Widget)
 		{
+
+			CurrentWidget = Widget;
 			Widget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
+			Widget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
 			//Widget->WidthInput->SetVisibility(ESlateVisibility::Visible);
+
+			if (SelectedActor)
+			{
+				Widget->LengthInput->SetValue(SelectedActor->GetLength());
+			}
 		}
 	}
 }
@@ -101,6 +109,7 @@ void USubModeWallCreation::ExitSubMode(UWallConstructionWidget* Widget)
 		if (Widget)
 		{
 			Widget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
+			Widget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
 			//Widget->WidthInput->SetVisibility(ESlateVisibility::Visible);
 		}
 		Cleanup();
@@ -160,6 +169,10 @@ void USubModeWallCreation::WallLeftClickProcess()
 		if (SelectedActor)
 		{
 			SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
+			if (SelectedActor)
+			{
+				CurrentWidget->LengthInput->SetValue(SelectedActor->GetLength());
+			}
 			if (DynamicMaterial)
 			{
 				SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);

@@ -24,7 +24,6 @@ public:
 	virtual void ExitSubMode(UWallConstructionWidget*) override;
 	void WallLeftClickProcess();
 	void WallRightClickProcess();
-	void DeleteSelectedWallActor();
 
 private:
 	UPROPERTY()
@@ -34,7 +33,4 @@ private:
 	UInputAction* OnWallRightClick;
 	UPROPERTY()
 	UWallConstructionWidget* CurrentWidget;
-
-	UPROPERTY()
-	UInputAction* OnWallDelete;
 };

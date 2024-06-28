@@ -8,7 +8,7 @@ ASlabActor::ASlabActor()
     PrimaryActorTick.bCanEverTick = true;
     Length = 400.0f;
     Width = 400.0f;
-    Height = 20.0f;
+    Height = 10.0f;
     WallState = EBuildingSubModeState::Placed;
 }
 
@@ -24,6 +24,45 @@ void ASlabActor::OnConstruction(const FTransform& Transform)
     CreateMesh();
 }
 
+void ASlabActor::HandlePlacedState()
+{
+}
+
+void ASlabActor::HandleMovingState()
+{
+    APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+    if (PlayerController)
+    {
+
+        FHitResult HitResult;
+        FCollisionQueryParams TraceParams(FName(TEXT("LineTrace")), true, this);
+
+        FVector CursorWorldLocation;
+        FVector CursorWorldDirection;
+        PlayerController->DeprojectMousePositionToWorld(CursorWorldLocation, CursorWorldDirection);
+
+        if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams))
+        {
+            FVector NewLocation = HitResult.Location;
+            FVector SnappedLocation = Utility::SnapToGrid(NewLocation, FVector(20));
+            SetActorLocation(SnappedLocation);
+        }
+
+    }
+}
+
+void ASlabActor::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+    switch (WallState) {
+    case EBuildingSubModeState::Placed:
+        HandlePlacedState();
+        break;
+    case EBuildingSubModeState::Moving:
+        HandleMovingState();
+        break;
+    }
+}
 
 void ASlabActor::CreateMesh()
 {

@@ -39,7 +39,7 @@ public:
 	virtual void EnterMode() override;
 	virtual void ExitMode() override;
 	virtual void CleanUp() override;
-	ACubeActor*& GetSelectedActor();
+	ACubeActor* GetSelectedActor();
 
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "BuildingCreationMode | Wall")

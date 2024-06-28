@@ -26,7 +26,7 @@ void USubModeCeilingCreation::Cleanup()
 			SelectedActor = nullptr;
 			ActorToDestroy->Destroy(); 
 		}
-		SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		ActorToDestroy->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
 
 	}
 	else
@@ -46,12 +46,17 @@ void USubModeCeilingCreation::SetupInputMapping()
 	OnWallRightClick = NewObject<UInputAction>(this);
 	OnWallRightClick->ValueType = EInputActionValueType::Boolean;
 
+	OnWallDelete = NewObject<UInputAction>(this);
+	OnWallDelete->ValueType = EInputActionValueType::Boolean;
+
 
 	if (InputMappingContext)
 	{
 
 		InputMappingContext->MapKey(OnWallLeftClick, EKeys::LeftMouseButton);
 		InputMappingContext->MapKey(OnWallRightClick, EKeys::RightMouseButton);
+		InputMappingContext->MapKey(OnWallDelete, EKeys::Delete);
+
 
 	}
 	else
@@ -63,6 +68,8 @@ void USubModeCeilingCreation::SetupInputMapping()
 	{
 		EnhancedInputComponent->BindAction(OnWallLeftClick, ETriggerEvent::Started, this, &USubModeCeilingCreation::WallLeftClickProcess);
 		EnhancedInputComponent->BindAction(OnWallRightClick, ETriggerEvent::Started, this, &USubModeCeilingCreation::WallRightClickProcess);
+		EnhancedInputComponent->BindAction(OnWallDelete, ETriggerEvent::Started, this, &USubModeCeilingCreation::DeleteSelectedWallActor);
+
 
 	}
 	else
@@ -72,7 +79,7 @@ void USubModeCeilingCreation::SetupInputMapping()
 	
 }
 
-void USubModeCeilingCreation::EnterSubMode(UWallConstructionWidget* WallConstructionWidget)
+void USubModeCeilingCreation::EnterSubMode(UWallConstructionWidget* CeilingConstructionWidget)
 {
 	if (PlayerController) {
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) {
@@ -80,15 +87,21 @@ void USubModeCeilingCreation::EnterSubMode(UWallConstructionWidget* WallConstruc
 
 			Setup();
 		}
-		if (WallConstructionWidget)
+		if (CeilingConstructionWidget)
 		{
-			WallConstructionWidget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
-			WallConstructionWidget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
+			CurrentWidget = CeilingConstructionWidget;
+			CeilingConstructionWidget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
+			CeilingConstructionWidget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
+			if (SelectedActor)
+			{
+				CeilingConstructionWidget->LengthInput->SetValue(SelectedActor->GetLength());
+				CeilingConstructionWidget->WidthInput->SetValue(SelectedActor->GetWidth());
+			}
 		}
 	}
 }
 
-void USubModeCeilingCreation::ExitSubMode(UWallConstructionWidget* WallConstructionWidget)
+void USubModeCeilingCreation::ExitSubMode(UWallConstructionWidget* WidgetCeiling)
 {
 	if (PlayerController) {
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) {
@@ -96,10 +109,10 @@ void USubModeCeilingCreation::ExitSubMode(UWallConstructionWidget* WallConstruct
 
 			Cleanup();
 		}
-		if (WallConstructionWidget)
+		if (WidgetCeiling)
 		{
-			WallConstructionWidget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
-			WallConstructionWidget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
+			WidgetCeiling->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
+			WidgetCeiling->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 }
@@ -117,7 +130,6 @@ void USubModeCeilingCreation::WallLeftClickProcess()
 			Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
 			FVector SnappedLocation = Utility::SnapToGrid(ClickLocation, FVector(20));
 			SelectedActor->SetActorLocation(SnappedLocation);
-
 		}
 		else
 		{
@@ -128,6 +140,11 @@ void USubModeCeilingCreation::WallLeftClickProcess()
 			{
 				SpawnedActor->WallState = EBuildingSubModeState::Moving;
 				SelectedActor = SpawnedActor;
+				if (CurrentWidget)
+				{
+					CurrentWidget->LengthInput->SetValue(SelectedActor->GetLength());
+					CurrentWidget->WidthInput->SetValue(SelectedActor->GetWidth());
+				}
 				if (DynamicMaterial)
 				{
 					SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
@@ -167,5 +184,9 @@ void USubModeCeilingCreation::WallRightClickProcess()
 		}
 	}
 
+}
+
+void USubModeCeilingCreation::DeleteSelectedWallActor()
+{
 }
 

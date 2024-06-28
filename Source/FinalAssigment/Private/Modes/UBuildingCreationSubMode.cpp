@@ -9,12 +9,20 @@ void UUBuildingCreationSubMode::InitParams(APlayerController* Controller) {
 
 void UUBuildingCreationSubMode::SetMaterial(UMaterialInstanceDynamic* Material)
 {
-	SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, Material);
+	if (SelectedActor && SelectedActor->GetProceduralMeshComponent())
+	{
+		SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, Material);
+		
+	}
 }
 
-ACubeActor*& UUBuildingCreationSubMode::GetSelectedActor()
+ACubeActor* UUBuildingCreationSubMode::GetSelectedActor()
 {
-	return SelectedActor;
+	if (SelectedActor)
+	{
+		return SelectedActor;
+	}
+	return nullptr;
 }
 
 FHitResult UUBuildingCreationSubMode::GetHitResult(const TArray<AActor*>& ActorsToIgnore) const {

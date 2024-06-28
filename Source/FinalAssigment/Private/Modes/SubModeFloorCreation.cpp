@@ -25,7 +25,7 @@ void USubModeFloorCreation::Cleanup()
 			SelectedActor = nullptr; // Reset the selected actor
 			ActorToDestroy->Destroy(); // Destroy the actor
 		}
-		SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		ActorToDestroy->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
 
 	}
 	else
@@ -33,6 +33,17 @@ void USubModeFloorCreation::Cleanup()
 		SelectedActor = nullptr;
 	}
 
+}
+
+void USubModeFloorCreation::DeleteSelectedWallActor()
+{
+	if (SelectedActor)
+	{
+		SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		SelectedActor->Destroy();
+		SelectedActor = nullptr;
+
+	}
 }
 
 void USubModeFloorCreation::SetupInputMapping()
@@ -46,12 +57,16 @@ void USubModeFloorCreation::SetupInputMapping()
 	OnWallRightClick = NewObject<UInputAction>(this);
 	OnWallRightClick->ValueType = EInputActionValueType::Boolean;
 
+	OnWallDelete = NewObject<UInputAction>(this);
+	OnWallDelete->ValueType = EInputActionValueType::Boolean;
+
 
 	if (InputMappingContext)
 	{
 
 		InputMappingContext->MapKey(OnWallLeftClick, EKeys::LeftMouseButton);
 		InputMappingContext->MapKey(OnWallRightClick, EKeys::RightMouseButton);
+		InputMappingContext->MapKey(OnWallDelete, EKeys::Delete);
 
 	}
 	else
@@ -63,6 +78,7 @@ void USubModeFloorCreation::SetupInputMapping()
 	{
 		EnhancedInputComponent->BindAction(OnWallLeftClick, ETriggerEvent::Started, this, &USubModeFloorCreation::WallLeftClickProcess);
 		EnhancedInputComponent->BindAction(OnWallRightClick, ETriggerEvent::Started, this, &USubModeFloorCreation::WallRightClickProcess);
+		EnhancedInputComponent->BindAction(OnWallDelete, ETriggerEvent::Started, this, &USubModeFloorCreation::DeleteSelectedWallActor);
 		
 	}
 	else
@@ -81,8 +97,14 @@ void USubModeFloorCreation::EnterSubMode(UWallConstructionWidget* Widget)
 		}
 		if(Widget)
 		{
+			CurrentWidget = Widget;
 			Widget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
 			Widget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
+			if (SelectedActor)
+			{
+				Widget->LengthInput->SetValue(SelectedActor->GetLength());
+				Widget->WidthInput->SetValue(SelectedActor->GetWidth());
+			}
 		}
 	}
 }
@@ -126,6 +148,12 @@ void USubModeFloorCreation::WallLeftClickProcess()
 			{
 				SpawnedActor->WallState = EBuildingSubModeState::Moving;
 				SelectedActor = SpawnedActor;
+
+				if (SelectedActor)
+				{
+					CurrentWidget->LengthInput->SetValue(SelectedActor->GetLength());
+					CurrentWidget->WidthInput->SetValue(SelectedActor->GetWidth());
+				}
 				if (DynamicMaterial)
 				{
 					SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);

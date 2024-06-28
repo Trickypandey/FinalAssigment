@@ -1,40 +1,41 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Modes/SubModeFloorCreation.h"
+#include "Modes/SubModeCeilingCreation.h"
 
+#include "CeilingActor.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "FloorActor.h"
 
-USubModeFloorCreation::USubModeFloorCreation()
+USubModeCeilingCreation::USubModeCeilingCreation()
 {
 }
 
-void USubModeFloorCreation::Setup()
+void USubModeCeilingCreation::Setup()
 {
 	SelectedActor = nullptr;
 }
 
-void USubModeFloorCreation::Cleanup()
+void USubModeCeilingCreation::Cleanup()
 {
-	if (auto* ActorToDestroy = Cast<AFloorActor>(SelectedActor))
+
+	if (auto* ActorToDestroy = Cast<ACeilingActor>(SelectedActor))
 	{
 		if (ActorToDestroy->WallState == EBuildingSubModeState::Moving)
 		{
-			ActorToDestroy->WallState = EBuildingSubModeState::Placed;
-			SelectedActor = nullptr; // Reset the selected actor
-			ActorToDestroy->Destroy(); // Destroy the actor
+			SelectedActor = nullptr;
+			ActorToDestroy->Destroy(); 
 		}
+		ActorToDestroy->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+
 	}
 	else
 	{
 		SelectedActor = nullptr;
 	}
-
 }
 
-void USubModeFloorCreation::SetupInputMapping()
+void USubModeCeilingCreation::SetupInputMapping()
 {
 	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent);
 	InputMappingContext = NewObject<UInputMappingContext>(this);
@@ -60,17 +61,18 @@ void USubModeFloorCreation::SetupInputMapping()
 
 	if (EnhancedInputComponent)
 	{
-		EnhancedInputComponent->BindAction(OnWallLeftClick, ETriggerEvent::Started, this, &USubModeFloorCreation::WallLeftClickProcess);
-		EnhancedInputComponent->BindAction(OnWallRightClick, ETriggerEvent::Started, this, &USubModeFloorCreation::WallRightClickProcess);
-		
+		EnhancedInputComponent->BindAction(OnWallLeftClick, ETriggerEvent::Started, this, &USubModeCeilingCreation::WallLeftClickProcess);
+		EnhancedInputComponent->BindAction(OnWallRightClick, ETriggerEvent::Started, this, &USubModeCeilingCreation::WallRightClickProcess);
+
 	}
 	else
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("EnhancedInputComponent Not Populated"));
 	}
+	
 }
 
-void USubModeFloorCreation::EnterSubMode(UWallConstructionWidget* Widget)
+void USubModeCeilingCreation::EnterSubMode(UWallConstructionWidget* CeilingConstructionWidget)
 {
 	if (PlayerController) {
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) {
@@ -78,30 +80,37 @@ void USubModeFloorCreation::EnterSubMode(UWallConstructionWidget* Widget)
 
 			Setup();
 		}
-		if(Widget)
+		if (CeilingConstructionWidget)
 		{
-			Widget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
-			Widget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
+			CurrentWidget = CeilingConstructionWidget;
+			CeilingConstructionWidget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
+			CeilingConstructionWidget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
+			if (SelectedActor)
+			{
+				CeilingConstructionWidget->LengthInput->SetValue(SelectedActor->GetLength());
+				CeilingConstructionWidget->WidthInput->SetValue(SelectedActor->GetWidth());
+			}
 		}
 	}
 }
 
-void USubModeFloorCreation::ExitSubMode(UWallConstructionWidget* Widget)
+void USubModeCeilingCreation::ExitSubMode(UWallConstructionWidget* WidgetCeiling)
 {
 	if (PlayerController) {
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) {
 			Subsystem->RemoveMappingContext(InputMappingContext);
+
 			Cleanup();
 		}
-		if (Widget)
+		if (WidgetCeiling)
 		{
-			Widget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
-			Widget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
+			WidgetCeiling->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
+			WidgetCeiling->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 }
 
-void USubModeFloorCreation::WallLeftClickProcess()
+void USubModeCeilingCreation::WallLeftClickProcess()
 {
 	FHitResult HitResult;
 	PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
@@ -109,40 +118,44 @@ void USubModeFloorCreation::WallLeftClickProcess()
 	{
 		const FVector ClickLocation = HitResult.Location;
 
-		if (SelectedActor && Cast<AFloorActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
+		if (SelectedActor && Cast<ACeilingActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
 		{
-			Cast<AFloorActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
-			FVector SnappedLocation = Utility::SnapToGrid(ClickLocation,FVector(20));
+			Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
+			FVector SnappedLocation = Utility::SnapToGrid(ClickLocation, FVector(20));
 			SelectedActor->SetActorLocation(SnappedLocation);
-			
 		}
 		else
 		{
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-			if (AFloorActor* SpawnedActor = Cast<AFloorActor>(HitResult.GetActor()))
+			if (ACeilingActor* SpawnedActor = Cast<ACeilingActor>(HitResult.GetActor()))
 			{
 				SpawnedActor->WallState = EBuildingSubModeState::Moving;
 				SelectedActor = SpawnedActor;
+				if (CurrentWidget)
+				{
+					CurrentWidget->LengthInput->SetValue(SelectedActor->GetLength());
+					CurrentWidget->WidthInput->SetValue(SelectedActor->GetWidth());
+				}
 				if (DynamicMaterial)
 				{
 					SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
 				}
 				SpawnedActor->WallState = EBuildingSubModeState::Moving;
 			}
-			
+
 		}
-		
+
 	}
 }
 
 
-void USubModeFloorCreation::WallRightClickProcess()
+void USubModeCeilingCreation::WallRightClickProcess()
 {
 	if (SelectedActor)
 	{
-		Cast<AFloorActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
+		Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
 		SelectedActor = nullptr;
 	}
 	FHitResult HitResult;
@@ -153,7 +166,7 @@ void USubModeFloorCreation::WallRightClickProcess()
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-		if (AFloorActor* SpawnedActor = GetWorld()->SpawnActor<AFloorActor>(AFloorActor::StaticClass(), SpawnLocation, FRotator::ZeroRotator, SpawnParams))
+		if (ACeilingActor* SpawnedActor = GetWorld()->SpawnActor<ACeilingActor>(ACeilingActor::StaticClass(), SpawnLocation, FRotator::ZeroRotator, SpawnParams))
 		{
 			SpawnedActor->WallState = EBuildingSubModeState::Moving;
 			SelectedActor = SpawnedActor;
@@ -163,5 +176,6 @@ void USubModeFloorCreation::WallRightClickProcess()
 			}
 		}
 	}
-	
+
 }
+

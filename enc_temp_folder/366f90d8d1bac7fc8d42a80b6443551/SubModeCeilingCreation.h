@@ -3,28 +3,28 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WallConstructionWidget.h"
 #include "Modes/UBuildingCreationSubMode.h"
-#include "SubModeFloorCreation.generated.h"
+#include "SubModeCeilingCreation.generated.h"
 
 /**
  * 
  */
 UCLASS(Blueprintable)
-class FINALASSIGMENT_API USubModeFloorCreation : public UUBuildingCreationSubMode
+class FINALASSIGMENT_API USubModeCeilingCreation : public UUBuildingCreationSubMode
 {
 	GENERATED_BODY()
 public:
-	USubModeFloorCreation();
+
+	USubModeCeilingCreation();
 
 	virtual void Setup() override;
 	virtual void Cleanup() override;
 	virtual void SetupInputMapping() override;
 	virtual void EnterSubMode(UWallConstructionWidget*) override;
 	virtual void ExitSubMode(UWallConstructionWidget*) override;
+
 	void WallLeftClickProcess();
 	void WallRightClickProcess();
-	void DeleteSelectedWallActor();
 
 private:
 	UPROPERTY()
@@ -32,9 +32,7 @@ private:
 
 	UPROPERTY()
 	UInputAction* OnWallRightClick;
-	UPROPERTY()
-	UWallConstructionWidget* CurrentWidget;
 
 	UPROPERTY()
-	UInputAction* OnWallDelete;
+	UWallConstructionWidget* CurrentWidget;
 };

@@ -139,51 +139,44 @@ void UInteriorDesignMode::HandleLeftClickAction()
 		if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams))
 		{
 			AActor* HitActor = HitResult.GetActor();
+			bool bCanAttach = false;
 
 			// Check if the HitActor is of the attachable type for InteriorDesignActor
 			switch (InteriorDesignActor->AttachebleTo)
 			{
-				case EBuildingAttachable::FloorAttachable:
+			case EBuildingAttachable::FloorAttachable:
+				if (AFloorActor* FloorActor = Cast<AFloorActor>(HitActor))
 				{
-					AFloorActor* FloorActor = Cast<AFloorActor>(HitActor);
-					if (FloorActor)
-					{
-						InteriorDesignActor->SetActorLocation(HitResult.Location);
-						InteriorDesignActor->AttachToActor(FloorActor, FAttachmentTransformRules::KeepWorldTransform);
-						InteriorDesignActor->InteriorState = EBuildingSubModeState::Placed;
-						InteriorDesignActor = nullptr; // Reset the current InteriorDesignActor
-					}
+					bCanAttach = true;
+					InteriorDesignActor->AttachToActor(FloorActor, FAttachmentTransformRules::KeepWorldTransform);
 				}
 				break;
 
-				case EBuildingAttachable::WallAttachable:
+			case EBuildingAttachable::WallAttachable:
+				if (AWallActor* WallActor = Cast<AWallActor>(HitActor))
 				{
-					AWallActor* WallActor = Cast<AWallActor>(HitActor);
-					if (WallActor)
-					{
-						InteriorDesignActor->SetActorLocation(HitResult.Location);
-						InteriorDesignActor->AttachToActor(WallActor, FAttachmentTransformRules::KeepWorldTransform);
-						InteriorDesignActor->InteriorState = EBuildingSubModeState::Placed;
-						InteriorDesignActor = nullptr; // Reset the current InteriorDesignActor
-					}
+					bCanAttach = true;
+					InteriorDesignActor->AttachToActor(WallActor, FAttachmentTransformRules::KeepWorldTransform);
 				}
 				break;
 
-				case EBuildingAttachable::CeilingAttachable:
+			case EBuildingAttachable::CeilingAttachable:
+				if (ACeilingActor* CeilingActor = Cast<ACeilingActor>(HitActor))
 				{
-					ACeilingActor* CeilingActor = Cast<ACeilingActor>(HitActor);
-					if (CeilingActor)
-					{
-						InteriorDesignActor->SetActorLocation(HitResult.Location);
-						InteriorDesignActor->AttachToActor(CeilingActor, FAttachmentTransformRules::KeepWorldTransform);
-						InteriorDesignActor->InteriorState = EBuildingSubModeState::Placed;
-						InteriorDesignActor = nullptr; // Reset the current InteriorDesignActor
-					}
+					bCanAttach = true;
+					InteriorDesignActor->AttachToActor(CeilingActor, FAttachmentTransformRules::KeepWorldTransform);
 				}
 				break;
 
-				default:
-					break;
+			default:
+				break;
+			}
+
+			if (bCanAttach)
+			{
+				InteriorDesignActor->SetActorLocation(HitResult.Location);
+				InteriorDesignActor->InteriorState = EBuildingSubModeState::Placed;
+				InteriorDesignActor = nullptr; // Reset the current InteriorDesignActor
 			}
 		}
 	}
@@ -211,8 +204,6 @@ void UInteriorDesignMode::HandleLeftClickAction()
 		}
 	}
 }
-
-
 
 void UInteriorDesignMode::HandleRightClickAction()
 {
@@ -258,6 +249,7 @@ void UInteriorDesignMode::HandleRightClickAction()
 		}
 	}
 }
+
 
 
 void UInteriorDesignMode::RotateSelectedActor()

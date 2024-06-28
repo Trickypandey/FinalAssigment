@@ -25,6 +25,7 @@ public:
 
 	void WallLeftClickProcess();
 	void WallRightClickProcess();
+	void DeleteSelectedWallActor();
 
 private:
 	UPROPERTY()
@@ -32,5 +33,10 @@ private:
 
 	UPROPERTY()
 	UInputAction* OnWallRightClick;
-	
+
+	UPROPERTY()
+	UInputAction* OnWallDelete;
+
+	UPROPERTY()
+	UWallConstructionWidget* CurrentWidget;
 };

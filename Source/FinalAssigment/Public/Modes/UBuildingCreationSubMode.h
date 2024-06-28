@@ -27,7 +27,7 @@ public:
 	virtual void InitParams(APlayerController* Controller);
 	void SetMaterial(UMaterialInstanceDynamic* Material);
 
-	ACubeActor*& GetSelectedActor();
+	ACubeActor* GetSelectedActor();
 
 protected:
 	FHitResult GetHitResult(const TArray<AActor*>& ActorsToIgnore = TArray<AActor*>{}) const;
