@@ -17,11 +17,9 @@ UInteriorDesignMode::UInteriorDesignMode()
 
 void UInteriorDesignMode::Setup()
 {
-	/*if (IsValid(InteriorDesignActorRef) && !IsValid(InteriorDesignActor)) {
+	if (IsValid(InteriorDesignActorRef) && !IsValid(InteriorDesignActor)) {
 		InteriorDesignActor = GetWorld()->SpawnActor<AInteriorDesignActor>(InteriorDesignActorRef, FTransform{});
-	}*/
-
-	InteriorDesignActor = nullptr;
+	}
 	if (IsValid(WidgetRef) && !IsValid(Widget)) {
 		Widget = CreateWidget<UInteriorDesignWidget>(PlayerController, WidgetRef, "Interior Mode Widget");
 	}
@@ -103,73 +101,73 @@ void UInteriorDesignMode::SetMeshData(const FFurnitureData& FurnitureData)
 
 void UInteriorDesignMode::HandleLeftClickAction()
 {
-	if (!PlayerController) return;
+	if (!PlayerController || !InteriorDesignActor) return;
 
-	// Check if the InteriorDesignActor is in the Moving state
-	if (InteriorDesignActor && InteriorDesignActor->InteriorState == EBuildingSubModeState::Moving)
-	{
-		FCollisionQueryParams TraceParams;
-		TraceParams.bTraceComplex = true;
-		TraceParams.AddIgnoredActor(PlayerController);
-		TraceParams.AddIgnoredActor(InteriorDesignActor);
 
-		FHitResult HitResult;
-		FVector CursorWorldLocation;
-		FVector CursorWorldDirection;
-		PlayerController->DeprojectMousePositionToWorld(CursorWorldLocation, CursorWorldDirection);
-
-		// Line trace to find a surface to attach to
-		if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams))
+		if (InteriorDesignActor->InteriorState == EBuildingSubModeState::Moving)
 		{
-			AActor* HitActor = HitResult.GetActor();
-			bool bCanAttach = false;
+			FCollisionQueryParams TraceParams;
+			TraceParams.bTraceComplex = true;
+			TraceParams.AddIgnoredActor(PlayerController);
+			TraceParams.AddIgnoredActor(InteriorDesignActor);
 
-			// Check if the HitActor is of the attachable type for InteriorDesignActor
-			switch (InteriorDesignActor->AttachebleTo)
+			FHitResult HitResult;
+			FVector CursorWorldLocation;
+			FVector CursorWorldDirection;
+			PlayerController->DeprojectMousePositionToWorld(CursorWorldLocation, CursorWorldDirection);
+
+			if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams))
 			{
-			case EBuildingAttachable::FloorAttachable:
-				bCanAttach = Cast<AFloorActor>(HitActor) != nullptr;
-				break;
+				
+				AActor* HitActor = HitResult.GetActor();
+				bool bCanAttach = false;
 
-			case EBuildingAttachable::WallAttachable:
-				bCanAttach = Cast<AWallActor>(HitActor) != nullptr;
-				break;
+				switch (InteriorDesignActor->AttachebleTo)
+				{
+				case EBuildingAttachable::FloorAttachable:
+					bCanAttach = Cast<AFloorActor>(HitActor) != nullptr;
+					break;
 
-			case EBuildingAttachable::CeilingAttachable:
-				bCanAttach = Cast<ACeilingActor>(HitActor) != nullptr;
-				break;
+				case EBuildingAttachable::WallAttachable:
+					bCanAttach = Cast<AWallActor>(HitActor) != nullptr;
+					break;
 
-			default:
-				break;
+				case EBuildingAttachable::CeilingAttachable:
+					bCanAttach = Cast<ACeilingActor>(HitActor) != nullptr;
+					break;
+
+				default:
+					break;
+				}
+
+				if (bCanAttach)
+				{
+					InteriorDesignActor->SetActorLocation(HitResult.Location);
+					InteriorDesignActor->InteriorState = EBuildingSubModeState::Placed;
+					InteriorDesignActor = nullptr; // Reset the current InteriorDesignActor
+				}
+				else
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Cannot attach to the selected surface."));
+				}
 			}
-
-			if (bCanAttach)
-			{
-				// Attach InteriorDesignActor to the HitResult location
-				InteriorDesignActor->SetActorLocation(HitResult.Location);
-				InteriorDesignActor->InteriorState = EBuildingSubModeState::Placed;
-				InteriorDesignActor = nullptr; // Reset the current InteriorDesignActor
-			}
-			else
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Cannot attach to the selected surface."));
-			}
+			
 		}
-	}
-	if (!InteriorDesignActor || (InteriorDesignActor && InteriorDesignActor->InteriorState == EBuildingSubModeState::Placed))
-	{
-		FCollisionQueryParams TraceParams;
-		TraceParams.bTraceComplex = true;
-		TraceParams.AddIgnoredActor(PlayerController);
-
-		FHitResult HitResult;
-		FVector CursorWorldLocation;
-		FVector CursorWorldDirection;
-		PlayerController->DeprojectMousePositionToWorld(CursorWorldLocation, CursorWorldDirection);
-
-		// Line trace to find a clicked InteriorDesignActor
-		if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams))
+		else // Handle clicking on an already placed interior design actor to set it to moving state
 		{
+
+			FCollisionQueryParams TraceParams;
+			TraceParams.bTraceComplex = true;
+			TraceParams.AddIgnoredActor(PlayerController);
+
+
+			FHitResult HitResult;
+			FVector CursorWorldLocation;
+			FVector CursorWorldDirection;
+			PlayerController->DeprojectMousePositionToWorld(CursorWorldLocation, CursorWorldDirection);
+
+			if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams))
+			{
 			AInteriorDesignActor* ClickedActor = Cast<AInteriorDesignActor>(HitResult.GetActor());
 			if (ClickedActor && ClickedActor->InteriorState == EBuildingSubModeState::Placed)
 			{
@@ -177,10 +175,11 @@ void UInteriorDesignMode::HandleLeftClickAction()
 				ClickedActor->InteriorState = EBuildingSubModeState::Moving;
 				InteriorDesignActor = ClickedActor; // Assign the clicked actor to be the current InteriorDesignActor
 			}
+				
+			}
 		}
-	}
+	
 }
-
 
 
 

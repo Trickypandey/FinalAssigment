@@ -19,6 +19,6 @@ void UInteriorDesignWidget::HandleFurnitureAdding(const FFurnitureData& MeshData
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
 
-		PlayerController->InteriorDesignMode;
+		PlayerController->InteriorDesignMode->SetMeshData(MeshData) ;
 	}
 }

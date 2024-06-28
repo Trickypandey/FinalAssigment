@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Utility.h"
 #include "GameFramework/Actor.h"
 #include "InteriorDesignActor.generated.h"
 
@@ -18,6 +19,10 @@ public:
 	UStaticMesh* InteriorStaticMesh;
 	UStaticMesh* GetStaticMesh();
 	void SetStaticMesh(UStaticMesh* StaticMesh);
+	UPROPERTY()
+	EBuildingSubModeState InteriorState;
+	UPROPERTY()
+	EBuildingAttachable AttachebleTo;
 
 protected:
 	// Called when the game starts or when spawned
@@ -29,5 +34,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	void HandlePlacedState();
+	void HandleMovingState();
 
+	void SetActorAttachebalType(EBuildingAttachable Attacheble);
 };

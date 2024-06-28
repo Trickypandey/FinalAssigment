@@ -30,6 +30,9 @@ private:
 	UFUNCTION()
 	void HandleLeftClickAction();
 
+	UFUNCTION()
+	void HandleRightClickAction();
+
 	UPROPERTY()
 	AInteriorDesignActor* InteriorDesignActor;
 
@@ -38,4 +41,9 @@ private:
 
 	UPROPERTY()
 	UInputAction* OnLeftClickAction;
+
+	UPROPERTY()
+	UInputAction* OnRightClickAction;
+
+	FFurnitureData InteriorCurrentData;
 };
