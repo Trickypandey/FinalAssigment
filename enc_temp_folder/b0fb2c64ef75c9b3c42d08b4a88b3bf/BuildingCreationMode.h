@@ -38,7 +38,6 @@ public:
 	virtual void SetupInputMapping() override;
 	virtual void EnterMode() override;
 	virtual void ExitMode() override;
-	virtual void CleanUp() override;
 	ACubeActor*& GetSelectedActor();
 
 

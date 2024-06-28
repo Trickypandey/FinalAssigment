@@ -67,16 +67,6 @@ void UBuildingCreationMode::EnterMode()
 void UBuildingCreationMode::ExitMode()
 {
 	Super::HideWidget();
-    CleanUp();
-}
-
-void UBuildingCreationMode::CleanUp()
-{
-	if (CurrentBuildingCreationSubMode)
-	{
-        CurrentBuildingCreationSubMode->ExitSubMode(Cast<UWallConstructionWidget>(Widget));
-	}
-    CurrentBuildingCreationSubMode = nullptr;
 }
 
 ACubeActor*& UBuildingCreationMode::GetSelectedActor()

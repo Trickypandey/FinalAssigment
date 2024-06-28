@@ -38,12 +38,17 @@ void UInteriorDesignMode::SetupInputMapping()
 		OnRightClickAction = NewObject<UInputAction>(this);
 		OnRightClickAction->ValueType = EInputActionValueType::Boolean;
 
-		
+
+		OnRotateAction = NewObject<UInputAction>(this);
+		OnRotateAction->ValueType = EInputActionValueType::Boolean;
+
+
 
 		if (InputMappingContext)
 		{
 			InputMappingContext->MapKey(OnLeftClickAction, EKeys::LeftMouseButton);
 			InputMappingContext->MapKey(OnRightClickAction, EKeys::RightMouseButton);
+			InputMappingContext->MapKey(OnRotateAction, EKeys::R);
 
 		}
 		else
@@ -55,6 +60,7 @@ void UInteriorDesignMode::SetupInputMapping()
 		{
 			EnhancedInputComponent->BindAction(OnLeftClickAction, ETriggerEvent::Completed, this, &UInteriorDesignMode::HandleLeftClickAction);
 			EnhancedInputComponent->BindAction(OnRightClickAction, ETriggerEvent::Completed, this, &UInteriorDesignMode::HandleRightClickAction);
+			EnhancedInputComponent->BindAction(OnRotateAction, ETriggerEvent::Completed, this, &UInteriorDesignMode::RotateSelectedActor);
 		}
 		else
 		{
@@ -85,7 +91,18 @@ void UInteriorDesignMode::ExitMode()
 		}
 
 		HideWidget();
+		CleanUp();
 	}
+}
+
+void UInteriorDesignMode::CleanUp()
+{
+	if (InteriorDesignActor && InteriorDesignActor->InteriorState == EBuildingSubModeState::Moving)
+	{
+		InteriorDesignActor->Destroy();
+	}
+
+	InteriorDesignActor = nullptr;
 }
 
 void UInteriorDesignMode::SetMeshData(const FFurnitureData& FurnitureData)
@@ -122,41 +139,55 @@ void UInteriorDesignMode::HandleLeftClickAction()
 		if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams))
 		{
 			AActor* HitActor = HitResult.GetActor();
-			bool bCanAttach = false;
 
 			// Check if the HitActor is of the attachable type for InteriorDesignActor
 			switch (InteriorDesignActor->AttachebleTo)
 			{
-			case EBuildingAttachable::FloorAttachable:
-				bCanAttach = Cast<AFloorActor>(HitActor) != nullptr;
+				case EBuildingAttachable::FloorAttachable:
+				{
+					AFloorActor* FloorActor = Cast<AFloorActor>(HitActor);
+					if (FloorActor)
+					{
+						InteriorDesignActor->SetActorLocation(HitResult.Location);
+						InteriorDesignActor->AttachToActor(FloorActor, FAttachmentTransformRules::KeepWorldTransform);
+						InteriorDesignActor->InteriorState = EBuildingSubModeState::Placed;
+						InteriorDesignActor = nullptr; // Reset the current InteriorDesignActor
+					}
+				}
 				break;
 
-			case EBuildingAttachable::WallAttachable:
-				bCanAttach = Cast<AWallActor>(HitActor) != nullptr;
+				case EBuildingAttachable::WallAttachable:
+				{
+					AWallActor* WallActor = Cast<AWallActor>(HitActor);
+					if (WallActor)
+					{
+						InteriorDesignActor->SetActorLocation(HitResult.Location);
+						InteriorDesignActor->AttachToActor(WallActor, FAttachmentTransformRules::KeepWorldTransform);
+						InteriorDesignActor->InteriorState = EBuildingSubModeState::Placed;
+						InteriorDesignActor = nullptr; // Reset the current InteriorDesignActor
+					}
+				}
 				break;
 
-			case EBuildingAttachable::CeilingAttachable:
-				bCanAttach = Cast<ACeilingActor>(HitActor) != nullptr;
+				case EBuildingAttachable::CeilingAttachable:
+				{
+					ACeilingActor* CeilingActor = Cast<ACeilingActor>(HitActor);
+					if (CeilingActor)
+					{
+						InteriorDesignActor->SetActorLocation(HitResult.Location);
+						InteriorDesignActor->AttachToActor(CeilingActor, FAttachmentTransformRules::KeepWorldTransform);
+						InteriorDesignActor->InteriorState = EBuildingSubModeState::Placed;
+						InteriorDesignActor = nullptr; // Reset the current InteriorDesignActor
+					}
+				}
 				break;
 
-			default:
-				break;
-			}
-
-			if (bCanAttach)
-			{
-				// Attach InteriorDesignActor to the HitResult location
-				InteriorDesignActor->SetActorLocation(HitResult.Location);
-				InteriorDesignActor->InteriorState = EBuildingSubModeState::Placed;
-				InteriorDesignActor = nullptr; // Reset the current InteriorDesignActor
-			}
-			else
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Cannot attach to the selected surface."));
+				default:
+					break;
 			}
 		}
 	}
-	if (!InteriorDesignActor || (InteriorDesignActor && InteriorDesignActor->InteriorState == EBuildingSubModeState::Placed))
+	else if (!InteriorDesignActor || (InteriorDesignActor && InteriorDesignActor->InteriorState == EBuildingSubModeState::Placed))
 	{
 		FCollisionQueryParams TraceParams;
 		TraceParams.bTraceComplex = true;
@@ -183,10 +214,9 @@ void UInteriorDesignMode::HandleLeftClickAction()
 
 
 
-
 void UInteriorDesignMode::HandleRightClickAction()
 {
-	if (!PlayerController ) return;
+	if (!PlayerController) return;
 
 	if (InteriorDesignActor && InteriorDesignActor->InteriorState == EBuildingSubModeState::Moving)
 	{
@@ -226,5 +256,15 @@ void UInteriorDesignMode::HandleRightClickAction()
 				InteriorDesignActor = SpawnedActor;
 			}
 		}
+	}
+}
+
+
+void UInteriorDesignMode::RotateSelectedActor()
+{
+	if (InteriorDesignActor)
+	{
+		InteriorDesignActor->AddActorLocalRotation(FRotator(0.f, 90.f, 0.f));
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Actor rotated by 90 degrees"));
 	}
 }

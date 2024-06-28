@@ -81,13 +81,7 @@ void URoadCreationMode::ExitMode()
 		}
 
 		HideWidget();
-		CleanUp();
 	}
-}
-
-void URoadCreationMode::CleanUp()
-{
-	CurrentRoadActor = nullptr;
 }
 
 void URoadCreationMode::HandleLeftClickAction() {

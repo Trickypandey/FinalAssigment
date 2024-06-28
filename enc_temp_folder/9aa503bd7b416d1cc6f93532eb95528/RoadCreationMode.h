@@ -24,7 +24,6 @@ public:
 	virtual void SetupInputMapping() override;
 	virtual void EnterMode() override;
 	virtual void ExitMode() override;
-	virtual void CleanUp() override;
 
 
 	void AddMaterialToRoad(const FMaterialData& MeshData);
@@ -39,7 +38,6 @@ private:
 	UFUNCTION()
 	void HandleRightClickAction();
 
-private:
 	UPROPERTY(VisibleDefaultsOnly, Category = "RoadConstrcution | Actor")
 	ARoadActor* CurrentRoadActor;
 

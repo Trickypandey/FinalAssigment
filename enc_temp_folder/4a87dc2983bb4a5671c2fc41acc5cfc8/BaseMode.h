@@ -22,7 +22,6 @@ public:
 	virtual void SetupInputMapping() PURE_VIRTUAL(UBaseMode::SetupInputMapping(), );
 	virtual void EnterMode() PURE_VIRTUAL(UBaseMode::EnterMode(), );
 	virtual void ExitMode() PURE_VIRTUAL(UBaseMode::ExitMode(), );
-	virtual void CleanUp() PURE_VIRTUAL(UBaseMode::CleanUp(), );
 
 	virtual void InitParam(APlayerController* Controller);
 	virtual void ShowWidget();

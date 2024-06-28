@@ -17,10 +17,9 @@ void USubModeWallCreation::Cleanup()
 	{
 		if (ActorToDestroy->WallState == EBuildingSubModeState::Moving)
 		{
-			SelectedActor = nullptr;
-			ActorToDestroy->Destroy(); 
+			SelectedActor = nullptr; // Reset the selected actor
+			ActorToDestroy->Destroy(); // Destroy the actor
 		}
-		SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
 	}
 	else
 	{
@@ -97,13 +96,13 @@ void USubModeWallCreation::ExitSubMode(UWallConstructionWidget* Widget)
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) {
 			Subsystem->RemoveMappingContext(InputMappingContext);
 
+			Cleanup();
 		}
 		if (Widget)
 		{
 			Widget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
 			//Widget->WidthInput->SetVisibility(ESlateVisibility::Visible);
 		}
-		Cleanup();
 	}
 }
 

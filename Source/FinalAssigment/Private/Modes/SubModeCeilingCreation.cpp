@@ -26,6 +26,8 @@ void USubModeCeilingCreation::Cleanup()
 			SelectedActor = nullptr;
 			ActorToDestroy->Destroy(); 
 		}
+		SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+
 	}
 	else
 	{

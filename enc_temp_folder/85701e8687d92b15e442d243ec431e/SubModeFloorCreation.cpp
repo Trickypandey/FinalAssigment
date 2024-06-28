@@ -22,11 +22,10 @@ void USubModeFloorCreation::Cleanup()
 	{
 		if (ActorToDestroy->WallState == EBuildingSubModeState::Moving)
 		{
+			ActorToDestroy->WallState = EBuildingSubModeState::Placed;
 			SelectedActor = nullptr; // Reset the selected actor
 			ActorToDestroy->Destroy(); // Destroy the actor
 		}
-		SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
-
 	}
 	else
 	{

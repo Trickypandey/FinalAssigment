@@ -23,7 +23,6 @@ public:
 	virtual void SetupInputMapping() override;
 	virtual void EnterMode() override;
 	virtual void ExitMode() override;
-	virtual void CleanUp() override;
 
 	void SetMeshData(const FFurnitureData& FurnitureData);
 
@@ -46,8 +45,5 @@ private:
 	UPROPERTY()
 	UInputAction* OnRightClickAction;
 
-	UPROPERTY()
-	UInputAction* OnRotateAction;
 	FFurnitureData InteriorCurrentData;
-	void  RotateSelectedActor();
 };
