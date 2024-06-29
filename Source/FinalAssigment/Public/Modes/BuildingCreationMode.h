@@ -32,6 +32,8 @@ public:
 	//void DeSelectedSelectedActor();
 	void SpawnSelectedActor(EBuildingCreationType Type);
 	void ApplyMaterialWallProceduralMesh(const FMaterialData& MeshData);
+	void SaveBuildings();
+	void LoadBuildings();
 	/*bool bIsActorSpawning;
 	bool bIsAddingDoor;
 	bool IsSlapOrFloor = false;*/

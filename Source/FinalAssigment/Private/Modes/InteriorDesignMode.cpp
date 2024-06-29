@@ -108,12 +108,6 @@ void UInteriorDesignMode::CleanUp()
 void UInteriorDesignMode::SetMeshData(const FFurnitureData& FurnitureData)
 {
 	InteriorCurrentData = FurnitureData;
-	//if (!InteriorDesignActor)
-	//{
-	//	InteriorDesignActor = GetWorld()->SpawnActor<AInteriorDesignActor>(InteriorDesignActorRef, FTransform{});
-	//}
-	//InteriorDesignActor->SetStaticMesh(FurnitureData.Type);
-	//InteriorDesignActor->SetActorAttachebalType(FurnitureData.Attachable);
 
 
 }

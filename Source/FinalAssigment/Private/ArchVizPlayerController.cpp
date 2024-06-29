@@ -116,6 +116,11 @@ void AArchVizPlayerController::SaveGame()
 	{
         RoadConstructionMode->SaveRoads();
 	}
+
+	if (BuildingConstructionMode)
+	{
+        BuildingConstructionMode->SaveBuildings();
+	}
 }
 
 void AArchVizPlayerController::LoadGame()
@@ -123,6 +128,11 @@ void AArchVizPlayerController::LoadGame()
     if (RoadConstructionMode)
     {
         RoadConstructionMode->LoadRoads();
+    }
+
+    if (BuildingConstructionMode)
+    {
+        BuildingConstructionMode->LoadBuildings();
     }
 
 }

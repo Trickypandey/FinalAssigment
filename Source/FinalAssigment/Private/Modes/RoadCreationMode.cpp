@@ -182,15 +182,6 @@ void URoadCreationMode::SaveRoads()
 
 	// Attempt to save the game to the slot and check for success
 	bool bSaveSuccessful = UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("RoadSaveSlot"), 0);
-	if (bSaveSuccessful)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Empty game successfully saved to slot"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to save empty game to slot"));
-		return; // Exit early if empty save fails
-	}
 
 	// Loop through all road actors and save their data
 	for (ARoadActor* RoadActor : RoadActors)
@@ -206,7 +197,6 @@ void URoadCreationMode::SaveRoads()
 		}
 	}
 
-	// Attempt to save the game to the slot again with data
 	bSaveSuccessful = UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("RoadSaveSlot"), 0);
 	if (bSaveSuccessful)
 	{
