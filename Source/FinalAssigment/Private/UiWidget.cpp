@@ -6,12 +6,25 @@
 #include "ArchVizPlayerController.h"
 
 
+
+
 void UUiWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	if (ComboBoxMode)
 	{
 		ComboBoxMode->OnSelectionChanged.AddDynamic(this,&UUiWidget::OnComboBoxSelectionChanged);
+	}
+
+	if (SaveButton)
+	{
+        SaveButton->OnClicked.AddDynamic(this, &UUiWidget::OnSaveButtonClickHandle);
+	}
+
+	if (LoadButton)
+	{
+		
+        LoadButton->OnClicked.AddDynamic(this, &UUiWidget::OnLoadButtonClickHandle);
 	}
 
 }
@@ -42,4 +55,21 @@ void UUiWidget::OnComboBoxSelectionChanged(FString SelectedItem, ESelectInfo::Ty
         
 		PlayerController->ModeChangeHandle(SelectedMode);
 	}
+}
+
+void UUiWidget::OnLoadButtonClickHandle()
+{
+    if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
+    {
+        PlayerController->LoadGame();
+    }
+}
+
+void UUiWidget::OnSaveButtonClickHandle()
+{
+    if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
+    {
+        PlayerController->SaveGame();
+    }
+
 }

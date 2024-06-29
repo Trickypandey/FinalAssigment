@@ -28,6 +28,8 @@ public:
 
 
 	void AddMaterialToRoad(const FMaterialData& MeshData);
+	void SaveRoads();
+	void LoadRoads();
 
 private:
 
@@ -54,5 +56,8 @@ private:
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* DynamicMaterial;
+
+	UPROPERTY()
+	TArray<ARoadActor*> RoadActors;
 	
 };

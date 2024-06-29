@@ -7,6 +7,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
 #include "RoadCreationWidget.h"
+#include "UArchVizSaveGame.h"
+#include "Kismet/GameplayStatics.h"
 
 URoadCreationMode::URoadCreationMode() : CurrentRoadActor{nullptr}, OnLeftClickAction(nullptr),
                                          OnRoadRightClick(nullptr), DynamicMaterial(nullptr)
@@ -15,9 +17,9 @@ URoadCreationMode::URoadCreationMode() : CurrentRoadActor{nullptr}, OnLeftClickA
 
 void URoadCreationMode::Setup()
 {
-	if (IsValid(RoadActorRef) && !IsValid(CurrentRoadActor)) {
+	/*if (IsValid(RoadActorRef) && !IsValid(CurrentRoadActor)) {
 		CurrentRoadActor = GetWorld()->SpawnActor<ARoadActor>(RoadActorRef, FTransform{});
-	}
+	}*/
 
 	if (IsValid(WidgetRef) && !IsValid(Widget)) {
 		Widget = CreateWidget<URoadCreationWidget>(GetWorld(), WidgetRef, "Road Mode Widget");
@@ -137,7 +139,7 @@ void URoadCreationMode::HandleRightClickAction()
 		CurrentRoadActor = GetWorld()->SpawnActor<ARoadActor>(ARoadActor::StaticClass(), ClickLocation, FRotator::ZeroRotator, SpawnParams);
 		if (CurrentRoadActor)
 		{
-			/*RoadArray.Add(CurrentRoadActor);*/
+			RoadActors.Add(CurrentRoadActor);
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Road actor spawned at cursor location"));
 		}
 	}
@@ -161,5 +163,77 @@ void URoadCreationMode::AddMaterialToRoad(const FMaterialData& MeshData)
 	if (DynamicMaterial && CurrentRoadActor)
 	{
 		CurrentRoadActor->ProceduralMeshComponent->SetMaterial(0, DynamicMaterial);
+	}
+}
+
+
+
+void URoadCreationMode::SaveRoads()
+{
+	// Create the save game object
+	UUArchVizSaveGame* SaveGameInstance = Cast<UUArchVizSaveGame>(UGameplayStatics::CreateSaveGameObject(UUArchVizSaveGame::StaticClass()));
+
+	// Check if the save game object was created successfully
+	if (!SaveGameInstance)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to create save game object"));
+		return;
+	}
+
+	// Attempt to save the game to the slot and check for success
+	bool bSaveSuccessful = UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("RoadSaveSlot"), 0);
+	if (bSaveSuccessful)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Empty game successfully saved to slot"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to save empty game to slot"));
+		return; // Exit early if empty save fails
+	}
+
+	// Loop through all road actors and save their data
+	for (ARoadActor* RoadActor : RoadActors)
+	{
+		if (IsValid(RoadActor))
+		{
+			FRoadActorData RoadData = RoadActor->SaveRoadActorData();
+			SaveGameInstance->RoadActorArray.Add(RoadData);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Invalid road actor found in RoadActors array"));
+		}
+	}
+
+	// Attempt to save the game to the slot again with data
+	bSaveSuccessful = UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("RoadSaveSlot"), 0);
+	if (bSaveSuccessful)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Game with road data successfully saved to slot"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to save game with road data to slot"));
+	}
+}
+
+
+
+void URoadCreationMode::LoadRoads()
+{
+	UUArchVizSaveGame* LoadGameInstance = Cast<UUArchVizSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("RoadSaveSlot"), 0));
+
+	if (LoadGameInstance)
+	{
+		for (const FRoadActorData& RoadData : LoadGameInstance->RoadActorArray)
+		{
+			ARoadActor* NewRoadActor = GetWorld()->SpawnActor<ARoadActor>(RoadActorRef, RoadData.ActorTransform);
+			if (NewRoadActor)
+			{
+				NewRoadActor->LoadRoadActorData(RoadData);
+				RoadActors.Add(NewRoadActor);
+			}
+		}
 	}
 }

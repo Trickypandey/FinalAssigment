@@ -110,6 +110,23 @@ void AArchVizPlayerController::ModeChangeHandle(EModes Mode)
 	
 }
 
+void AArchVizPlayerController::SaveGame()
+{
+	if (RoadConstructionMode)
+	{
+        RoadConstructionMode->SaveRoads();
+	}
+}
+
+void AArchVizPlayerController::LoadGame()
+{
+    if (RoadConstructionMode)
+    {
+        RoadConstructionMode->LoadRoads();
+    }
+
+}
+
 void AArchVizPlayerController::SetArchVizMode(UBaseMode* NewArchVizMode) {
     if (CurrentModeClass) {
         CurrentModeClass->ExitMode();

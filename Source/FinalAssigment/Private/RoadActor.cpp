@@ -1,5 +1,7 @@
 #include "RoadActor.h"
 
+#include "UArchVizSaveGame.h"
+
 // Sets default values
 ARoadActor::ARoadActor()
 {
@@ -168,3 +170,45 @@ void ARoadActor::SetMaterialForSection(int32 SectionIndex, UMaterialInterface* M
         ProceduralMeshComponent->SetMaterial(SectionIndex, Material);
     }
 }
+
+FRoadActorData ARoadActor::SaveRoadActorData() const
+{
+    FRoadActorData Data;
+
+    const int32 NumPoints = SplineComponent->GetNumberOfSplinePoints();
+    for (int32 i = 0; i < NumPoints; ++i)
+    {
+        FVector Location = SplineComponent->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World);
+        Data.SplinePoints.Add(Location);
+    }
+    if (RoadMaterial)
+    {
+        Data.RoadMaterial = RoadMaterial;
+    }
+
+    Data.ActorTransform = GetActorTransform();
+
+    return Data;
+}
+
+
+void ARoadActor::LoadRoadActorData(const FRoadActorData& Data)
+{
+    SplineComponent->ClearSplinePoints();
+    SetActorTransform(Data.ActorTransform);
+    for (const FVector& Location : Data.SplinePoints)
+    {
+        SplineComponent->AddSplinePoint(Location, ESplineCoordinateSpace::World);
+    }
+
+    if (Data.RoadMaterial)
+    {
+        RoadMaterial = Data.RoadMaterial;
+    }
+
+    if (SplineComponent->GetNumberOfSplinePoints() > 1)
+    {
+        GenerateRoadMesh();
+    }
+}
+

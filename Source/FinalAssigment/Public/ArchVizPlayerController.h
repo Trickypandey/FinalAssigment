@@ -21,6 +21,9 @@ public:
     void SetIsAddingDoor(bool);
    
     void ModeChangeHandle(EModes Mode);
+
+    void SaveGame();
+    void LoadGame();
   
 protected:
     virtual void SetupInputComponent() override;
