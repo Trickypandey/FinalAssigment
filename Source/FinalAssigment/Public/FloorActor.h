@@ -15,10 +15,13 @@ class FINALASSIGMENT_API AFloorActor : public ASlabActor
 {
 	GENERATED_BODY()
 public:
+	virtual void Tick(float DeltaSeconds) override;
 	AFloorActor();
+	void HandlePlacedState();
+	void HandleMovingState();
 
 	UPROPERTY()
-	TEnumAsByte<EObjectType> ConstructionType;
+	EBuildingCreationType ConstructionType;
 
 	
 };

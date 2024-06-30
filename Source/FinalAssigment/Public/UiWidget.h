@@ -16,8 +16,8 @@ UCLASS()
 class FINALASSIGMENT_API UUiWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
 	virtual void NativeConstruct() override;
+
 public:
 	UPROPERTY(meta = (BindWidget))
 	UCanvasPanel* CanvasPanel;
@@ -25,6 +25,11 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UComboBoxString* ComboBoxMode;
 
+	UPROPERTY(meta = (BindWidget))
+	UButton* SaveButton;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* LoadButton;
 	
 
 private:
@@ -33,4 +38,10 @@ private:
 
 	UFUNCTION()
 	void OnComboBoxSelectionChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
+
+	UFUNCTION()
+	void OnLoadButtonClickHandle();
+
+	UFUNCTION()
+	void OnSaveButtonClickHandle();
 };

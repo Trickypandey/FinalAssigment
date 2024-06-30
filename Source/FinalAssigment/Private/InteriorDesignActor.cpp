@@ -11,6 +11,8 @@ AInteriorDesignActor::AInteriorDesignActor()
 	InteriorMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Interior Mesh Component"));
 	RootComponent = InteriorMeshComponent;
 
+	InteriorState = EBuildingSubModeState::Placed;
+
 }
 
 UStaticMesh* AInteriorDesignActor::GetStaticMesh()
@@ -35,6 +37,48 @@ void AInteriorDesignActor::BeginPlay()
 void AInteriorDesignActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	switch (InteriorState) {
+		case EBuildingSubModeState::Placed:
+			HandlePlacedState();
+			break;
+		case EBuildingSubModeState::Moving:
+			HandleMovingState();
+			break;
+	}
+}
+
+void AInteriorDesignActor::HandlePlacedState()
+{
+
 
 }
+
+void AInteriorDesignActor::HandleMovingState()
+{
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	if (PlayerController)
+	{
+
+		FHitResult HitResult;
+		FCollisionQueryParams TraceParams(FName(TEXT("LineTrace")), true, this);
+
+		FVector CursorWorldLocation;
+		FVector CursorWorldDirection;
+		PlayerController->DeprojectMousePositionToWorld(CursorWorldLocation, CursorWorldDirection);
+
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams))
+		{
+			FVector NewLocation = HitResult.Location;
+			FVector SnappedLocation = Utility::SnapToGrid(NewLocation, FVector(20));
+			SetActorLocation(NewLocation);
+		}
+
+	}
+}
+
+void AInteriorDesignActor::SetActorAttachebalType(EBuildingAttachable Attacheble)
+{
+	AttachebleTo = Attacheble;
+}
+
 

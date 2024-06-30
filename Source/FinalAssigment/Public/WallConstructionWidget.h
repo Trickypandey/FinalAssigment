@@ -74,7 +74,7 @@ public:
 
 public:
 	UPROPERTY(meta = (BindWidget))
-	UUSelectionScrollBox* SelectionWidgetInstance;
+	UUSelectionScrollBox* WallMaterialSelectionWidgetInstance;
 
 	
 };

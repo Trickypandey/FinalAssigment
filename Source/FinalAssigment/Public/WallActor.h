@@ -35,10 +35,16 @@ public:
 
     void AttachDoor(UStaticMesh*& DoorStaticMesh);
 
+    void HandleMovingState();
+    void HandlePlacedState();
+
 	virtual void CreateMesh() override;
 
     UPROPERTY()
-    TEnumAsByte<EObjectType> ConstructionType;
+    EBuildingCreationType ConstructionType;
+
+    UPROPERTY()
+    EBuildingSubModeState WallState;
 private:
 	virtual void ResetArrays() override;
 	virtual void AddQuad(int32 V0, int32 V1, int32 V2, int32 V3) override;
@@ -62,4 +68,5 @@ private:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall", meta = (AllowPrivateAccess = "true"))
     float DoorHeight;
+
 };

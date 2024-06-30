@@ -4,7 +4,6 @@
 #include "WallConstructionWidget.h"
 
 #include "ArchVizPlayerController.h"
-#include "SlabActor.h"
 #include "WallActor.h"
 
 
@@ -46,9 +45,9 @@ void UWallConstructionWidget::NativeConstruct()
 		WidthInput->OnValueChanged.AddDynamic(this,&UWallConstructionWidget::WidthInputChangeHandle );
 	}
 
-	if (SelectionWidgetInstance)
+	if (WallMaterialSelectionWidgetInstance)
 	{
-		SelectionWidgetInstance->OnMaterialAssetThumbnailSelected.AddDynamic(this, &UWallConstructionWidget::MaterialChangeHandler);
+		WallMaterialSelectionWidgetInstance->OnMaterialAssetThumbnailSelected.AddDynamic(this, &UWallConstructionWidget::MaterialChangeHandler);
 	}
 }
 
@@ -57,7 +56,7 @@ void UWallConstructionWidget::SpawnWall()
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		PlayerController->SpawnSelectedActor(EObjectType::Wall);
+		PlayerController->BuildingConstructionMode->SpawnSelectedActor(EBuildingCreationType::Wall);
 	}
 }
 
@@ -65,7 +64,7 @@ void UWallConstructionWidget::SpawnFloor()
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		PlayerController->SpawnSelectedActor(EObjectType::Floor);
+		PlayerController->BuildingConstructionMode->SpawnSelectedActor(EBuildingCreationType::Floor);
 	}
 }
 
@@ -73,12 +72,13 @@ void UWallConstructionWidget::SpawnCeiling()
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		PlayerController->SpawnSelectedActor(EObjectType::Ceiling);
+		PlayerController->BuildingConstructionMode->SpawnSelectedActor(EBuildingCreationType::Ceiling);
 	}
 }
 
 void UWallConstructionWidget::OnToggleDoorClicked()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Toggle hit"));
 	bIsAddingDoor = !bIsAddingDoor;
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
@@ -90,14 +90,36 @@ void UWallConstructionWidget::LengthInputChangeHandle(float InputValue)
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		
-		if (auto Actor = PlayerController->GetSelectedActor())
+		if (PlayerController && PlayerController->BuildingConstructionMode)
 		{
-			
-			Actor->SetLength(InputValue);
-			Actor->CreateMesh();
+			UBuildingCreationMode* BuildingCreationMode = PlayerController->BuildingConstructionMode;
 
+			if (BuildingCreationMode && BuildingCreationMode->GetSelectedActor())
+			{
+				ACubeActor* Actor = BuildingCreationMode->GetSelectedActor();
+				if (Actor)
+				{
+					Actor->SetLength(InputValue);
+					Actor->CreateMesh();
+				}
+				else
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Selected actor is null."));
+				}
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("No selected actor found or BuildingCreationMode is not valid."));
+			}
 		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("BuildingConstructionMode is not initialized or PlayerController is not valid."));
+		}
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("PlayerController is not valid."));
 	}
 }
 
@@ -105,23 +127,44 @@ void UWallConstructionWidget::WidthInputChangeHandle(float InputValue)
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		
-		if (auto Actor = PlayerController->GetSelectedActor())
+		if (PlayerController && PlayerController->BuildingConstructionMode)
 		{
+			UBuildingCreationMode* BuildingCreationMode = PlayerController->BuildingConstructionMode;
 
-			Actor->SetWidth(InputValue);
-			Actor->CreateMesh();
-
+			if (BuildingCreationMode && BuildingCreationMode->GetSelectedActor())
+			{
+				ACubeActor* Actor = BuildingCreationMode->GetSelectedActor();
+				if (Actor)
+				{
+					Actor->SetWidth(InputValue);
+					Actor->CreateMesh();
+				}
+				else
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Selected actor is null."));
+				}
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("No selected actor found or BuildingCreationMode is not valid."));
+			}
 		}
-		
-
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("BuildingConstructionMode is not initialized or PlayerController is not valid."));
+		}
 	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("PlayerController is not valid."));
+	}
+
 }
 
 void UWallConstructionWidget::MaterialChangeHandler(const FMaterialData& MeshData)
 {
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		PlayerController->ApplyMaterialWallProceduralMesh(MeshData);
+		PlayerController->BuildingConstructionMode->ApplyMaterialWallProceduralMesh(MeshData);
 	}
 }

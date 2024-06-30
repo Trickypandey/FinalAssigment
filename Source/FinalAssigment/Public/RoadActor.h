@@ -4,6 +4,7 @@
 #include "GameFramework/Actor.h"
 #include "Components/SplineComponent.h"
 #include "ProceduralMeshComponent.h"
+#include "UArchVizSaveGame.h"
 #include "RoadActor.generated.h"
 
 UCLASS()
@@ -41,6 +42,8 @@ public:
     // Function to set the material for the road
     UFUNCTION(BlueprintCallable, Category = "Materials")
     void SetMaterialForSection(int32 SectionIndex, UMaterialInterface* Material);
+    FRoadActorData SaveRoadActorData() const;
+    void LoadRoadActorData(const FRoadActorData& Data);
 
     // Road dimensions
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Road Dimensions")
@@ -49,7 +52,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Road Dimensions")
     float RoadThickness = 10.0f;
 
-    // Material for the road
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
     UMaterialInterface* RoadMaterial;
 };
