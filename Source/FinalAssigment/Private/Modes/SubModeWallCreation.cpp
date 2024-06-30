@@ -90,6 +90,7 @@ void USubModeWallCreation::EnterSubMode(UWallConstructionWidget* Widget)
 			Widget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
 			Widget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
 			//Widget->WidthInput->SetVisibility(ESlateVisibility::Visible);
+			/*Widget->Wall->SetBackgroundColor(FLinearColor(184.0f / 255.0f, 184.0f / 255.0f, 184.0f / 255.0f, 255.0f / 255.0f));*/
 
 			if (SelectedActor)
 			{
@@ -110,6 +111,8 @@ void USubModeWallCreation::ExitSubMode(UWallConstructionWidget* Widget)
 		{
 			Widget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
 			Widget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
+			/*Widget->Wall->SetBackgroundColor(FLinearColor(126.0f / 255.0f, 126.0f / 255.0f, 126.0f / 255.0f, 1.0f));*/
+
 			//Widget->WidthInput->SetVisibility(ESlateVisibility::Visible);
 		}
 		Cleanup();

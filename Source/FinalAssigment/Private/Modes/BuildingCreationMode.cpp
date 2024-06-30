@@ -41,6 +41,7 @@ void UBuildingCreationMode::Setup()
 void UBuildingCreationMode::SetSubMode(UUBuildingCreationSubMode* NewSubMode) {
     if (CurrentBuildingCreationSubMode) {
         CurrentBuildingCreationSubMode->ExitSubMode(Cast<UWallConstructionWidget>(Widget));
+
     }
 
     CurrentBuildingCreationSubMode = NewSubMode;
@@ -97,18 +98,20 @@ ACubeActor* UBuildingCreationMode::GetSelectedActor()
 
 void UBuildingCreationMode::SpawnSelectedActor(EBuildingCreationType Type)
 {
+    // Declare the variable outside the switch statement
+    UWallConstructionWidget* WallConstructionWidget = nullptr;
 
     switch (Type) {
-	    case EBuildingCreationType::Wall:
-				SetSubMode(WallCreationMode);
-        
-		    break;
-	    case EBuildingCreationType::Floor:
-				SetSubMode(FloorCreationMode);
-		    break;
-	    case EBuildingCreationType::Ceiling:
-				SetSubMode(CeilingCreationMode);
-		    break;
+    case EBuildingCreationType::Wall:
+        SetSubMode(WallCreationMode);
+       
+        break;
+    case EBuildingCreationType::Floor:
+        SetSubMode(FloorCreationMode);
+        break;
+    case EBuildingCreationType::Ceiling:
+        SetSubMode(CeilingCreationMode);
+        break;
     }
 }
 

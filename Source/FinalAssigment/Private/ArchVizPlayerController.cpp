@@ -91,10 +91,7 @@ void AArchVizPlayerController::ModeChangeHandle(EModes Mode)
     
 	switch (Mode) {
 		case EModes::WallCreation:
-			{
-				SetArchVizMode(BuildingConstructionMode);
-			}
-
+			SetArchVizMode(BuildingConstructionMode);
 			break;
 		case EModes::RoadConstruction:
             SetArchVizMode(RoadConstructionMode);
