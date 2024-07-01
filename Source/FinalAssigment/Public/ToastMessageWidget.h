@@ -4,14 +4,27 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/EditableTextBox.h"
 #include "ToastMessageWidget.generated.h"
 
 /**
  * 
  */
+
+
 UCLASS()
 class FINALASSIGMENT_API UToastMessageWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
+protected:
+	virtual void NativeConstruct() override;
+private:
+	UPROPERTY(Transient, meta = (BindWidgetAnim))
+	UWidgetAnimation* PopUpAnimation;
+
+	UPROPERTY(meta = (BindWidget))
+	UEditableTextBox* ToastText;
+
+	UFUNCTION()
+	void OnShowToastMessage(const FString& Message);
 };

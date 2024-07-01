@@ -61,7 +61,10 @@ void UUiWidget::OnLoadButtonClickHandle()
 {
     if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
     {
-        //PlayerController->LoadGame(TODO);
+        if (PlayerController->LoadSlotWidgetInstance)
+        {
+            PlayerController->LoadSlotWidgetInstance->AddToViewport();
+        }
     }
 }
 

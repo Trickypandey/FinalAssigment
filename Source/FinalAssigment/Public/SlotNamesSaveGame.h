@@ -16,6 +16,4 @@ class FINALASSIGMENT_API USlotNamesSaveGame : public USaveGame
 public:
 	UPROPERTY(BlueprintReadWrite, Category = "SaveGame")
 	TArray<FString> SlotNames;
-
-	
 };

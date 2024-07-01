@@ -39,12 +39,24 @@ void AArchVizPlayerController::BeginPlay()
         {
             UiWidgetInstance->AddToViewport();
         }
+    } if (!UiWidgetInstance && UiWidgetClass)
+    {
+        UiWidgetInstance = CreateWidget<UUiWidget>(this, UiWidgetClass);
+        if (UiWidgetInstance)
+        {
+            UiWidgetInstance->AddToViewport();
+        }
     }
 
 
 	if (!SaveWidgetInstance && SaveWidgetClass)
     {
         SaveWidgetInstance = CreateWidget<USaveGameWidget>(this, SaveWidgetClass);
+    }
+
+	if (!LoadSlotWidgetInstance && LoadSlotWidgetClass)
+    {
+        LoadSlotWidgetInstance = CreateWidget<ULoadSlotWidget>(this, LoadSlotWidgetClass);
     }
 
    if (IsValid(RoadConstructionModeRef)) {
@@ -135,7 +147,7 @@ bool AArchVizPlayerController::SaveGame(FString SlotName)
 
 void AArchVizPlayerController::LoadGame(FString SlotName)
 {
-    UUArchVizSaveGame* LoadGameInstance = Cast<UUArchVizSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("RoadSaveSlot"), 0));
+    UUArchVizSaveGame* LoadGameInstance = Cast<UUArchVizSaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, 0));
 
     if (!LoadGameInstance)
     {

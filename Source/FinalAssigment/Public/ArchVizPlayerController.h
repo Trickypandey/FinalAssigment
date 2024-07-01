@@ -1,7 +1,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "LoadSlotWidget.h"
 #include "SaveGameWidget.h"
+#include "ToastMessageWidget.h"
 #include "GameFramework/PlayerController.h"
 #include "UiWidget.h"
 #include "FinalAssigment/Public/Modes/BaseMode.h"
@@ -29,9 +31,14 @@ public:
 	UPROPERTY()
     USaveGameWidget* SaveWidgetInstance;
 
-
     UPROPERTY(EditAnywhere, Category = "UI")
     TSubclassOf<UUserWidget> SaveWidgetClass;
+
+    UPROPERTY()
+    ULoadSlotWidget* LoadSlotWidgetInstance;
+
+    UPROPERTY(EditAnywhere, Category = "UI")
+    TSubclassOf<UUserWidget> LoadSlotWidgetClass;
 protected:
     virtual void SetupInputComponent() override;
     virtual void Tick(float DeltaTime) override;
@@ -39,18 +46,19 @@ protected:
 
 private:
 
-
     void SetArchVizMode(UBaseMode* NewArchVizMode);
-
 
     UPROPERTY()
 	UUiWidget* UiWidgetInstance;
 
-
     UPROPERTY(EditAnywhere, Category = "UI")
     TSubclassOf<UUserWidget> UiWidgetClass;
 
+	UPROPERTY()
+	UToastMessageWidget* ToastMessageWidgetInstance;
 
+    UPROPERTY(EditAnywhere, Category = "UI")
+    TSubclassOf<UUserWidget> ToastMessageWidgetClass;
 
     UPROPERTY()
     UBaseMode* CurrentModeClass;
