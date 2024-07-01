@@ -39,7 +39,7 @@ protected:
 	UInputMappingContext* InputMappingContext;
 
 	UPROPERTY()
-	UMaterialInstanceDynamic* DynamicMaterial;
+	UMaterialInterface* DynamicMaterial;
 
 	UPROPERTY()
 	ACubeActor* SelectedActor = nullptr;

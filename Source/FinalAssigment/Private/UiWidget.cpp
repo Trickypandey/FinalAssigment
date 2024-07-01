@@ -42,9 +42,9 @@ void UUiWidget::OnComboBoxSelectionChanged(FString SelectedItem, ESelectInfo::Ty
         {
             SelectedMode = EModes::RoadConstruction;
         }
-        else if (SelectedItem == "Wall Creation Mode")
+        else if (SelectedItem == "Building Creation Mode")
         {
-            SelectedMode = EModes::WallCreation;
+            SelectedMode = EModes::BuildingCreation;
         }
         else if (SelectedItem == "Interior Design Mode")
         {

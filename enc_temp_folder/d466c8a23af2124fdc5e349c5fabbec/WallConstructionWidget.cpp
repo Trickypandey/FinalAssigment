@@ -100,7 +100,7 @@ void UWallConstructionWidget::LengthInputChangeHandle(float InputValue)
 				if (Actor)
 				{
 					Actor->SetLength(InputValue);
-					
+					Actor->CreateMesh();
 				}
 				else
 				{
@@ -137,6 +137,7 @@ void UWallConstructionWidget::WidthInputChangeHandle(float InputValue)
 				if (Actor)
 				{
 					Actor->SetWidth(InputValue);
+					Actor->CreateMesh();
 				}
 				else
 				{

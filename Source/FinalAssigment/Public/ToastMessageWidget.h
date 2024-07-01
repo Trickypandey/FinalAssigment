@@ -11,11 +11,14 @@
  * 
  */
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FToastMessageDelegate, const FString&, Message);
 
 UCLASS()
 class FINALASSIGMENT_API UToastMessageWidget : public UUserWidget
 {
 	GENERATED_BODY()
+public:
+	FToastMessageDelegate ShowMessage;
 protected:
 	virtual void NativeConstruct() override;
 private:
@@ -27,4 +30,5 @@ private:
 
 	UFUNCTION()
 	void OnShowToastMessage(const FString& Message);
+
 };

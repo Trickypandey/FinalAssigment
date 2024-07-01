@@ -45,6 +45,14 @@ struct FBuildingActorData
 
     //UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     //FString ActorName; // Unique name for the actor
+    UPROPERTY()
+    float Width;
+
+	UPROPERTY()
+    float Length;
+
+    UPROPERTY()
+    UMaterialInterface* Material = nullptr;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     TArray<FInteriorActorData> AttachedInteriorActors; // List of attached interior actors

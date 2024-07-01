@@ -9,7 +9,7 @@ void UToastMessageWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-    UToastMessage::OnShowToastMessage.AddDynamic(this, &UToastMessageWidget::OnShowToastMessage);
+    ShowMessage.AddDynamic(this, &UToastMessageWidget::OnShowToastMessage);
 }
 
 void UToastMessageWidget::OnShowToastMessage(const FString& Message)

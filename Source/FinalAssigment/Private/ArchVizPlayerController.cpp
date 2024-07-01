@@ -39,12 +39,23 @@ void AArchVizPlayerController::BeginPlay()
         {
             UiWidgetInstance->AddToViewport();
         }
-    } if (!UiWidgetInstance && UiWidgetClass)
+    }
+
+	if (!UiWidgetInstance && UiWidgetClass)
     {
         UiWidgetInstance = CreateWidget<UUiWidget>(this, UiWidgetClass);
         if (UiWidgetInstance)
         {
             UiWidgetInstance->AddToViewport();
+        }
+    }
+
+	if (!ToastMessageWidgetInstance && ToastMessageWidgetClass)
+    {
+        ToastMessageWidgetInstance = CreateWidget<UToastMessageWidget>(this, ToastMessageWidgetClass);
+        if (ToastMessageWidgetInstance)
+        {
+            ToastMessageWidgetInstance->AddToViewport();
         }
     }
 
@@ -93,14 +104,17 @@ void AArchVizPlayerController::ModeChangeHandle(EModes Mode)
 {
     
 	switch (Mode) {
-		case EModes::WallCreation:
+		case EModes::BuildingCreation:
+            ToastMessageWidgetInstance->ShowMessage.Broadcast("In Building Creation Mode");
 			SetArchVizMode(BuildingConstructionMode);
 			break;
 		case EModes::RoadConstruction:
+            ToastMessageWidgetInstance->ShowMessage.Broadcast("In Road Construction Mode");
             SetArchVizMode(RoadConstructionMode);
 			
 			break;
 		case EModes::InteriorDesign:
+            ToastMessageWidgetInstance->ShowMessage.Broadcast("In Interior Design Mode");
             SetArchVizMode(InteriorDesignMode);
 			break;
       

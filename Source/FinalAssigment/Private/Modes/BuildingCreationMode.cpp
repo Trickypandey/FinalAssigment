@@ -159,8 +159,14 @@ void UBuildingCreationMode::SaveBuildings(UUArchVizSaveGame*& SaveGameInstance)
             FBuildingActorData ActorData;
             ActorData.ActorClass = WallActor->GetClass();
             ActorData.ActorTransform = WallActor->GetActorTransform();
+            ActorData.Length = WallActor->GetLength();
             //ActorData.ActorName = WallActor->GetName();
             ActorData.bIsDoorAdded = WallActor->GetDoorFlag();
+
+            if (UMaterialInterface* CurrentMaterial = WallActor->GetProceduralMeshComponent()->GetMaterial(0))
+            {
+                ActorData.Material = CurrentMaterial;
+            }
 
             // Save attached interior actors
             TArray<AActor*> AttachedActors;
@@ -201,7 +207,13 @@ void UBuildingCreationMode::SaveBuildings(UUArchVizSaveGame*& SaveGameInstance)
             ActorData.ActorClass = FloorActor->GetClass();
             ActorData.ActorTransform = FloorActor->GetActorTransform();
             //ActorData.ActorName = FloorActor->GetName();
+            ActorData.Length = FloorActor->GetLength();
+            ActorData.Width = FloorActor->GetWidth();
 
+            if (UMaterialInterface* CurrentMaterial = FloorActor->GetProceduralMeshComponent()->GetMaterial(0))
+            {
+                ActorData.Material = CurrentMaterial;
+            }
             // Save attached interior actors
             TArray<AActor*> AttachedActors;
             FloorActor->GetAttachedActors(AttachedActors);
@@ -241,6 +253,13 @@ void UBuildingCreationMode::SaveBuildings(UUArchVizSaveGame*& SaveGameInstance)
             ActorData.ActorTransform = CeilingActor->GetActorTransform();
             //ActorData.ActorName = CeilingActor->GetName();
 
+            ActorData.Length = CeilingActor->GetLength();
+            ActorData.Width = CeilingActor->GetWidth();
+
+            if (UMaterialInterface* CurrentMaterial = CeilingActor->GetProceduralMeshComponent()->GetMaterial(0))
+            {
+                ActorData.Material = CurrentMaterial;
+            }
             // Save attached interior actors
             TArray<AActor*> AttachedActors;
             CeilingActor->GetAttachedActors(AttachedActors);
@@ -302,11 +321,22 @@ void UBuildingCreationMode::LoadBuildings(UUArchVizSaveGame*& LoadGameInstance)
             FActorSpawnParameters SpawnParams;
             /*SpawnParams.Name = FName(*ActorData.ActorName);*/
 
-            AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(ActorData.ActorClass, ActorData.ActorTransform, SpawnParams);
+            ACubeActor* SpawnedActor = GetWorld()->SpawnActor<ACubeActor>(ActorData.ActorClass, ActorData.ActorTransform, SpawnParams);
             if (auto WallActor = Cast<AWallActor>(SpawnedActor))
             {
                 WallActor->SetIsDoorAdded(ActorData.bIsDoorAdded);
             }
+
+            if (auto SlabActor = Cast<ASlabActor>(SpawnedActor))
+            {
+                SlabActor->SetWidth(ActorData.Width);
+            }
+            SpawnedActor->SetLength(ActorData.Length);
+            if (ActorData.Material)
+            {
+                SpawnedActor->GetProceduralMeshComponent()->SetMaterial(0, ActorData.Material);
+            }
+			
 
             if (SpawnedActor)
             {

@@ -11,6 +11,7 @@ void UUBuildingCreationSubMode::SetMaterial(UMaterialInterface* Material)
 {
 	if (SelectedActor && SelectedActor->GetProceduralMeshComponent())
 	{
+		DynamicMaterial = Material;
 		SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, Material);
 		
 	}

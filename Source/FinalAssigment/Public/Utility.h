@@ -26,7 +26,7 @@ UENUM(BlueprintType)
 enum class EModes : uint8
 {
   
-    WallCreation UMETA(DisplayName = "Wall Creation Mode"),
+	BuildingCreation UMETA(DisplayName = "Building Creation Mode"),
     RoadConstruction UMETA(DisplayName = "Road Construction Mode"),
     InteriorDesign UMETA(DisplayName = "Actor Spawning Mode")
 

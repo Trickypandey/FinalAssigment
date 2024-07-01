@@ -15,7 +15,6 @@ ACubeActor::ACubeActor()
 void ACubeActor::SetLength(float length)
 {
     this->Length = length;
-    CreateMesh();
 }
 
 float ACubeActor::GetLength()
@@ -36,8 +35,6 @@ UProceduralMeshComponent* ACubeActor::GetProceduralMeshComponent()
 void ACubeActor::SetWidth(float width)
 {
     this->Width = width;
-    CreateMesh();
-
 }
 
 void ACubeActor::BeginPlay()
