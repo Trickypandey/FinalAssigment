@@ -61,7 +61,7 @@ void UUiWidget::OnLoadButtonClickHandle()
 {
     if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
     {
-        PlayerController->LoadGame();
+        //PlayerController->LoadGame(TODO);
     }
 }
 
@@ -69,7 +69,11 @@ void UUiWidget::OnSaveButtonClickHandle()
 {
     if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
     {
-        PlayerController->SaveGame();
+	    if (PlayerController->SaveWidgetInstance)
+	    {
+            PlayerController->SaveWidgetInstance->AddToViewport();
+	    }
+	   
     }
 
 }

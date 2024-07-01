@@ -26,10 +26,13 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	class UButton* CancelButton;
 
+	void SaveSlot(FString SlotName);
 	UFUNCTION()
 	void OnSaveButtonClicked();
 
 	UFUNCTION()
 	void OnCancelButtonClicked();
+
+	bool CheckSlotAlreadyExist(const FString& SlotName);
 	
 };

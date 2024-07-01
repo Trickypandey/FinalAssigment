@@ -38,6 +38,7 @@ enum class EBuildingSubModeState : uint8 {
 	Moving
 };
 
+
 namespace Utility
 {
 	inline FVector SnapToGrid(const FVector& WorldLocation, const FVector& GridSize)
@@ -48,6 +49,8 @@ namespace Utility
 
 		return FVector(SnappedX, SnappedY, SnappedZ);
 	}
+
+	
 }
 
 

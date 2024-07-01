@@ -10,6 +10,7 @@
 #include "SubModeCeilingCreation.h"
 #include "SubModeFloorCreation.h"
 #include "SubModeWallCreation.h"
+#include "UArchVizSaveGame.h"
 #include "Utility.h"
 #include "BuildingCreationMode.generated.h"
 
@@ -32,8 +33,8 @@ public:
 	//void DeSelectedSelectedActor();
 	void SpawnSelectedActor(EBuildingCreationType Type);
 	void ApplyMaterialWallProceduralMesh(const FMaterialData& MeshData);
-	void SaveBuildings();
-	void LoadBuildings();
+	void SaveBuildings(UUArchVizSaveGame*& SaveGameInstance);
+	void LoadBuildings(UUArchVizSaveGame*& LoadGameInstance);
 	/*bool bIsActorSpawning;
 	bool bIsAddingDoor;
 	bool IsSlapOrFloor = false;*/

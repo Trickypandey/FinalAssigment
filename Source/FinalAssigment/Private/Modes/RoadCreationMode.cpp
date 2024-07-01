@@ -169,10 +169,10 @@ void URoadCreationMode::AddMaterialToRoad(const FMaterialData& MeshData)
 
 
 
-void URoadCreationMode::SaveRoads()
+void URoadCreationMode::SaveRoads(UUArchVizSaveGame*& SaveGameInstance)
 {
 	// Create the save game object
-	UUArchVizSaveGame* SaveGameInstance = Cast<UUArchVizSaveGame>(UGameplayStatics::CreateSaveGameObject(UUArchVizSaveGame::StaticClass()));
+	
 
 	// Check if the save game object was created successfully
 	if (!SaveGameInstance)
@@ -181,8 +181,6 @@ void URoadCreationMode::SaveRoads()
 		return;
 	}
 
-	// Attempt to save the game to the slot and check for success
-	bool bSaveSuccessful = UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("RoadSaveSlot"), 0);
 
 	// Loop through all road actors and save their data
 	for (ARoadActor* RoadActor : RoadActors)
@@ -197,36 +195,28 @@ void URoadCreationMode::SaveRoads()
 			UE_LOG(LogTemp, Warning, TEXT("Invalid road actor found in RoadActors array"));
 		}
 	}
-
-	bSaveSuccessful = UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("RoadSaveSlot"), 0);
-	if (bSaveSuccessful)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Game with road data successfully saved to slot"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to save game with road data to slot"));
-	}
 }
 
 
 
-void URoadCreationMode::LoadRoads()
+void URoadCreationMode::LoadRoads(UUArchVizSaveGame*& LoadGameInstance)
 {
-	UUArchVizSaveGame* LoadGameInstance = Cast<UUArchVizSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("RoadSaveSlot"), 0));
-
-	if (LoadGameInstance)
+	if (!LoadGameInstance)
 	{
-		for (const FRoadActorData& RoadData : LoadGameInstance->RoadActorArray)
+		UE_LOG(LogTemp, Error, TEXT("Failed to load game from slot"));
+		return;
+	}
+
+	for (const FRoadActorData& RoadData : LoadGameInstance->RoadActorArray)
+	{
+		ARoadActor* NewRoadActor = GetWorld()->SpawnActor<ARoadActor>(RoadActorRef, RoadData.ActorTransform);
+		if (NewRoadActor)
 		{
-			ARoadActor* NewRoadActor = GetWorld()->SpawnActor<ARoadActor>(RoadActorRef, RoadData.ActorTransform);
-			if (NewRoadActor)
-			{
-				NewRoadActor->LoadRoadActorData(RoadData);
-				RoadActors.Add(NewRoadActor);
-			}
+			NewRoadActor->LoadRoadActorData(RoadData);
+			RoadActors.Add(NewRoadActor);
 		}
 	}
+	
 }
 
 void URoadCreationMode::SetWidth(float Invalue)

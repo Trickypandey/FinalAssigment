@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SaveGameWidget.h"
 #include "GameFramework/PlayerController.h"
 #include "UiWidget.h"
 #include "FinalAssigment/Public/Modes/BaseMode.h"
@@ -22,9 +23,15 @@ public:
    
     void ModeChangeHandle(EModes Mode);
 
-    void SaveGame();
-    void LoadGame();
+    bool SaveGame(FString SlotName);
+    void LoadGame(FString SlotName);
   
+	UPROPERTY()
+    USaveGameWidget* SaveWidgetInstance;
+
+
+    UPROPERTY(EditAnywhere, Category = "UI")
+    TSubclassOf<UUserWidget> SaveWidgetClass;
 protected:
     virtual void SetupInputComponent() override;
     virtual void Tick(float DeltaTime) override;
@@ -37,11 +44,12 @@ private:
 
 
     UPROPERTY()
-    UUiWidget* UiWidgetInstance;
+	UUiWidget* UiWidgetInstance;
 
 
     UPROPERTY(EditAnywhere, Category = "UI")
     TSubclassOf<UUserWidget> UiWidgetClass;
+
 
 
     UPROPERTY()

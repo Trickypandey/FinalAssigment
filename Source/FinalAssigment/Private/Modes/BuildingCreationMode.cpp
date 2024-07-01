@@ -133,9 +133,8 @@ void UBuildingCreationMode::ApplyMaterialWallProceduralMesh(const FMaterialData&
 }
 
 
-void UBuildingCreationMode::SaveBuildings()
+void UBuildingCreationMode::SaveBuildings(UUArchVizSaveGame*& SaveGameInstance)
 {
-    UUArchVizSaveGame* SaveGameInstance = Cast<UUArchVizSaveGame>(UGameplayStatics::CreateSaveGameObject(UUArchVizSaveGame::StaticClass()));
     if (!SaveGameInstance)
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to create save game object"));
@@ -271,25 +270,13 @@ void UBuildingCreationMode::SaveBuildings()
             SaveGameInstance->SaveData.CeilingActors.Add(ActorData);
         }
     }
-
-    // Save to slot
-    bool bSaveSuccessful = UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("InteriorSaveSlot"), 0);
-    if (bSaveSuccessful)
-    {
-        UE_LOG(LogTemp, Log, TEXT("Game successfully saved to slot"));
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("Failed to save game to slot"));
-    }
 }
 
 
 
 
-void UBuildingCreationMode::LoadBuildings()
+void UBuildingCreationMode::LoadBuildings(UUArchVizSaveGame*& LoadGameInstance)
 {
-    UUArchVizSaveGame* LoadGameInstance = Cast<UUArchVizSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("InteriorSaveSlot"), 0));
     if (!LoadGameInstance)
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to load game from slot"));

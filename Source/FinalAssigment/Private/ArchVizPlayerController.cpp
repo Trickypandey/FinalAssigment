@@ -1,8 +1,10 @@
 #include "ArchVizPlayerController.h"
 #include "CeilingActor.h"
+#include "SaveGameWidget.h"
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "UiWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 AArchVizPlayerController::AArchVizPlayerController()
 {
@@ -38,6 +40,13 @@ void AArchVizPlayerController::BeginPlay()
             UiWidgetInstance->AddToViewport();
         }
     }
+
+
+	if (!SaveWidgetInstance && SaveWidgetClass)
+    {
+        SaveWidgetInstance = CreateWidget<USaveGameWidget>(this, SaveWidgetClass);
+    }
+
    if (IsValid(RoadConstructionModeRef)) {
        RoadConstructionMode = NewObject<URoadCreationMode>(this, RoadConstructionModeRef);
        RoadConstructionMode->InitParam(this);
@@ -89,29 +98,59 @@ void AArchVizPlayerController::ModeChangeHandle(EModes Mode)
 	
 }
 
-void AArchVizPlayerController::SaveGame()
+bool AArchVizPlayerController::SaveGame(FString SlotName)
 {
+    UUArchVizSaveGame* SaveGameInstance = Cast<UUArchVizSaveGame>(UGameplayStatics::CreateSaveGameObject(UUArchVizSaveGame::StaticClass()));
+    if (!SaveGameInstance)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Fail TO create SaveGameInstance in Controller"));
+        return false;
+    }
+
 	if (RoadConstructionMode)
 	{
-        RoadConstructionMode->SaveRoads();
+        RoadConstructionMode->SaveRoads(SaveGameInstance);
 	}
 
 	if (BuildingConstructionMode)
 	{
-        BuildingConstructionMode->SaveBuildings();
+        BuildingConstructionMode->SaveBuildings(SaveGameInstance);
 	}
+
+
+    bool bSaveSuccessful = UGameplayStatics::SaveGameToSlot(SaveGameInstance, SlotName, 0);
+    if (bSaveSuccessful)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Game with road data successfully saved to slot"));
+        return true;
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to save game with road data to slot"));
+        return false;
+    }
+
+
 }
 
-void AArchVizPlayerController::LoadGame()
+void AArchVizPlayerController::LoadGame(FString SlotName)
 {
+    UUArchVizSaveGame* LoadGameInstance = Cast<UUArchVizSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("RoadSaveSlot"), 0));
+
+    if (!LoadGameInstance)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Fail TO create LoadGameInstance in Controller" ));
+        return;
+    }
+
     if (RoadConstructionMode)
     {
-        RoadConstructionMode->LoadRoads();
+        RoadConstructionMode->LoadRoads(LoadGameInstance);
     }
 
     if (BuildingConstructionMode)
     {
-        BuildingConstructionMode->LoadBuildings();
+        BuildingConstructionMode->LoadBuildings(LoadGameInstance);
     }
 
 }

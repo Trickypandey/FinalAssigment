@@ -26,8 +26,8 @@ public:
 	virtual void ExitMode() override;
 	virtual void CleanUp() override;
 	void AddMaterialToRoad(const FMaterialData& MeshData);
-	void SaveRoads();
-	void LoadRoads();
+	void SaveRoads(UUArchVizSaveGame*& SaveGameInstance);
+	void LoadRoads(UUArchVizSaveGame*& LoadGameInstance);
 	void SetWidth(float Invalue);
 
 private:
