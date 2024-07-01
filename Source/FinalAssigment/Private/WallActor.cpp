@@ -101,7 +101,7 @@ void AWallActor::HandleMovingState()
 
         if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams))
         {
-            FVector NewLocation =Utility::SnapToGrid(HitResult.Location,FVector(20));
+            FVector NewLocation =Utility::SnapToGrid(HitResult.Location,FVector(10));
             SetActorLocation(NewLocation);
         }
         

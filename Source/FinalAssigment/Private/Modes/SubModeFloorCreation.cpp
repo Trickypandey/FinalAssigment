@@ -178,7 +178,7 @@ void USubModeFloorCreation::WallRightClickProcess()
 	PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
 	if (HitResult.bBlockingHit)
 	{
-		FVector SpawnLocation = Utility::SnapToGrid(HitResult.Location, FVector(20.0f, 20.0f, 0.0f));
+		FVector SpawnLocation = Utility::SnapToGrid(HitResult.Location, FVector(10.0f, 10.0f, 10.0f));
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 

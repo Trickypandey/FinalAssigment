@@ -137,7 +137,7 @@ void USubModeWallCreation::WallLeftClickProcess()
 		if (SelectedActor && Cast<AWallActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving && !bIsDoorAdding)
 		{
 			Cast<AWallActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
-			FVector SnappedLocation = Utility::SnapToGrid(ClickLocation, FVector(20));
+			FVector SnappedLocation = Utility::SnapToGrid(ClickLocation, FVector(10));
 			SelectedActor->SetActorLocation(SnappedLocation);
 		}
 		// Check if the clicked actor is a wall
