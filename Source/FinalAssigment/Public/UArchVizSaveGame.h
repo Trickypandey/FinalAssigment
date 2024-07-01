@@ -18,11 +18,11 @@ struct FInteriorActorData
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     FTransform ActorTransform;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-    FString AttachedActorName;
+    //UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    //FString AttachedActorName;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-    FString ActorName;
+    //UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    //FString ActorName;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     FString StaticMeshPath;
@@ -38,10 +38,13 @@ struct FBuildingActorData
     TSubclassOf<AActor> ActorClass;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-    FTransform ActorTransform;
+    bool bIsDoorAdded = false;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-    FString ActorName; // Unique name for the actor
+    FTransform ActorTransform;
+
+    //UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    //FString ActorName; // Unique name for the actor
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     TArray<FInteriorActorData> AttachedInteriorActors; // List of attached interior actors
@@ -72,6 +75,9 @@ struct FRoadActorData
 
     UPROPERTY()
     FTransform ActorTransform;
+
+    UPROPERTY()
+    float Width;
 
     UPROPERTY()
     UMaterialInterface* RoadMaterial = nullptr;

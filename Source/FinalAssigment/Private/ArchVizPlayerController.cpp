@@ -21,24 +21,6 @@ void AArchVizPlayerController::SetupInputComponent()
 void AArchVizPlayerController::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-
-    /*if (SelectedActor && bIsActorSpawning && bIsWallCreationMode)
-    {
-        FHitResult HitResult;
-        FCollisionQueryParams TraceParams(FName(TEXT("LineTrace")), true, SelectedActor);
-
-        FVector CursorWorldLocation;
-        FVector CursorWorldDirection;
-        DeprojectMousePositionToWorld(CursorWorldLocation, CursorWorldDirection);
-
-        if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams))
-        {
-            FVector NewLocation = HitResult.Location;
-          
-            SelectedActor->SetActorLocation(NewLocation);
-            SnapWall();
-        }
-    }*/
 }
 
 void AArchVizPlayerController::BeginPlay()

@@ -117,17 +117,17 @@ void UBuildingCreationMode::SpawnSelectedActor(EBuildingCreationType Type)
 
 void UBuildingCreationMode::ApplyMaterialWallProceduralMesh(const FMaterialData& MeshData)
 {
-    UMaterialInterface* BaseMaterial = MeshData.Type;
-    if (!BaseMaterial)
+ 
+    if (!MeshData.Type)
     {
         UE_LOG(LogTemp, Error, TEXT("BaseMaterial is nullptr in AArchVizPlayerController"));
     }
 
-    if (auto DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this))
+    if (MeshData.Type)
     {
 	    if (CurrentBuildingCreationSubMode)
 	    {
-    		CurrentBuildingCreationSubMode->SetMaterial(DynamicMaterial);
+    		CurrentBuildingCreationSubMode->SetMaterial(MeshData.Type);
 	    }
     }
 }
@@ -160,7 +160,8 @@ void UBuildingCreationMode::SaveBuildings()
             FBuildingActorData ActorData;
             ActorData.ActorClass = WallActor->GetClass();
             ActorData.ActorTransform = WallActor->GetActorTransform();
-            ActorData.ActorName = WallActor->GetName();
+            //ActorData.ActorName = WallActor->GetName();
+            ActorData.bIsDoorAdded = WallActor->GetDoorFlag();
 
             // Save attached interior actors
             TArray<AActor*> AttachedActors;
@@ -172,8 +173,8 @@ void UBuildingCreationMode::SaveBuildings()
                     FInteriorActorData InteriorData;
                     InteriorData.ActorClass = InteriorActor->GetClass();
                     InteriorData.ActorTransform = InteriorActor->GetActorTransform();
-                    InteriorData.AttachedActorName = ActorData.ActorName;
-                    InteriorData.ActorName = InteriorActor->GetName();
+          /*          InteriorData.AttachedActorName = ActorData.ActorName;
+                    InteriorData.ActorName = InteriorActor->GetName();*/
 
                     // Save static mesh
                     if (UStaticMeshComponent* StaticMeshComp = InteriorActor->FindComponentByClass<UStaticMeshComponent>())
@@ -200,7 +201,7 @@ void UBuildingCreationMode::SaveBuildings()
             FBuildingActorData ActorData;
             ActorData.ActorClass = FloorActor->GetClass();
             ActorData.ActorTransform = FloorActor->GetActorTransform();
-            ActorData.ActorName = FloorActor->GetName();
+            //ActorData.ActorName = FloorActor->GetName();
 
             // Save attached interior actors
             TArray<AActor*> AttachedActors;
@@ -212,8 +213,8 @@ void UBuildingCreationMode::SaveBuildings()
                     FInteriorActorData InteriorData;
                     InteriorData.ActorClass = InteriorActor->GetClass();
                     InteriorData.ActorTransform = InteriorActor->GetActorTransform();
-                    InteriorData.AttachedActorName = ActorData.ActorName;
-                    InteriorData.ActorName = InteriorActor->GetName();
+                   /* InteriorData.AttachedActorName = ActorData.ActorName;
+                    InteriorData.ActorName = InteriorActor->GetName();*/
 
                     // Save static mesh
                     if (UStaticMeshComponent* StaticMeshComp = InteriorActor->FindComponentByClass<UStaticMeshComponent>())
@@ -239,7 +240,7 @@ void UBuildingCreationMode::SaveBuildings()
             FBuildingActorData ActorData;
             ActorData.ActorClass = CeilingActor->GetClass();
             ActorData.ActorTransform = CeilingActor->GetActorTransform();
-            ActorData.ActorName = CeilingActor->GetName();
+            //ActorData.ActorName = CeilingActor->GetName();
 
             // Save attached interior actors
             TArray<AActor*> AttachedActors;
@@ -251,8 +252,8 @@ void UBuildingCreationMode::SaveBuildings()
                     FInteriorActorData InteriorData;
                     InteriorData.ActorClass = InteriorActor->GetClass();
                     InteriorData.ActorTransform = InteriorActor->GetActorTransform();
-                    InteriorData.AttachedActorName = ActorData.ActorName;
-                    InteriorData.ActorName = InteriorActor->GetName();
+                   /* InteriorData.AttachedActorName = ActorData.ActorName;
+                    InteriorData.ActorName = InteriorActor->GetName();*/
 
                     // Save static mesh
                     if (UStaticMeshComponent* StaticMeshComp = InteriorActor->FindComponentByClass<UStaticMeshComponent>())
@@ -297,29 +298,29 @@ void UBuildingCreationMode::LoadBuildings()
 
     // Clear existing actors if necessary
     TArray<AActor*> ExistingActors;
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AWallActor::StaticClass(), ExistingActors);
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACubeActor::StaticClass(), ExistingActors);
     for (AActor* Actor : ExistingActors)
     {
-        Actor->Destroy();
-    }
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFloorActor::StaticClass(), ExistingActors);
-    for (AActor* Actor : ExistingActors)
-    {
-        Actor->Destroy();
-    }
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACeilingActor::StaticClass(), ExistingActors);
-    for (AActor* Actor : ExistingActors)
-    {
-        Actor->Destroy();
+	    if (Cast<ACubeActor>(Actor))
+	    {
+			Actor->Destroy();
+            Actor = nullptr;
+	    }
+
     }
 
     // Helper function to spawn actors
     auto SpawnBuildingActor = [this](const FBuildingActorData& ActorData)
         {
             FActorSpawnParameters SpawnParams;
-            SpawnParams.Name = FName(*ActorData.ActorName);
+            /*SpawnParams.Name = FName(*ActorData.ActorName);*/
 
             AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(ActorData.ActorClass, ActorData.ActorTransform, SpawnParams);
+            if (auto WallActor = Cast<AWallActor>(SpawnedActor))
+            {
+                WallActor->SetIsDoorAdded(ActorData.bIsDoorAdded);
+            }
+
             if (SpawnedActor)
             {
                 UE_LOG(LogTemp, Log, TEXT("Actor %s spawned successfully"), *SpawnedActor->GetName());
@@ -328,7 +329,7 @@ void UBuildingCreationMode::LoadBuildings()
                 for (const FInteriorActorData& InteriorData : ActorData.AttachedInteriorActors)
                 {
                     FActorSpawnParameters InteriorSpawnParams;
-                    InteriorSpawnParams.Name = FName(*InteriorData.ActorName);
+                    /*InteriorSpawnParams.Name = FName(*InteriorData.ActorName);*/
 
                     AInteriorDesignActor* InteriorActor = GetWorld()->SpawnActor<AInteriorDesignActor>(InteriorData.ActorClass, InteriorData.ActorTransform, InteriorSpawnParams);
                     if (InteriorActor)

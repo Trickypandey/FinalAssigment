@@ -7,7 +7,7 @@ void UUBuildingCreationSubMode::InitParams(APlayerController* Controller) {
 	PlayerController = Controller;
 }
 
-void UUBuildingCreationSubMode::SetMaterial(UMaterialInstanceDynamic* Material)
+void UUBuildingCreationSubMode::SetMaterial(UMaterialInterface* Material)
 {
 	if (SelectedActor && SelectedActor->GetProceduralMeshComponent())
 	{

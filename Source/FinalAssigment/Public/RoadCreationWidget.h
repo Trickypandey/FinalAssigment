@@ -20,13 +20,11 @@ class FINALASSIGMENT_API URoadCreationWidget : public UUserWidget
 public:
 	UFUNCTION()
 	void MaterialChangeHandler(const FMaterialData& MeshData);
+	UFUNCTION()
+	void WidthInputChangeHandle(float InValue);
 	virtual void NativeConstruct() override;
 	UPROPERTY(meta = (BindWidget))
 	UCanvasPanel* Canvas;
-
-	// Input fields for wall dimensions
-	UPROPERTY(meta = (BindWidget))
-	USpinBox* HeightInput;
 
 	UPROPERTY(meta = (BindWidget))
 	USpinBox* WidthInput;

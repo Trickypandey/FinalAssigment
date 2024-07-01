@@ -13,6 +13,11 @@ void URoadCreationWidget::NativeConstruct()
 	{
 		SelectionWidgetInstance->OnMaterialAssetThumbnailSelected.AddDynamic(this, &URoadCreationWidget::MaterialChangeHandler);
 	}
+
+	if (WidthInput)
+	{
+		WidthInput->OnValueChanged.AddDynamic(this, &URoadCreationWidget::WidthInputChangeHandle);
+	}
 }
 
 void URoadCreationWidget::MaterialChangeHandler(const FMaterialData& MeshData)
@@ -21,5 +26,14 @@ void URoadCreationWidget::MaterialChangeHandler(const FMaterialData& MeshData)
 	{
 
 		PlayerController->RoadConstructionMode->AddMaterialToRoad(MeshData);
+	}
+}
+
+void URoadCreationWidget::WidthInputChangeHandle(float InValue)
+{
+	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
+	{
+
+		PlayerController->RoadConstructionMode->SetWidth(InValue);
 	}
 }

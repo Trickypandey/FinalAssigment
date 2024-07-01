@@ -30,6 +30,8 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Wall")
     void SetIsDoorAdded(bool Flag);
 
+    bool GetDoorFlag();
+
     UFUNCTION(BlueprintCallable, Category = "Wall")
     void SetDimension(int32 _Length, int32 _Width);
 

@@ -47,10 +47,12 @@ public:
 
     // Road dimensions
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Road Dimensions")
-    float RoadWidth = 200.0f;
+    float RoadWidth = 100.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Road Dimensions")
     float RoadThickness = 10.0f;
+
+    void SetRoadWidth(float Invalue);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Materials")
     UMaterialInterface* RoadMaterial;

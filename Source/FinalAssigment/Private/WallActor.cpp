@@ -66,6 +66,11 @@ void AWallActor::SetIsDoorAdded(bool Flag)
     CreateMesh();
 }
 
+bool AWallActor::GetDoorFlag()
+{
+    return IsDoorAdded;
+}
+
 void AWallActor::SetDimension(int32 _Length, int32 _Width)
 {
     this->Length = _Length;

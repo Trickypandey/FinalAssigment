@@ -160,9 +160,10 @@ void URoadCreationMode::AddMaterialToRoad(const FMaterialData& MeshData)
 	}
 
 	DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this);
-	if (DynamicMaterial && CurrentRoadActor)
+	if (BaseMaterial && CurrentRoadActor)
 	{
-		CurrentRoadActor->ProceduralMeshComponent->SetMaterial(0, DynamicMaterial);
+		
+		CurrentRoadActor->SetMaterialForSection(0, BaseMaterial);
 	}
 }
 
@@ -225,5 +226,13 @@ void URoadCreationMode::LoadRoads()
 				RoadActors.Add(NewRoadActor);
 			}
 		}
+	}
+}
+
+void URoadCreationMode::SetWidth(float Invalue)
+{
+	if(CurrentRoadActor)
+	{
+		CurrentRoadActor->SetRoadWidth(Invalue);
 	}
 }

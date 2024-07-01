@@ -6,6 +6,7 @@
 #include "CeilingActor.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "WallActor.h"
 
 USubModeCeilingCreation::USubModeCeilingCreation()
 {
@@ -127,9 +128,12 @@ void USubModeCeilingCreation::WallLeftClickProcess()
 
 		if (SelectedActor && Cast<ACeilingActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
 		{
-			Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
-			FVector SnappedLocation = Utility::SnapToGrid(ClickLocation, FVector(20));
-			SelectedActor->SetActorLocation(SnappedLocation);
+			if (Cast<AWallActor>(HitResult.GetActor()))
+			{
+				Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
+				FVector SnappedLocation = Utility::SnapToGrid(ClickLocation, FVector(20));
+				SelectedActor->SetActorLocation(SnappedLocation);
+			}
 		}
 		else
 		{

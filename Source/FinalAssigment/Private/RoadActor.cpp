@@ -45,7 +45,6 @@ void ARoadActor::GenerateRoadMesh()
 
     const int32 NumPoints = SplineComponent->GetNumberOfSplinePoints();
     const int32 SubdivisionsPerSegment = 10; // Number of subdivisions per spline segment
-    RoadWidth = 100.0f; // Adjust this to your desired road width
     const float RoadHeight = 15.0f; // Adjust this to your desired road height
 
     for (int32 i = 0; i < NumPoints - 1; ++i)
@@ -144,12 +143,6 @@ void ARoadActor::GenerateRoadMesh()
     }
 }
 
-
-
-
-
-
-
 void ARoadActor::AddSplinePoint(FVector Location)
 {
     
@@ -167,7 +160,9 @@ void ARoadActor::SetMaterialForSection(int32 SectionIndex, UMaterialInterface* M
 {
     if (Material)
     {
-        ProceduralMeshComponent->SetMaterial(SectionIndex, Material);
+        auto DynamicMaterial = UMaterialInstanceDynamic::Create(Material, this);
+        RoadMaterial = Material;
+        ProceduralMeshComponent->SetMaterial(SectionIndex, DynamicMaterial);
     }
 }
 
@@ -185,12 +180,11 @@ FRoadActorData ARoadActor::SaveRoadActorData() const
     {
         Data.RoadMaterial = RoadMaterial;
     }
-
+    Data.Width = RoadWidth;
     Data.ActorTransform = GetActorTransform();
 
     return Data;
 }
-
 
 void ARoadActor::LoadRoadActorData(const FRoadActorData& Data)
 {
@@ -205,9 +199,18 @@ void ARoadActor::LoadRoadActorData(const FRoadActorData& Data)
     {
         RoadMaterial = Data.RoadMaterial;
     }
-
+    RoadWidth = Data.Width;
     if (SplineComponent->GetNumberOfSplinePoints() > 1)
     {
+        GenerateRoadMesh();
+    }
+}
+
+void ARoadActor::SetRoadWidth(float Invalue)
+{
+    if (Invalue != RoadWidth)
+    {
+        RoadWidth = Invalue;
         GenerateRoadMesh();
     }
 }

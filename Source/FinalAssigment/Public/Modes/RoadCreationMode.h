@@ -25,11 +25,10 @@ public:
 	virtual void EnterMode() override;
 	virtual void ExitMode() override;
 	virtual void CleanUp() override;
-
-
 	void AddMaterialToRoad(const FMaterialData& MeshData);
 	void SaveRoads();
 	void LoadRoads();
+	void SetWidth(float Invalue);
 
 private:
 

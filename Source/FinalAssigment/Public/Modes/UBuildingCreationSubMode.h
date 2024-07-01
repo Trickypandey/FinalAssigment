@@ -25,7 +25,7 @@ public:
 	virtual void ExitSubMode(UWallConstructionWidget*) PURE_VIRTUAL(UBuildingCreationSubMode::ExitSubMode, );
 
 	virtual void InitParams(APlayerController* Controller);
-	void SetMaterial(UMaterialInstanceDynamic* Material);
+	void SetMaterial(UMaterialInterface* Material);
 
 	ACubeActor* GetSelectedActor();
 
