@@ -192,3 +192,11 @@ void AArchVizPlayerController::SetArchVizMode(UBaseMode* NewArchVizMode) {
         CurrentModeClass->EnterMode();
     }
 }
+
+void AArchVizPlayerController::BroadcastToast(const FString& Message)
+{
+	if (ToastMessageWidgetInstance)
+	{
+		ToastMessageWidgetInstance->ShowMessage.Broadcast(Message);
+	}
+}

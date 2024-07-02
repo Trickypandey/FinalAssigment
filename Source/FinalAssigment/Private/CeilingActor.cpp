@@ -43,7 +43,7 @@ void ACeilingActor::HandleMovingState()
         if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams))
         {
             FVector NewLocation = HitResult.Location;
-            FVector SnappedLocation = Utility::SnapToGrid(NewLocation, FVector(20));
+            FVector SnappedLocation = Utility::SnapToGrid(NewLocation, FVector(10));
             SetActorLocation(SnappedLocation);
         }
 

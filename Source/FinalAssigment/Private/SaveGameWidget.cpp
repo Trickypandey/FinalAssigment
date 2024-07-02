@@ -41,11 +41,19 @@ void USaveGameWidget::SaveSlot(FString SlotName)
 
 		if (bSaveSuccessful)
 		{
-			UE_LOG(LogTemp, Log, TEXT("Slot name successfully saved to slot"));
+			if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
+			{
+				PlayerController->BroadcastToast("Successfully Saved");
+				RemoveFromParent();
+			}
+			
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to save slot names"));
+			if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
+			{
+				PlayerController->BroadcastToast("Save Was Not Successful");
+			}
 		}
 	}
 }
@@ -63,9 +71,9 @@ void USaveGameWidget::OnSaveButtonClicked()
 			{
 				if (PlayerController->SaveGame(SaveName))
 				{
-					UE_LOG(LogTemp, Log, TEXT("Game saved successfully in slot: %s"), *SaveName);
-
+					
 					SaveSlot(SaveName);
+					
 				}
 				else
 				{
@@ -74,6 +82,9 @@ void USaveGameWidget::OnSaveButtonClicked()
 			}
 			else
 			{
+				
+					PlayerController->BroadcastToast("Slot Name Already exists");
+				
 				UE_LOG(LogTemp, Error, TEXT("Slot Name Already exists: %s"), *SaveName);
 			}
 		}

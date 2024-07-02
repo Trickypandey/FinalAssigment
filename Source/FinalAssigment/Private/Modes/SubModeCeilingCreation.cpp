@@ -131,8 +131,6 @@ void USubModeCeilingCreation::WallLeftClickProcess()
 			if (Cast<AWallActor>(HitResult.GetActor()))
 			{
 				Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
-				FVector SnappedLocation = Utility::SnapToGrid(ClickLocation, FVector(20));
-				SelectedActor->SetActorLocation(SnappedLocation);
 			}
 		}
 		else
@@ -142,10 +140,15 @@ void USubModeCeilingCreation::WallLeftClickProcess()
 
 			if (ACeilingActor* SpawnedActor = Cast<ACeilingActor>(HitResult.GetActor()))
 			{
+				if (SelectedActor)
+				{
+					SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+				}
 				SpawnedActor->WallState = EBuildingSubModeState::Moving;
 				SelectedActor = SpawnedActor;
-				if (CurrentWidget)
+				if (SelectedActor && CurrentWidget)
 				{
+					SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
 					CurrentWidget->LengthInput->SetValue(SelectedActor->GetLength());
 					CurrentWidget->WidthInput->SetValue(SelectedActor->GetWidth());
 				}
@@ -164,33 +167,49 @@ void USubModeCeilingCreation::WallLeftClickProcess()
 
 void USubModeCeilingCreation::WallRightClickProcess()
 {
-	if (SelectedActor)
-	{
-		Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
-		SelectedActor = nullptr;
-	}
 	FHitResult HitResult;
+	FVector spawnLocation = HitResult.Location;
 	PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
 	if (HitResult.bBlockingHit)
 	{
-		FVector SpawnLocation = Utility::SnapToGrid(HitResult.Location, FVector(20.0f, 20.0f, 0.0f));
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-		if (ACeilingActor* SpawnedActor = GetWorld()->SpawnActor<ACeilingActor>(ACeilingActor::StaticClass(), SpawnLocation, FRotator::ZeroRotator, SpawnParams))
+		if (SelectedActor  && Cast<ACeilingActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
 		{
-			SpawnedActor->WallState = EBuildingSubModeState::Moving;
-			SelectedActor = SpawnedActor;
-			if (DynamicMaterial)
-			{
-				SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
-			}
+			/*Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
+			SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);*/
+			SelectedActor->Destroy();
+			SelectedActor = nullptr;
 		}
+		/*
+		else
+		{*/
+			if (SelectedActor)
+			{
+				SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+			}
+				FActorSpawnParameters SpawnParams;
+				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+				if (ACeilingActor* SpawnedActor = GetWorld()->SpawnActor<ACeilingActor>(ACeilingActor::StaticClass(), spawnLocation, FRotator::ZeroRotator, SpawnParams))
+				{
+					SpawnedActor->WallState = EBuildingSubModeState::Moving;
+					SelectedActor = SpawnedActor;
+					if (DynamicMaterial)
+					{
+						SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
+					}
+				}
+			
 	}
 
 }
 
 void USubModeCeilingCreation::DeleteSelectedWallActor()
 {
-}
+	if (SelectedActor)
+	{
+		SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		SelectedActor->Destroy();
+		SelectedActor = nullptr;
 
+	}
+}

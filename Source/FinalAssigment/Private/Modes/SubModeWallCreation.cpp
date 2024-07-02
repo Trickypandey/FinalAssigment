@@ -137,8 +137,8 @@ void USubModeWallCreation::WallLeftClickProcess()
 		if (SelectedActor && Cast<AWallActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving && !bIsDoorAdding)
 		{
 			Cast<AWallActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
-			FVector SnappedLocation = Utility::SnapToGrid(ClickLocation, FVector(10));
-			SelectedActor->SetActorLocation(SnappedLocation);
+			/*FVector SnappedLocation = Utility::SnapToGrid(ClickLocation, FVector(10));*/
+			//SelectedActor->SetActorLocation(SnappedLocation);
 		}
 		// Check if the clicked actor is a wall
 		else if (AWallActor* WallActor = Cast<AWallActor>(HitResult.GetActor()))
@@ -191,12 +191,10 @@ void USubModeWallCreation::WallRightClickProcess()
 	// Deselect the current actor if it is in moving state
 	if (SelectedActor && Cast<AWallActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
 	{
-		SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
-		Cast<AWallActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
+		SelectedActor->Destroy();
 		SelectedActor = nullptr;
 	}
-	else
-	{
+	
 		if (SelectedActor)
 		{
 			SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
@@ -228,7 +226,7 @@ void USubModeWallCreation::WallRightClickProcess()
 				}
 			}
 		}
-	}
+	
 }
 
 

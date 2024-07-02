@@ -20,7 +20,12 @@ class FINALASSIGMENT_API URoadCreationMode : public UBaseMode
 public:
 	URoadCreationMode();
 	virtual void Setup() override;
-	;
+	UFUNCTION()
+	void ShowInstructionTab();
+	UFUNCTION()
+	void HideInstructionTab();
+	void DeleteSelectedRoadActor();
+	void ResetCustomDepthForAllRoadActors();
 	virtual void SetupInputMapping() override;
 	virtual void EnterMode() override;
 	virtual void ExitMode() override;
@@ -52,6 +57,12 @@ private:
 
 	UPROPERTY()
 	UInputAction* OnRoadRightClick;
+
+	UPROPERTY()
+	UInputAction* ShowInstruction;
+
+	UPROPERTY()
+	UInputAction* OnDelete;
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* DynamicMaterial;

@@ -2,7 +2,7 @@
 
 
 #include "Modes/SubModeFloorCreation.h"
-
+#include "ArchVizPlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "FloorActor.h"
@@ -135,8 +135,6 @@ void USubModeFloorCreation::WallLeftClickProcess()
 		if (SelectedActor && Cast<AFloorActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
 		{
 			Cast<AFloorActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
-			FVector SnappedLocation = Utility::SnapToGrid(ClickLocation,FVector(20));
-			SelectedActor->SetActorLocation(SnappedLocation);
 			
 		}
 		else
@@ -146,11 +144,16 @@ void USubModeFloorCreation::WallLeftClickProcess()
 
 			if (AFloorActor* SpawnedActor = Cast<AFloorActor>(HitResult.GetActor()))
 			{
+				if (SelectedActor)
+				{
+					SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+				}
 				SpawnedActor->WallState = EBuildingSubModeState::Moving;
 				SelectedActor = SpawnedActor;
 
 				if (SelectedActor)
 				{
+					SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
 					CurrentWidget->LengthInput->SetValue(SelectedActor->GetLength());
 					CurrentWidget->WidthInput->SetValue(SelectedActor->GetWidth());
 				}
@@ -169,10 +172,16 @@ void USubModeFloorCreation::WallLeftClickProcess()
 
 void USubModeFloorCreation::WallRightClickProcess()
 {
+	if (SelectedActor && Cast<AFloorActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
+	{
+		;
+		SelectedActor->Destroy();
+		SelectedActor = nullptr;
+	}
+	
 	if (SelectedActor)
 	{
-		Cast<AFloorActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
-		SelectedActor = nullptr;
+		SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
 	}
 	FHitResult HitResult;
 	PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
@@ -190,7 +199,13 @@ void USubModeFloorCreation::WallRightClickProcess()
 			{
 				SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
 			}
+			if (SelectedActor)
+			{
+				SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
+				SelectedActor->GetProceduralMeshComponent()->CustomDepthStencilValue = 2.0;
+			}
 		}
 	}
+	
 	
 }

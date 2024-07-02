@@ -15,6 +15,7 @@ class FINALASSIGMENT_API ARoadActor : public AActor
 public:
     // Sets default values for this actor's properties
     ARoadActor();
+    UProceduralMeshComponent* GetProceduralMeshComponent();
 
 protected:
     // Called when the game starts or when spawned

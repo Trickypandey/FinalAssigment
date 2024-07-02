@@ -26,6 +26,8 @@ void URoadCreationMode::Setup()
 	}
 }
 
+
+
 void URoadCreationMode::SetupInputMapping()
 {
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent)) {
@@ -37,12 +39,20 @@ void URoadCreationMode::SetupInputMapping()
 		OnRoadRightClick = NewObject<UInputAction>(this);
 		OnRoadRightClick->ValueType = EInputActionValueType::Boolean;
 
+		ShowInstruction = NewObject<UInputAction>(this);
+		ShowInstruction->ValueType = EInputActionValueType::Boolean;
+
+		OnDelete = NewObject<UInputAction>(this);
+		OnDelete->ValueType = EInputActionValueType::Boolean;
+
 
 		if (InputMappingContext)
 		{
 			InputMappingContext = NewObject<UInputMappingContext>(this);
 			InputMappingContext->MapKey(OnLeftClickAction, EKeys::LeftMouseButton);
 			InputMappingContext->MapKey(OnRoadRightClick, EKeys::RightMouseButton);
+			InputMappingContext->MapKey(ShowInstruction, EKeys::I);
+			InputMappingContext->MapKey(OnDelete, EKeys::Delete);
 			
 		}
 		else
@@ -54,6 +64,9 @@ void URoadCreationMode::SetupInputMapping()
 		{
 			EnhancedInputComponent->BindAction(OnLeftClickAction, ETriggerEvent::Completed, this, &URoadCreationMode::HandleLeftClickAction);
 			EnhancedInputComponent->BindAction(OnRoadRightClick, ETriggerEvent::Completed, this, &URoadCreationMode::HandleRightClickAction);
+			EnhancedInputComponent->BindAction(ShowInstruction, ETriggerEvent::Started, this, &URoadCreationMode::ShowInstructionTab);
+			EnhancedInputComponent->BindAction(ShowInstruction, ETriggerEvent::Completed, this, &URoadCreationMode::HideInstructionTab);
+			EnhancedInputComponent->BindAction(OnDelete, ETriggerEvent::Completed, this, &URoadCreationMode::DeleteSelectedRoadActor);
 		}
 		else
 		{			
@@ -89,10 +102,15 @@ void URoadCreationMode::ExitMode()
 
 void URoadCreationMode::CleanUp()
 {
-	CurrentRoadActor = nullptr;
+	if (CurrentRoadActor)
+	{
+		CurrentRoadActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		CurrentRoadActor = nullptr;
+	}
 }
 
-void URoadCreationMode::HandleLeftClickAction() {
+void URoadCreationMode::HandleLeftClickAction()
+{
 	if (IsValid(CurrentRoadActor)) {
 		FHitResult HitResult;
 		PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
@@ -100,7 +118,11 @@ void URoadCreationMode::HandleLeftClickAction() {
 		if (HitResult.bBlockingHit) {
 			AActor* HitActor = HitResult.GetActor();
 			if (HitActor && HitActor->IsA(ARoadActor::StaticClass())) {
+				ResetCustomDepthForAllRoadActors();
+
 				CurrentRoadActor = Cast<ARoadActor>(HitActor);
+				CurrentRoadActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
+
 				return;
 			}
 
@@ -129,16 +151,19 @@ void URoadCreationMode::HandleRightClickAction()
 	FHitResult HitResult;
 	PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
 
-
 	if (HitResult.bBlockingHit)
 	{
 		FVector ClickLocation = HitResult.Location;
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
+		ResetCustomDepthForAllRoadActors();
+
 		CurrentRoadActor = GetWorld()->SpawnActor<ARoadActor>(ARoadActor::StaticClass(), ClickLocation, FRotator::ZeroRotator, SpawnParams);
 		if (CurrentRoadActor)
 		{
+			CurrentRoadActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
+			CurrentRoadActor->GetProceduralMeshComponent()->CustomDepthStencilValue = 2.0;
 			RoadActors.Add(CurrentRoadActor);
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Road actor spawned at cursor location"));
 		}
@@ -166,8 +191,6 @@ void URoadCreationMode::AddMaterialToRoad(const FMaterialData& MeshData)
 		CurrentRoadActor->SetMaterialForSection(0, BaseMaterial);
 	}
 }
-
-
 
 void URoadCreationMode::SaveRoads(UUArchVizSaveGame*& SaveGameInstance)
 {
@@ -197,8 +220,6 @@ void URoadCreationMode::SaveRoads(UUArchVizSaveGame*& SaveGameInstance)
 	}
 }
 
-
-
 void URoadCreationMode::LoadRoads(UUArchVizSaveGame*& LoadGameInstance)
 {
 	if (!LoadGameInstance)
@@ -224,5 +245,47 @@ void URoadCreationMode::SetWidth(float Invalue)
 	if(CurrentRoadActor)
 	{
 		CurrentRoadActor->SetRoadWidth(Invalue);
+	}
+}
+
+void URoadCreationMode::ShowInstructionTab()
+{
+	auto RoadWidget = Cast<URoadCreationWidget>(Widget);
+	if (Widget && RoadWidget)
+	{
+		RoadWidget->InstructionBtn->SetVisibility(ESlateVisibility::Hidden);
+		RoadWidget->Allkeys->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+void URoadCreationMode::HideInstructionTab()
+{
+	auto RoadWidget = Cast<URoadCreationWidget>(Widget);
+	if (Widget && RoadWidget)
+	{
+		RoadWidget->InstructionBtn->SetVisibility(ESlateVisibility::Visible);
+		RoadWidget->Allkeys->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
+void URoadCreationMode::DeleteSelectedRoadActor()
+{
+	if(CurrentRoadActor)
+	{
+		CurrentRoadActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		CurrentRoadActor->Destroy();
+		CurrentRoadActor = nullptr;
+
+	}
+}
+
+void URoadCreationMode::ResetCustomDepthForAllRoadActors()
+{
+	for (ARoadActor* RoadActor : RoadActors)
+	{
+		if (IsValid(RoadActor))
+		{
+			RoadActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		}
 	}
 }

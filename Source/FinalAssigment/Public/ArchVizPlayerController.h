@@ -39,6 +39,7 @@ public:
 
     UPROPERTY(EditAnywhere, Category = "UI")
     TSubclassOf<UUserWidget> LoadSlotWidgetClass;
+    void BroadcastToast(const FString& Message);
 protected:
     virtual void SetupInputComponent() override;
     virtual void Tick(float DeltaTime) override;

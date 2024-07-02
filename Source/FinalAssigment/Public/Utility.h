@@ -47,7 +47,7 @@ namespace Utility
 		float SnappedY = FMath::RoundToFloat(WorldLocation.Y / GridSize.Y) * GridSize.Y;
 		float SnappedZ = FMath::RoundToFloat(WorldLocation.Z / GridSize.Z) * GridSize.Z;
 
-		return FVector(SnappedX, SnappedY, SnappedZ);
+		return FVector(SnappedX, SnappedY, WorldLocation.Z);
 	}
 
 	

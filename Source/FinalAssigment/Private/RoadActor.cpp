@@ -15,7 +15,10 @@ ARoadActor::ARoadActor()
     ProceduralMeshComponent = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ProceduralMeshComponent"));
     ProceduralMeshComponent->SetupAttachment(RootComponent);
 }
-
+UProceduralMeshComponent* ARoadActor::GetProceduralMeshComponent()
+{
+    return ProceduralMeshComponent;
+}
 // Called when the game starts or when spawned
 void ARoadActor::BeginPlay()
 {
