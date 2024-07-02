@@ -309,6 +309,17 @@ void UBuildingCreationMode::LoadBuildings(UUArchVizSaveGame*& LoadGameInstance)
     {
 	    if (Cast<ACubeActor>(Actor))
 	    {
+            TArray<AActor*> AttachedActors;
+            Actor->GetAttachedActors(AttachedActors);
+
+            // Destroy all attached actors
+            for (AActor* AttachedActor : AttachedActors)
+            {
+                if (AttachedActor)
+                {
+                    AttachedActor->Destroy();
+                }
+            }
 			Actor->Destroy();
             Actor = nullptr;
 	    }

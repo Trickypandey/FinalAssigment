@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
+#include "Components/CanvasPanel.h"
 #include "Components/ComboBox.h"
 #include "Components/ComboBoxString.h"
 #include "LoadSlotWidget.generated.h"
@@ -22,6 +23,9 @@ protected:
 	virtual void NativeConstruct() override;
 
 	UPROPERTY(meta = (BindWidget))
+	UCanvasPanel* CanvasPanelLoad;
+
+	UPROPERTY(meta = (BindWidget))
 	UComboBoxString* SlotListComboBox;
 
 	UPROPERTY(meta = (BindWidget))
@@ -30,6 +34,8 @@ protected:
 private:
 	UFUNCTION()
 	void OnLoadSlotButtonClicked();
+	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	bool IsPointWithinWidget(UWidget* Widget, const FVector2D& Point);
 
 	void PopulateSaveSlots();
 	

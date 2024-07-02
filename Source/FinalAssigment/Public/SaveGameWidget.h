@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/CanvasPanel.h"
 #include "SaveGameWidget.generated.h"
 
 /**
@@ -17,6 +18,10 @@ protected:
 	virtual void NativeConstruct() override;
 
 private:
+
+	UPROPERTY(meta = (BindWidget))
+	UCanvasPanel* CanvasPanelSave;
+
 	UPROPERTY(meta = (BindWidget))
 	class UEditableTextBox* SaveNameInput;
 
@@ -34,5 +39,6 @@ private:
 	void OnCancelButtonClicked();
 
 	bool CheckSlotAlreadyExist(const FString& SlotName);
-	
+	FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent);
+	bool IsPointWithinWidget(UWidget* Widget, const FVector2D& Point);
 };

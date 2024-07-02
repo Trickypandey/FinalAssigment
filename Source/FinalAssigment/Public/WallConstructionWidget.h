@@ -9,6 +9,7 @@
 #include "Components/CanvasPanel.h"
 #include "Components/EditableTextBox.h"
 #include "Utility.h"
+#include "Components/Border.h"
 #include "Components/SpinBox.h"
 #include "WallConstructionWidget.generated.h"
 
@@ -50,6 +51,12 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UButton* Ceiling;
+
+	UPROPERTY(meta = (BindWidget))
+	UBorder* InstructionBtn;
+
+	UPROPERTY(meta = (BindWidget))
+	UBorder* Allkeys;
 
 	UFUNCTION()
 	void SpawnWall();

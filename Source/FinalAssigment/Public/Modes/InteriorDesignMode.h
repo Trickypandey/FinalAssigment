@@ -26,6 +26,7 @@ public:
 	virtual void CleanUp() override;
 
 	void SetMeshData(const FFurnitureData& FurnitureData);
+	void DeleteSelectedActor();
 
 private:
 	UFUNCTION()
@@ -48,6 +49,11 @@ private:
 
 	UPROPERTY()
 	UInputAction* OnRotateAction;
+
 	FFurnitureData InteriorCurrentData;
+
+	UPROPERTY()
+	UInputAction* OnDeleteAction;
+
 	void  RotateSelectedActor();
 };

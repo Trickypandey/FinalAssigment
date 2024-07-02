@@ -27,6 +27,17 @@ void UInteriorDesignMode::Setup()
 	}
 }
 
+void UInteriorDesignMode::DeleteSelectedActor()
+{
+
+	if (InteriorDesignActor)
+	{
+		InteriorDesignActor->Destroy();
+		InteriorDesignActor = nullptr;
+
+	}
+}
+
 void UInteriorDesignMode::SetupInputMapping()
 {
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent)) {
@@ -43,12 +54,17 @@ void UInteriorDesignMode::SetupInputMapping()
 		OnRotateAction->ValueType = EInputActionValueType::Boolean;
 
 
+		OnDeleteAction = NewObject<UInputAction>(this);
+		OnDeleteAction->ValueType = EInputActionValueType::Boolean;
+
+
 
 		if (InputMappingContext)
 		{
 			InputMappingContext->MapKey(OnLeftClickAction, EKeys::LeftMouseButton);
 			InputMappingContext->MapKey(OnRightClickAction, EKeys::RightMouseButton);
 			InputMappingContext->MapKey(OnRotateAction, EKeys::R);
+			InputMappingContext->MapKey(OnDeleteAction, EKeys::Delete);
 
 		}
 		else
@@ -61,6 +77,7 @@ void UInteriorDesignMode::SetupInputMapping()
 			EnhancedInputComponent->BindAction(OnLeftClickAction, ETriggerEvent::Completed, this, &UInteriorDesignMode::HandleLeftClickAction);
 			EnhancedInputComponent->BindAction(OnRightClickAction, ETriggerEvent::Completed, this, &UInteriorDesignMode::HandleRightClickAction);
 			EnhancedInputComponent->BindAction(OnRotateAction, ETriggerEvent::Completed, this, &UInteriorDesignMode::RotateSelectedActor);
+			EnhancedInputComponent->BindAction(OnDeleteAction, ETriggerEvent::Completed, this, &UInteriorDesignMode::DeleteSelectedActor);
 		}
 		else
 		{

@@ -117,3 +117,39 @@ bool USaveGameWidget::CheckSlotAlreadyExist(const FString& SlotName)
 
 	return false;
 }
+
+
+FReply USaveGameWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
+
+	FVector2D LocalMousePosition = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
+
+	// Check if click is within the combo box
+	if (IsPointWithinWidget(SaveNameInput, LocalMousePosition) ||
+		IsPointWithinWidget(CancelButton, LocalMousePosition) ||
+		IsPointWithinWidget(SaveButton, LocalMousePosition))
+	{
+		// Do nothing if the click is inside the combo box or button
+		return FReply::Handled();
+	}
+
+	// Remove the widget if click is outside
+	RemoveFromParent();
+	return FReply::Handled();
+}
+
+bool USaveGameWidget::IsPointWithinWidget(UWidget* Widget, const FVector2D& Point)
+{
+	if (!Widget) return false;
+
+	// Get the widget's geometry
+	FGeometry WidgetGeometry = Widget->GetCachedGeometry();
+	FVector2D LocalSize = WidgetGeometry.GetLocalSize();
+	FVector2D TopLeft = WidgetGeometry.GetAccumulatedRenderTransform().TransformPoint(FVector2D::ZeroVector);
+	FVector2D BottomRight = WidgetGeometry.GetAccumulatedRenderTransform().TransformPoint(LocalSize);
+
+	// Check if the point is within the widget's bounds
+	return Point.X >= TopLeft.X && Point.X <= BottomRight.X &&
+		Point.Y >= TopLeft.Y && Point.Y <= BottomRight.Y;
+}

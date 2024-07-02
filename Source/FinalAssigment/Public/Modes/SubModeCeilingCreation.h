@@ -22,6 +22,8 @@ public:
 	virtual void SetupInputMapping() override;
 	virtual void EnterSubMode(UWallConstructionWidget*) override;
 	virtual void ExitSubMode(UWallConstructionWidget*) override;
+	void ShowInstructionTab();
+	void HideInstructionTab();
 
 	void WallLeftClickProcess();
 	void WallRightClickProcess();
@@ -39,4 +41,6 @@ private:
 
 	UPROPERTY()
 	UWallConstructionWidget* CurrentWidget;
+	UPROPERTY()
+	UInputAction* OnShowInstruction;
 };

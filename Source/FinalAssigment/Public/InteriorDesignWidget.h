@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "USelectionScrollBox.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/Border.h"
 #include "InteriorDesignWidget.generated.h"
 
 /**
@@ -22,5 +23,11 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UUSelectionScrollBox* FurnitureScrollBoxInstance;
+
+	UPROPERTY(meta = (BindWidget))
+	UBorder* InstructionBtn;
+
+	UPROPERTY(meta = (BindWidget))
+	UBorder* Allkeys;
 	
 };

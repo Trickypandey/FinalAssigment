@@ -76,6 +76,9 @@ void USubModeFloorCreation::SetupInputMapping()
 	OnWallDelete = NewObject<UInputAction>(this);
 	OnWallDelete->ValueType = EInputActionValueType::Boolean;
 
+	OnShowInstruction = NewObject<UInputAction>(this);
+	OnShowInstruction->ValueType = EInputActionValueType::Boolean;
+
 
 	if (InputMappingContext)
 	{
@@ -83,6 +86,7 @@ void USubModeFloorCreation::SetupInputMapping()
 		InputMappingContext->MapKey(OnWallLeftClick, EKeys::LeftMouseButton);
 		InputMappingContext->MapKey(OnWallRightClick, EKeys::RightMouseButton);
 		InputMappingContext->MapKey(OnWallDelete, EKeys::Delete);
+		InputMappingContext->MapKey(OnShowInstruction, EKeys::I);
 
 	}
 	else
@@ -95,6 +99,8 @@ void USubModeFloorCreation::SetupInputMapping()
 		EnhancedInputComponent->BindAction(OnWallLeftClick, ETriggerEvent::Started, this, &USubModeFloorCreation::WallLeftClickProcess);
 		EnhancedInputComponent->BindAction(OnWallRightClick, ETriggerEvent::Started, this, &USubModeFloorCreation::WallRightClickProcess);
 		EnhancedInputComponent->BindAction(OnWallDelete, ETriggerEvent::Started, this, &USubModeFloorCreation::DeleteSelectedActor);
+		EnhancedInputComponent->BindAction(OnShowInstruction, ETriggerEvent::Started, this, &USubModeFloorCreation::ShowInstructionTab);
+		EnhancedInputComponent->BindAction(OnShowInstruction, ETriggerEvent::Completed, this, &USubModeFloorCreation::HideInstructionTab);
 		
 	}
 	else
@@ -116,6 +122,7 @@ void USubModeFloorCreation::EnterSubMode(UWallConstructionWidget* Widget)
 			CurrentWidget = Widget;
 			Widget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
 			Widget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
+			Widget->Floor->SetBackgroundColor(FColor::Black);
 			if (SelectedActor)
 			{
 				Widget->LengthInput->SetValue(SelectedActor->GetLength());
@@ -134,9 +141,29 @@ void USubModeFloorCreation::ExitSubMode(UWallConstructionWidget* Widget)
 		}
 		if (Widget)
 		{
+			Widget->Floor->SetBackgroundColor(FColor::White);
 			Widget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
 			Widget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
 		}
+	}
+}
+
+void USubModeFloorCreation::ShowInstructionTab()
+{
+
+	if (CurrentWidget)
+	{
+		CurrentWidget->InstructionBtn->SetVisibility(ESlateVisibility::Hidden);
+		CurrentWidget->Allkeys->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+void USubModeFloorCreation::HideInstructionTab()
+{
+	if (CurrentWidget)
+	{
+		CurrentWidget->InstructionBtn->SetVisibility(ESlateVisibility::Visible);
+		CurrentWidget->Allkeys->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 

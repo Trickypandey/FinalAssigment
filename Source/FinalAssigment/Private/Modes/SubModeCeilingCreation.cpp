@@ -50,6 +50,9 @@ void USubModeCeilingCreation::SetupInputMapping()
 	OnWallDelete = NewObject<UInputAction>(this);
 	OnWallDelete->ValueType = EInputActionValueType::Boolean;
 
+	OnShowInstruction = NewObject<UInputAction>(this);
+	OnShowInstruction->ValueType = EInputActionValueType::Boolean;
+
 
 	if (InputMappingContext)
 	{
@@ -57,6 +60,7 @@ void USubModeCeilingCreation::SetupInputMapping()
 		InputMappingContext->MapKey(OnWallLeftClick, EKeys::LeftMouseButton);
 		InputMappingContext->MapKey(OnWallRightClick, EKeys::RightMouseButton);
 		InputMappingContext->MapKey(OnWallDelete, EKeys::Delete);
+		InputMappingContext->MapKey(OnShowInstruction, EKeys::I);
 
 
 	}
@@ -70,6 +74,8 @@ void USubModeCeilingCreation::SetupInputMapping()
 		EnhancedInputComponent->BindAction(OnWallLeftClick, ETriggerEvent::Started, this, &USubModeCeilingCreation::WallLeftClickProcess);
 		EnhancedInputComponent->BindAction(OnWallRightClick, ETriggerEvent::Started, this, &USubModeCeilingCreation::WallRightClickProcess);
 		EnhancedInputComponent->BindAction(OnWallDelete, ETriggerEvent::Started, this, &USubModeCeilingCreation::DeleteSelectedWallActor);
+		EnhancedInputComponent->BindAction(OnShowInstruction, ETriggerEvent::Started, this, &USubModeCeilingCreation::ShowInstructionTab);
+		EnhancedInputComponent->BindAction(OnShowInstruction, ETriggerEvent::Completed, this, &USubModeCeilingCreation::HideInstructionTab);
 
 
 	}
@@ -93,6 +99,7 @@ void USubModeCeilingCreation::EnterSubMode(UWallConstructionWidget* CeilingConst
 			CurrentWidget = CeilingConstructionWidget;
 			CeilingConstructionWidget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
 			CeilingConstructionWidget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
+			CeilingConstructionWidget->Ceiling->SetBackgroundColor(FColor::Black);
 			if (SelectedActor)
 			{
 				CeilingConstructionWidget->LengthInput->SetValue(SelectedActor->GetLength());
@@ -102,7 +109,7 @@ void USubModeCeilingCreation::EnterSubMode(UWallConstructionWidget* CeilingConst
 	}
 }
 
-void USubModeCeilingCreation::ExitSubMode(UWallConstructionWidget* WidgetCeiling)
+void USubModeCeilingCreation::ExitSubMode(UWallConstructionWidget* CeilingConstructionWidget)
 {
 	if (PlayerController) {
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) {
@@ -110,11 +117,32 @@ void USubModeCeilingCreation::ExitSubMode(UWallConstructionWidget* WidgetCeiling
 
 			Cleanup();
 		}
-		if (WidgetCeiling)
+		if (CeilingConstructionWidget)
 		{
-			WidgetCeiling->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
-			WidgetCeiling->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
+			CeilingConstructionWidget->Ceiling->SetBackgroundColor(FColor::White);
+
+			CeilingConstructionWidget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
+			CeilingConstructionWidget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
 		}
+	}
+}
+
+void USubModeCeilingCreation::ShowInstructionTab()
+{
+
+	if (CurrentWidget)
+	{
+		CurrentWidget->InstructionBtn->SetVisibility(ESlateVisibility::Hidden);
+		CurrentWidget->Allkeys->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+void USubModeCeilingCreation::HideInstructionTab()
+{
+	if (CurrentWidget)
+	{
+		CurrentWidget->InstructionBtn->SetVisibility(ESlateVisibility::Visible);
+		CurrentWidget->Allkeys->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 
@@ -208,6 +236,17 @@ void USubModeCeilingCreation::DeleteSelectedWallActor()
 	if (SelectedActor)
 	{
 		SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		TArray<AActor*> AttachedActors;
+		SelectedActor->GetAttachedActors(AttachedActors);
+
+		// Destroy all attached actors
+		for (AActor* AttachedActor : AttachedActors)
+		{
+			if (AttachedActor)
+			{
+				AttachedActor->Destroy();
+			}
+		}
 		SelectedActor->Destroy();
 		SelectedActor = nullptr;
 

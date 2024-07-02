@@ -5,6 +5,7 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "InteriorDesignActor.h"
 #include "Components/TextBlock.h"
 
 USubModeWallCreation::USubModeWallCreation()
@@ -29,6 +30,25 @@ void USubModeWallCreation::Cleanup()
 	}
 }
 
+void USubModeWallCreation::ShowInstructionTab()
+{
+	
+	if (CurrentWidget)
+	{
+		CurrentWidget->InstructionBtn->SetVisibility(ESlateVisibility::Hidden);
+		CurrentWidget->Allkeys->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+void USubModeWallCreation::HideInstructionTab()
+{
+	if (CurrentWidget)
+	{
+		CurrentWidget->InstructionBtn->SetVisibility(ESlateVisibility::Visible);
+		CurrentWidget->Allkeys->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
 void USubModeWallCreation::SetupInputMapping()
 {
 	 UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent);
@@ -46,6 +66,9 @@ void USubModeWallCreation::SetupInputMapping()
 	OnWallDelete = NewObject<UInputAction>(this);
 	OnWallDelete->ValueType = EInputActionValueType::Boolean;
 
+	OnShowInstruction = NewObject<UInputAction>(this);
+	OnShowInstruction->ValueType = EInputActionValueType::Boolean;
+
 	if (InputMappingContext)
 	{
 
@@ -53,6 +76,7 @@ void USubModeWallCreation::SetupInputMapping()
 		InputMappingContext->MapKey(OnWallRightClick, EKeys::RightMouseButton);
 		InputMappingContext->MapKey(OnWallRotate, EKeys::R);
 		InputMappingContext->MapKey(OnWallDelete, EKeys::Delete);
+		InputMappingContext->MapKey(OnShowInstruction, EKeys::I);
 		//InputMappingContext->MapKey(OnDeSelectWall, EKeys::Tab);
 
 	}
@@ -67,6 +91,8 @@ void USubModeWallCreation::SetupInputMapping()
 		EnhancedInputComponent->BindAction(OnWallRightClick, ETriggerEvent::Started, this, &USubModeWallCreation::WallRightClickProcess);
 		EnhancedInputComponent->BindAction(OnWallRotate, ETriggerEvent::Started, this, &USubModeWallCreation::RotateSelectedActor);
 		EnhancedInputComponent->BindAction(OnWallDelete, ETriggerEvent::Started, this, &USubModeWallCreation::DeleteSelectedWallActor);
+		EnhancedInputComponent->BindAction(OnShowInstruction, ETriggerEvent::Started, this, &USubModeWallCreation::ShowInstructionTab);
+		EnhancedInputComponent->BindAction(OnShowInstruction, ETriggerEvent::Completed, this, &USubModeWallCreation::HideInstructionTab);
 		//EnhancedInputComponent->BindAction(OnDeSelectWall, ETriggerEvent::Started, this, &UBuildingCreationMode::DeSelectedSelectedActor);
 
 	}
@@ -90,6 +116,8 @@ void USubModeWallCreation::EnterSubMode(UWallConstructionWidget* Widget)
 			CurrentWidget = Widget;
 			Widget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
 			Widget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
+			Widget->Wall->SetBackgroundColor(FColor::Black);
+			Widget->ToggleDoorButton->SetVisibility(ESlateVisibility::Visible);
 			//Widget->WidthInput->SetVisibility(ESlateVisibility::Visible);
 			/*Widget->Wall->SetBackgroundColor(FLinearColor(184.0f / 255.0f, 184.0f / 255.0f, 184.0f / 255.0f, 255.0f / 255.0f));*/
 
@@ -112,6 +140,8 @@ void USubModeWallCreation::ExitSubMode(UWallConstructionWidget* Widget)
 		{
 			Widget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
 			Widget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
+			Widget->Wall->SetBackgroundColor(FColor::White);
+			Widget->ToggleDoorButton->SetVisibility(ESlateVisibility::Hidden);
 			/*Widget->Wall->SetBackgroundColor(FLinearColor(126.0f / 255.0f, 126.0f / 255.0f, 126.0f / 255.0f, 1.0f));*/
 
 			//Widget->WidthInput->SetVisibility(ESlateVisibility::Visible);
@@ -119,7 +149,6 @@ void USubModeWallCreation::ExitSubMode(UWallConstructionWidget* Widget)
 		Cleanup();
 	}
 }
-
 
 void USubModeWallCreation::Setup()
 {
@@ -189,8 +218,6 @@ void USubModeWallCreation::WallLeftClickProcess()
 	}
 }
 
-
-
 void USubModeWallCreation::WallRightClickProcess()
 {
 	// Deselect the current actor if it is in moving state
@@ -234,7 +261,6 @@ void USubModeWallCreation::WallRightClickProcess()
 	
 }
 
-
 void USubModeWallCreation::RotateSelectedActor()
 {
 	if (SelectedActor)
@@ -251,6 +277,19 @@ void USubModeWallCreation::DeleteSelectedWallActor()
 	if (SelectedActor)
 	{
 		SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+
+		TArray<AActor*> AttachedActors;
+		SelectedActor->GetAttachedActors(AttachedActors);
+
+		// Destroy all attached actors
+		for (AActor* AttachedActor : AttachedActors)
+		{
+			if (AttachedActor)
+			{
+				AttachedActor->Destroy();
+			}
+		}
+
 		SelectedActor->Destroy();
 		SelectedActor = nullptr;
 
@@ -261,4 +300,3 @@ void USubModeWallCreation::SetIsDoorAddingFlag(bool flag)
 {
 	bIsDoorAdding = flag;
 }
-

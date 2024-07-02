@@ -12,8 +12,6 @@ AArchVizPlayerController::AArchVizPlayerController()
     CurrentMode = EModes::RoadConstruction;
 }
 
-
-
 void AArchVizPlayerController::SetupInputComponent()
 {
     Super::SetupInputComponent();
@@ -91,7 +89,7 @@ void AArchVizPlayerController::BeginPlay()
    }
 
    ModeChangeHandle(CurrentMode);
-}
+} 
 
 
 void AArchVizPlayerController::SetIsAddingDoor(bool DoorFlag)

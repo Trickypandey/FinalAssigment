@@ -21,6 +21,8 @@ public:
 
 	virtual void Setup() override;
 	virtual void Cleanup() override;
+	void ShowInstructionTab();
+	void HideInstructionTab();
 	virtual void SetupInputMapping() override;
 	virtual void EnterSubMode(UWallConstructionWidget* Widget) override;
 	virtual void ExitSubMode(UWallConstructionWidget* Widget) override;
@@ -34,9 +36,14 @@ public:
 	UPROPERTY()
 	UWallConstructionWidget* CurrentWidget;
 
+
 private:
 	
 	bool bIsDoorAdding = false;
+
+	UPROPERTY()
+	UInputAction* OnShowInstruction;
+
 	UPROPERTY()
 	UInputAction* OnWallLeftClick;
 
