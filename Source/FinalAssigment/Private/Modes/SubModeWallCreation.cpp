@@ -5,6 +5,7 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Components/TextBlock.h"
 
 USubModeWallCreation::USubModeWallCreation()
 {
@@ -154,12 +155,16 @@ void USubModeWallCreation::WallLeftClickProcess()
 
 			SelectedActor = WallActor;
 
-			if (bIsDoorAdding)
+			if (bIsDoorAdding && WallActor->WallState == EBuildingSubModeState::Placed)
 			{
 				// If adding a door is requested, update the wall actor
 				WallActor->SetIsDoorAdded(true);
 				WallActor->SetDoorLocation(LocalClickLocation.X);
 				WallActor->CreateMesh();
+			}
+			else if(bIsDoorAdding && WallActor->WallState == EBuildingSubModeState::Moving)
+			{
+				WallActor->WallState = EBuildingSubModeState::Placed;
 			}
 			else
 			{
@@ -251,3 +256,9 @@ void USubModeWallCreation::DeleteSelectedWallActor()
 
 	}
 }
+
+void USubModeWallCreation::SetIsDoorAddingFlag(bool flag)
+{
+	bIsDoorAdding = flag;
+}
+

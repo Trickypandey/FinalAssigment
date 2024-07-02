@@ -19,12 +19,12 @@ public:
 
 	virtual void Setup() override;
 	virtual void Cleanup() override;
+	void DeleteSelectedActor();
 	virtual void SetupInputMapping() override;
 	virtual void EnterSubMode(UWallConstructionWidget*) override;
 	virtual void ExitSubMode(UWallConstructionWidget*) override;
 	void WallLeftClickProcess();
 	void WallRightClickProcess();
-	void DeleteSelectedWallActor();
 
 private:
 	UPROPERTY()

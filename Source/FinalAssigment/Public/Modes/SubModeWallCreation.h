@@ -29,13 +29,14 @@ public:
 	void RotateSelectedActor();
 	void WallLeftClickProcess();
 	void DeleteSelectedWallActor();
+	void SetIsDoorAddingFlag(bool flag);
 
-	bool bIsDoorAdding = false;
 	UPROPERTY()
 	UWallConstructionWidget* CurrentWidget;
 
 private:
 	
+	bool bIsDoorAdding = false;
 	UPROPERTY()
 	UInputAction* OnWallLeftClick;
 

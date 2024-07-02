@@ -16,6 +16,7 @@ void UWallConstructionWidget::NativeConstruct()
 	if (ToggleDoorButton)
 	{
 		ToggleDoorButton->OnClicked.AddDynamic(this, &UWallConstructionWidget::OnToggleDoorClicked);
+		
 	}
 
 	if (Wall)
@@ -83,6 +84,14 @@ void UWallConstructionWidget::OnToggleDoorClicked()
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
 		PlayerController->SetIsAddingDoor(bIsAddingDoor);
+	}
+	if (bIsAddingDoor)
+	{
+		ToggleDoorButton->SetBackgroundColor(FColor::Black);
+	}
+	else
+	{
+		ToggleDoorButton->SetBackgroundColor(FColor::White);
 	}
 }
 

@@ -97,7 +97,7 @@ void AArchVizPlayerController::BeginPlay()
 void AArchVizPlayerController::SetIsAddingDoor(bool DoorFlag)
 {
 
-    BuildingConstructionMode->WallCreationMode->bIsDoorAdding = DoorFlag;
+    BuildingConstructionMode->WallCreationMode->SetIsDoorAddingFlag(DoorFlag) ;
 }
 
 void AArchVizPlayerController::ModeChangeHandle(EModes Mode)

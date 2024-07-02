@@ -35,16 +35,32 @@ void USubModeFloorCreation::Cleanup()
 
 }
 
-void USubModeFloorCreation::DeleteSelectedWallActor()
+void USubModeFloorCreation::DeleteSelectedActor()
 {
 	if (SelectedActor)
 	{
+		// Disable custom depth rendering for the selected actor
 		SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+
+		// Collect all attached actors
+		TArray<AActor*> AttachedActors;
+		SelectedActor->GetAttachedActors(AttachedActors);
+
+		// Destroy all attached actors
+		for (AActor* AttachedActor : AttachedActors)
+		{
+			if (AttachedActor)
+			{
+				AttachedActor->Destroy();
+			}
+		}
+
+		// Destroy the selected actor
 		SelectedActor->Destroy();
 		SelectedActor = nullptr;
-
 	}
 }
+
 
 void USubModeFloorCreation::SetupInputMapping()
 {
@@ -78,7 +94,7 @@ void USubModeFloorCreation::SetupInputMapping()
 	{
 		EnhancedInputComponent->BindAction(OnWallLeftClick, ETriggerEvent::Started, this, &USubModeFloorCreation::WallLeftClickProcess);
 		EnhancedInputComponent->BindAction(OnWallRightClick, ETriggerEvent::Started, this, &USubModeFloorCreation::WallRightClickProcess);
-		EnhancedInputComponent->BindAction(OnWallDelete, ETriggerEvent::Started, this, &USubModeFloorCreation::DeleteSelectedWallActor);
+		EnhancedInputComponent->BindAction(OnWallDelete, ETriggerEvent::Started, this, &USubModeFloorCreation::DeleteSelectedActor);
 		
 	}
 	else

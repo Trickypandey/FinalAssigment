@@ -111,40 +111,40 @@ void URoadCreationMode::CleanUp()
 
 void URoadCreationMode::HandleLeftClickAction()
 {
-	if (IsValid(CurrentRoadActor)) {
-		FHitResult HitResult;
-		PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
+	FHitResult HitResult;
+	PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
 
-		if (HitResult.bBlockingHit) {
-			AActor* HitActor = HitResult.GetActor();
-			if (HitActor && HitActor->IsA(ARoadActor::StaticClass())) {
-				ResetCustomDepthForAllRoadActors();
+	if (HitResult.bBlockingHit) {
+		AActor* HitActor = HitResult.GetActor();
+		if (HitActor && HitActor->IsA(ARoadActor::StaticClass())) {
+			// Reset custom depth for all road actors
+			ResetCustomDepthForAllRoadActors();
 
-				CurrentRoadActor = Cast<ARoadActor>(HitActor);
-				CurrentRoadActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
+			// Set the current road actor and enable custom depth
+			CurrentRoadActor = Cast<ARoadActor>(HitActor);
+			CurrentRoadActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
 
-				return;
+			return;
+		}
+		else if (CurrentRoadActor) {
+			const FVector ClickLocation = HitResult.Location;
+			CurrentRoadActor->AddSplinePoint(ClickLocation);
+
+			if (DynamicMaterial) {
+				CurrentRoadActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
 			}
 
-			if (CurrentRoadActor) {
-				const FVector ClickLocation = HitResult.Location;
-				CurrentRoadActor->AddSplinePoint(ClickLocation);
-
-				if (DynamicMaterial) {
-					CurrentRoadActor->ProceduralMeshComponent->SetMaterial(0, DynamicMaterial);
-				}
-
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Added spline point at location: %s"), *ClickLocation.ToString()));
-			}
-			else {
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("No road actor selected or no hit detected"));
-			}
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Added spline point at location: %s"), *ClickLocation.ToString()));
 		}
 		else {
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("No hit detected"));
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("No road actor selected or no hit detected"));
 		}
 	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("No hit detected"));
+	}
 }
+
 
 void URoadCreationMode::HandleRightClickAction()
 {
