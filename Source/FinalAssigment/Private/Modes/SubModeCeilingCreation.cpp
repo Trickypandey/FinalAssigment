@@ -3,6 +3,7 @@
 
 #include "Modes/SubModeCeilingCreation.h"
 
+#include "ArchVizPlayerController.h"
 #include "CeilingActor.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -150,6 +151,7 @@ void USubModeCeilingCreation::ToggleMovementSelectedActor()
 	if (SelectedActor)
 	{
 		Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Moving;
+		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor movement started");
 	}
 }
 
@@ -174,6 +176,7 @@ void USubModeCeilingCreation::WallLeftClickProcess()
 		{
 			if (Cast<AWallActor>(HitResult.GetActor()))
 			{
+				Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor movement started");
 				Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
 			}
 		}
@@ -201,6 +204,8 @@ void USubModeCeilingCreation::WallLeftClickProcess()
 					SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
 				}
 				SpawnedActor->WallState = EBuildingSubModeState::Moving;
+				Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor selected for moving");
+
 			}
 
 		}
@@ -218,14 +223,11 @@ void USubModeCeilingCreation::WallRightClickProcess()
 	{
 		if (SelectedActor  && Cast<ACeilingActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
 		{
-			/*Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
-			SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);*/
 			SelectedActor->Destroy();
 			SelectedActor = nullptr;
+			Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor destroyed");
+
 		}
-		/*
-		else
-		{*/
 			if (SelectedActor)
 			{
 				SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
@@ -233,15 +235,24 @@ void USubModeCeilingCreation::WallRightClickProcess()
 				FActorSpawnParameters SpawnParams;
 				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-				if (ACeilingActor* SpawnedActor = GetWorld()->SpawnActor<ACeilingActor>(ACeilingActor::StaticClass(), spawnLocation, FRotator::ZeroRotator, SpawnParams))
+			if (ACeilingActor* SpawnedActor = GetWorld()->SpawnActor<ACeilingActor>(ACeilingActor::StaticClass(), spawnLocation, FRotator::ZeroRotator, SpawnParams))
+			{
+				SpawnedActor->WallState = EBuildingSubModeState::Moving;
+				SelectedActor = SpawnedActor;
+				SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
+				if (DynamicMaterial)
 				{
-					SpawnedActor->WallState = EBuildingSubModeState::Moving;
-					SelectedActor = SpawnedActor;
-					if (DynamicMaterial)
-					{
-						SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
-					}
+					SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
 				}
+
+				if (SelectedActor)
+				{
+					SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
+					SelectedActor->GetProceduralMeshComponent()->CustomDepthStencilValue = 2.0;
+				}
+			}
+			Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor spawned and selected for moving");
+
 			
 	}
 
@@ -265,6 +276,9 @@ void USubModeCeilingCreation::DeleteSelectedWallActor()
 		}
 		SelectedActor->Destroy();
 		SelectedActor = nullptr;
+
+		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Selected actor and attached actors destroyed");
+
 
 	}
 }

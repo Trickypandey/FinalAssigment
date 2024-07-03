@@ -40,6 +40,7 @@ void USubModeFloorCreation::ToggleMovementSelectedActor()
 	if (SelectedActor)
 	{
 		Cast<AFloorActor>(SelectedActor)->WallState = EBuildingSubModeState::Moving;
+		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor movement started");
 	}
 }
 void USubModeFloorCreation::DeleteSelectedActor()
@@ -65,6 +66,8 @@ void USubModeFloorCreation::DeleteSelectedActor()
 		// Destroy the selected actor
 		SelectedActor->Destroy();
 		SelectedActor = nullptr;
+		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Selected actor and attached actors destroyed");
+
 	}
 }
 
@@ -191,6 +194,8 @@ void USubModeFloorCreation::WallLeftClickProcess()
 		if (SelectedActor && Cast<AFloorActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
 		{
 			Cast<AFloorActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
+			Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor placed");
+
 			
 		}
 		else
@@ -218,6 +223,7 @@ void USubModeFloorCreation::WallLeftClickProcess()
 					SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
 				}
 				SpawnedActor->WallState = EBuildingSubModeState::Moving;
+				Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor selected for moving");
 			}
 			
 		}
@@ -232,6 +238,7 @@ void USubModeFloorCreation::WallRightClickProcess()
 	{
 		;
 		SelectedActor->Destroy();
+		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor destroyed");
 		SelectedActor = nullptr;
 	}
 	
@@ -260,6 +267,8 @@ void USubModeFloorCreation::WallRightClickProcess()
 				SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
 				SelectedActor->GetProceduralMeshComponent()->CustomDepthStencilValue = 2.0;
 			}
+			Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor spawned and selected for moving");
+
 		}
 	}
 	

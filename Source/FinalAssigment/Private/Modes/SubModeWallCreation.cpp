@@ -3,6 +3,7 @@
 
 #include "Modes/SubModeWallCreation.h"
 
+#include "ArchVizPlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InteriorDesignActor.h"
@@ -54,6 +55,8 @@ void USubModeWallCreation::ToggleMovementSelectedActor()
 	if (SelectedActor)
 	{
 		Cast<AWallActor>(SelectedActor)->WallState = EBuildingSubModeState::Moving;
+		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor movement started");
+
 	}
 }
 
@@ -203,10 +206,14 @@ void USubModeWallCreation::WallLeftClickProcess()
 				// If adding a door is requested, update the wall actor
 				WallActor->SetIsDoorAdded(true);
 				WallActor->SetDoorLocation(LocalClickLocation.X);
+				Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Door added to the wall");
+
 			}
 			else if(bIsDoorAdding && WallActor->WallState == EBuildingSubModeState::Moving)
 			{
 				WallActor->WallState = EBuildingSubModeState::Placed;
+				Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Wall placed while adding door");
+
 			}
 			else
 			{
@@ -238,6 +245,8 @@ void USubModeWallCreation::WallRightClickProcess()
 	{
 		SelectedActor->Destroy();
 		SelectedActor = nullptr;
+		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor destroyed");
+
 	}
 	
 		if (SelectedActor)
@@ -269,6 +278,8 @@ void USubModeWallCreation::WallRightClickProcess()
 				{
 					SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
 				}
+				Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor spawned and selected for moving");
+
 			}
 		}
 	
@@ -305,6 +316,8 @@ void USubModeWallCreation::DeleteSelectedWallActor()
 
 		SelectedActor->Destroy();
 		SelectedActor = nullptr;
+		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Selected actor and its attached actors destroyed");
+
 
 	}
 }
