@@ -26,6 +26,7 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Wall")
     void SetDoorLocation(float X);
+    FVector GetDoorLocation();
 
     UFUNCTION(BlueprintCallable, Category = "Wall")
     void SetIsDoorAdded(bool Flag);
@@ -60,7 +61,7 @@ private:
     UStaticMesh* DoorMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall", meta = (AllowPrivateAccess = "true"))
-    FVector DoorLocation;
+    FVector DoorLocation{0};
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall", meta = (AllowPrivateAccess = "true"))
     bool IsDoorAdded;

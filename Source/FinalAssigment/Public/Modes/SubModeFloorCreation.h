@@ -19,6 +19,7 @@ public:
 
 	virtual void Setup() override;
 	virtual void Cleanup() override;
+	void ToggleMovementSelectedActor();
 	void DeleteSelectedActor();
 	virtual void SetupInputMapping() override;
 	virtual void EnterSubMode(UWallConstructionWidget*) override;
@@ -42,4 +43,7 @@ private:
 
 	UPROPERTY()
 	UInputAction* OnShowInstruction;
+
+	UPROPERTY()
+	UInputAction* StartMovement;
 };

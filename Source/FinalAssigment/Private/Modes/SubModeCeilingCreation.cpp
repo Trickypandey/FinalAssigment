@@ -53,6 +53,9 @@ void USubModeCeilingCreation::SetupInputMapping()
 	OnShowInstruction = NewObject<UInputAction>(this);
 	OnShowInstruction->ValueType = EInputActionValueType::Boolean;
 
+	StartMovement = NewObject<UInputAction>(this);
+	StartMovement->ValueType = EInputActionValueType::Boolean;
+
 
 	if (InputMappingContext)
 	{
@@ -61,6 +64,8 @@ void USubModeCeilingCreation::SetupInputMapping()
 		InputMappingContext->MapKey(OnWallRightClick, EKeys::RightMouseButton);
 		InputMappingContext->MapKey(OnWallDelete, EKeys::Delete);
 		InputMappingContext->MapKey(OnShowInstruction, EKeys::I);
+		InputMappingContext->MapKey(StartMovement, EKeys::M);
+
 
 
 	}
@@ -76,6 +81,9 @@ void USubModeCeilingCreation::SetupInputMapping()
 		EnhancedInputComponent->BindAction(OnWallDelete, ETriggerEvent::Started, this, &USubModeCeilingCreation::DeleteSelectedWallActor);
 		EnhancedInputComponent->BindAction(OnShowInstruction, ETriggerEvent::Started, this, &USubModeCeilingCreation::ShowInstructionTab);
 		EnhancedInputComponent->BindAction(OnShowInstruction, ETriggerEvent::Completed, this, &USubModeCeilingCreation::HideInstructionTab);
+		EnhancedInputComponent->BindAction(StartMovement, ETriggerEvent::Completed, this, &USubModeCeilingCreation::ToggleMovementSelectedActor);
+
+
 
 
 	}
@@ -134,6 +142,14 @@ void USubModeCeilingCreation::ShowInstructionTab()
 	{
 		CurrentWidget->InstructionBtn->SetVisibility(ESlateVisibility::Hidden);
 		CurrentWidget->Allkeys->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+void USubModeCeilingCreation::ToggleMovementSelectedActor()
+{
+	if (SelectedActor)
+	{
+		Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Moving;
 	}
 }
 

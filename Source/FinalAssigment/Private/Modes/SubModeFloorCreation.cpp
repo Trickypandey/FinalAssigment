@@ -35,6 +35,13 @@ void USubModeFloorCreation::Cleanup()
 
 }
 
+void USubModeFloorCreation::ToggleMovementSelectedActor()
+{
+	if (SelectedActor)
+	{
+		Cast<AFloorActor>(SelectedActor)->WallState = EBuildingSubModeState::Moving;
+	}
+}
 void USubModeFloorCreation::DeleteSelectedActor()
 {
 	if (SelectedActor)
@@ -79,6 +86,9 @@ void USubModeFloorCreation::SetupInputMapping()
 	OnShowInstruction = NewObject<UInputAction>(this);
 	OnShowInstruction->ValueType = EInputActionValueType::Boolean;
 
+	StartMovement = NewObject<UInputAction>(this);
+	StartMovement->ValueType = EInputActionValueType::Boolean;
+
 
 	if (InputMappingContext)
 	{
@@ -87,6 +97,7 @@ void USubModeFloorCreation::SetupInputMapping()
 		InputMappingContext->MapKey(OnWallRightClick, EKeys::RightMouseButton);
 		InputMappingContext->MapKey(OnWallDelete, EKeys::Delete);
 		InputMappingContext->MapKey(OnShowInstruction, EKeys::I);
+		InputMappingContext->MapKey(StartMovement, EKeys::M);
 
 	}
 	else
@@ -101,6 +112,8 @@ void USubModeFloorCreation::SetupInputMapping()
 		EnhancedInputComponent->BindAction(OnWallDelete, ETriggerEvent::Started, this, &USubModeFloorCreation::DeleteSelectedActor);
 		EnhancedInputComponent->BindAction(OnShowInstruction, ETriggerEvent::Started, this, &USubModeFloorCreation::ShowInstructionTab);
 		EnhancedInputComponent->BindAction(OnShowInstruction, ETriggerEvent::Completed, this, &USubModeFloorCreation::HideInstructionTab);
+		EnhancedInputComponent->BindAction(StartMovement, ETriggerEvent::Completed, this, &USubModeFloorCreation::ToggleMovementSelectedActor);
+
 		
 	}
 	else

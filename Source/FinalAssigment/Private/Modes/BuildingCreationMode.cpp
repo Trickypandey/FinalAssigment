@@ -162,6 +162,10 @@ void UBuildingCreationMode::SaveBuildings(UUArchVizSaveGame*& SaveGameInstance)
             ActorData.Length = WallActor->GetLength();
             //ActorData.ActorName = WallActor->GetName();
             ActorData.bIsDoorAdded = WallActor->GetDoorFlag();
+            if (WallActor->GetDoorFlag())
+            {
+                ActorData.DoorLocation = WallActor->GetDoorLocation();
+            }
 
             if (UMaterialInterface* CurrentMaterial = WallActor->GetProceduralMeshComponent()->GetMaterial(0))
             {
@@ -336,6 +340,11 @@ void UBuildingCreationMode::LoadBuildings(UUArchVizSaveGame*& LoadGameInstance)
             if (auto WallActor = Cast<AWallActor>(SpawnedActor))
             {
                 WallActor->SetIsDoorAdded(ActorData.bIsDoorAdded);
+                if (WallActor->GetDoorFlag())
+                {
+                    WallActor->SetDoorLocation(ActorData.DoorLocation.X);
+                }
+               
             }
 
             if (auto SlabActor = Cast<ASlabActor>(SpawnedActor))

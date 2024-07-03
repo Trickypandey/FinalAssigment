@@ -23,6 +23,7 @@ public:
 	virtual void Cleanup() override;
 	void ShowInstructionTab();
 	void HideInstructionTab();
+	void ToggleMovementSelectedActor();
 	virtual void SetupInputMapping() override;
 	virtual void EnterSubMode(UWallConstructionWidget* Widget) override;
 	virtual void ExitSubMode(UWallConstructionWidget* Widget) override;
@@ -36,10 +37,12 @@ public:
 	UPROPERTY()
 	UWallConstructionWidget* CurrentWidget;
 
-
 private:
 	
 	bool bIsDoorAdding = false;
+
+	UPROPERTY()
+	UInputAction* StartMovement;
 
 	UPROPERTY()
 	UInputAction* OnShowInstruction;

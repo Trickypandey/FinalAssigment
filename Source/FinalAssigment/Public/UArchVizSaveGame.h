@@ -40,6 +40,9 @@ struct FBuildingActorData
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     bool bIsDoorAdded = false;
 
+    UPROPERTY()
+    FVector DoorLocation {0};
+
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     FTransform ActorTransform;
 
@@ -102,6 +105,4 @@ public:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     FSaveGameData SaveData;
-
-
 };

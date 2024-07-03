@@ -23,6 +23,7 @@ public:
 	virtual void EnterSubMode(UWallConstructionWidget*) override;
 	virtual void ExitSubMode(UWallConstructionWidget*) override;
 	void ShowInstructionTab();
+	void ToggleMovementSelectedActor();
 	void HideInstructionTab();
 
 	void WallLeftClickProcess();
@@ -43,4 +44,7 @@ private:
 	UWallConstructionWidget* CurrentWidget;
 	UPROPERTY()
 	UInputAction* OnShowInstruction;
+
+	UPROPERTY()
+	UInputAction* StartMovement;
 };

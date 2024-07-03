@@ -60,6 +60,11 @@ void AWallActor::SetDoorLocation(float X)
     CreateMesh();
 }
 
+FVector AWallActor::GetDoorLocation()
+{
+    return DoorLocation;
+}
+
 void AWallActor::SetIsDoorAdded(bool Flag)
 {
     IsDoorAdded = Flag;

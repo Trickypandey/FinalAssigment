@@ -49,6 +49,14 @@ void USubModeWallCreation::HideInstructionTab()
 	}
 }
 
+void USubModeWallCreation::ToggleMovementSelectedActor()
+{
+	if (SelectedActor)
+	{
+		Cast<AWallActor>(SelectedActor)->WallState = EBuildingSubModeState::Moving;
+	}
+}
+
 void USubModeWallCreation::SetupInputMapping()
 {
 	 UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent);
@@ -69,6 +77,10 @@ void USubModeWallCreation::SetupInputMapping()
 	OnShowInstruction = NewObject<UInputAction>(this);
 	OnShowInstruction->ValueType = EInputActionValueType::Boolean;
 
+
+	StartMovement = NewObject<UInputAction>(this);
+	StartMovement->ValueType = EInputActionValueType::Boolean;
+
 	if (InputMappingContext)
 	{
 
@@ -77,6 +89,7 @@ void USubModeWallCreation::SetupInputMapping()
 		InputMappingContext->MapKey(OnWallRotate, EKeys::R);
 		InputMappingContext->MapKey(OnWallDelete, EKeys::Delete);
 		InputMappingContext->MapKey(OnShowInstruction, EKeys::I);
+		InputMappingContext->MapKey(StartMovement, EKeys::M);
 		//InputMappingContext->MapKey(OnDeSelectWall, EKeys::Tab);
 
 	}
@@ -93,6 +106,7 @@ void USubModeWallCreation::SetupInputMapping()
 		EnhancedInputComponent->BindAction(OnWallDelete, ETriggerEvent::Started, this, &USubModeWallCreation::DeleteSelectedWallActor);
 		EnhancedInputComponent->BindAction(OnShowInstruction, ETriggerEvent::Started, this, &USubModeWallCreation::ShowInstructionTab);
 		EnhancedInputComponent->BindAction(OnShowInstruction, ETriggerEvent::Completed, this, &USubModeWallCreation::HideInstructionTab);
+		EnhancedInputComponent->BindAction(StartMovement, ETriggerEvent::Completed, this, &USubModeWallCreation::ToggleMovementSelectedActor);
 		//EnhancedInputComponent->BindAction(OnDeSelectWall, ETriggerEvent::Started, this, &UBuildingCreationMode::DeSelectedSelectedActor);
 
 	}
@@ -189,7 +203,6 @@ void USubModeWallCreation::WallLeftClickProcess()
 				// If adding a door is requested, update the wall actor
 				WallActor->SetIsDoorAdded(true);
 				WallActor->SetDoorLocation(LocalClickLocation.X);
-				WallActor->CreateMesh();
 			}
 			else if(bIsDoorAdding && WallActor->WallState == EBuildingSubModeState::Moving)
 			{
@@ -198,7 +211,7 @@ void USubModeWallCreation::WallLeftClickProcess()
 			else
 			{
 				// Select the wall actor for movement
-				WallActor->WallState = EBuildingSubModeState::Moving;
+				//WallActor->WallState = EBuildingSubModeState::Moving;
 			}
 		}
 
