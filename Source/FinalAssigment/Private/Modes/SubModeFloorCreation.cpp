@@ -92,12 +92,16 @@ void USubModeFloorCreation::SetupInputMapping()
 	StartMovement = NewObject<UInputAction>(this);
 	StartMovement->ValueType = EInputActionValueType::Boolean;
 
+	OnActorRotate = NewObject<UInputAction>(this);
+	OnActorRotate->ValueType = EInputActionValueType::Boolean;
+
 
 	if (InputMappingContext)
 	{
 
 		InputMappingContext->MapKey(OnWallLeftClick, EKeys::LeftMouseButton);
 		InputMappingContext->MapKey(OnWallRightClick, EKeys::RightMouseButton);
+		InputMappingContext->MapKey(OnActorRotate, EKeys::R);
 		InputMappingContext->MapKey(OnWallDelete, EKeys::Delete);
 		InputMappingContext->MapKey(OnShowInstruction, EKeys::I);
 		InputMappingContext->MapKey(StartMovement, EKeys::M);
@@ -116,6 +120,8 @@ void USubModeFloorCreation::SetupInputMapping()
 		EnhancedInputComponent->BindAction(OnShowInstruction, ETriggerEvent::Started, this, &USubModeFloorCreation::ShowInstructionTab);
 		EnhancedInputComponent->BindAction(OnShowInstruction, ETriggerEvent::Completed, this, &USubModeFloorCreation::HideInstructionTab);
 		EnhancedInputComponent->BindAction(StartMovement, ETriggerEvent::Completed, this, &USubModeFloorCreation::ToggleMovementSelectedActor);
+		EnhancedInputComponent->BindAction(OnActorRotate, ETriggerEvent::Started, this, &USubModeFloorCreation::RotateSelectedActor);
+
 
 		
 	}
@@ -125,6 +131,14 @@ void USubModeFloorCreation::SetupInputMapping()
 	}
 }
 
+void USubModeFloorCreation::RotateSelectedActor()
+{
+	if (SelectedActor)
+	{
+		SelectedActor->AddActorLocalRotation(FRotator(0.f, 90.f, 0.f));
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Actor rotated by 80 degrees"));
+	}
+}
 void USubModeFloorCreation::EnterSubMode(UWallConstructionWidget* Widget)
 {
 	if (PlayerController) {

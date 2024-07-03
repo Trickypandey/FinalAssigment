@@ -57,6 +57,9 @@ void USubModeCeilingCreation::SetupInputMapping()
 	StartMovement = NewObject<UInputAction>(this);
 	StartMovement->ValueType = EInputActionValueType::Boolean;
 
+	OnActorRotate = NewObject<UInputAction>(this);
+	OnActorRotate->ValueType = EInputActionValueType::Boolean;
+
 
 	if (InputMappingContext)
 	{
@@ -65,6 +68,7 @@ void USubModeCeilingCreation::SetupInputMapping()
 		InputMappingContext->MapKey(OnWallRightClick, EKeys::RightMouseButton);
 		InputMappingContext->MapKey(OnWallDelete, EKeys::Delete);
 		InputMappingContext->MapKey(OnShowInstruction, EKeys::I);
+		InputMappingContext->MapKey(OnActorRotate, EKeys::R);
 		InputMappingContext->MapKey(StartMovement, EKeys::M);
 
 
@@ -83,6 +87,8 @@ void USubModeCeilingCreation::SetupInputMapping()
 		EnhancedInputComponent->BindAction(OnShowInstruction, ETriggerEvent::Started, this, &USubModeCeilingCreation::ShowInstructionTab);
 		EnhancedInputComponent->BindAction(OnShowInstruction, ETriggerEvent::Completed, this, &USubModeCeilingCreation::HideInstructionTab);
 		EnhancedInputComponent->BindAction(StartMovement, ETriggerEvent::Completed, this, &USubModeCeilingCreation::ToggleMovementSelectedActor);
+		EnhancedInputComponent->BindAction(OnActorRotate, ETriggerEvent::Started, this, &USubModeCeilingCreation::RotateSelectedActor);
+
 
 
 
@@ -94,7 +100,14 @@ void USubModeCeilingCreation::SetupInputMapping()
 	}
 	
 }
-
+void USubModeCeilingCreation::RotateSelectedActor()
+{
+	if (SelectedActor)
+	{
+		SelectedActor->AddActorLocalRotation(FRotator(0.f, 90.f, 0.f));
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Actor rotated by 80 degrees"));
+	}
+}
 void USubModeCeilingCreation::EnterSubMode(UWallConstructionWidget* CeilingConstructionWidget)
 {
 	if (PlayerController) {
