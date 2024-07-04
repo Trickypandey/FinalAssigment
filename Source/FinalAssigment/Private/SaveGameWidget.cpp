@@ -44,6 +44,7 @@ void USaveGameWidget::SaveSlot(FString SlotName)
             if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
             {
                 PlayerController->BroadcastToast("Successfully Saved");
+                SaveNameInput->SetText(FText::GetEmpty());
                 RemoveFromParent();
             }
         }

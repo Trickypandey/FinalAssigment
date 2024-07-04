@@ -33,7 +33,6 @@ void USubModeWallCreation::Cleanup()
 
 void USubModeWallCreation::ShowInstructionTab()
 {
-	
 	if (CurrentWidget)
 	{
 		CurrentWidget->InstructionBtn->SetVisibility(ESlateVisibility::Hidden);
