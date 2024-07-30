@@ -164,13 +164,13 @@ void UBuildingCreationMode::SaveBuildings(UUArchVizSaveGame*& SaveGameInstance)
             ActorData.bIsDoorAdded = WallActor->GetDoorFlag();
             if (WallActor->GetDoorFlag())
             {
-                ActorData.DoorLocation = WallActor->GetDoorLocation();
+               // ActorData.DoorLocation = WallActor->GetDoorLocation();
             }
 
-            if (UMaterialInterface* CurrentMaterial = WallActor->GetProceduralMeshComponent()->GetMaterial(0))
+           /* if (UMaterialInterface* CurrentMaterial = WallActor->GetProceduralMeshComponent()->GetMaterial(0))
             {
                 ActorData.Material = CurrentMaterial;
-            }
+            }*/
 
             // Save attached interior actors
             TArray<AActor*> AttachedActors;
@@ -342,7 +342,7 @@ void UBuildingCreationMode::LoadBuildings(UUArchVizSaveGame*& LoadGameInstance)
                 WallActor->SetIsDoorAdded(ActorData.bIsDoorAdded);
                 if (WallActor->GetDoorFlag())
                 {
-                    WallActor->SetDoorLocation(ActorData.DoorLocation.X);
+                    //WallActor->SetDoorLocation(ActorData.DoorLocation.X);
                 }
                
             }

@@ -48,7 +48,7 @@ void USubModeFloorCreation::DeleteSelectedActor()
 	if (SelectedActor)
 	{
 		// Disable custom depth rendering for the selected actor
-		SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		Cast<AFloorActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
 
 		// Collect all attached actors
 		TArray<AActor*> AttachedActors;
@@ -121,9 +121,6 @@ void USubModeFloorCreation::SetupInputMapping()
 		EnhancedInputComponent->BindAction(OnShowInstruction, ETriggerEvent::Completed, this, &USubModeFloorCreation::HideInstructionTab);
 		EnhancedInputComponent->BindAction(StartMovement, ETriggerEvent::Completed, this, &USubModeFloorCreation::ToggleMovementSelectedActor);
 		EnhancedInputComponent->BindAction(OnActorRotate, ETriggerEvent::Started, this, &USubModeFloorCreation::RotateSelectedActor);
-
-
-		
 	}
 	else
 	{
@@ -155,8 +152,8 @@ void USubModeFloorCreation::EnterSubMode(UWallConstructionWidget* Widget)
 			Widget->Floor->SetBackgroundColor(FColor::Black);
 			if (SelectedActor)
 			{
-				Widget->LengthInput->SetValue(SelectedActor->GetLength());
-				Widget->WidthInput->SetValue(SelectedActor->GetWidth());
+				Widget->LengthInput->SetValue(Cast<AFloorActor>(SelectedActor)->GetLength());
+				Widget->WidthInput->SetValue(Cast<AFloorActor>(SelectedActor)->GetWidth());
 			}
 		}
 	}
@@ -209,8 +206,6 @@ void USubModeFloorCreation::WallLeftClickProcess()
 		{
 			Cast<AFloorActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
 			Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor placed");
-
-			
 		}
 		else
 		{
@@ -221,22 +216,22 @@ void USubModeFloorCreation::WallLeftClickProcess()
 			{
 				if (SelectedActor)
 				{
-					SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+					Cast<AFloorActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
 				}
-				SpawnedActor->WallState = EBuildingSubModeState::Moving;
+				
 				SelectedActor = SpawnedActor;
 
 				if (SelectedActor)
 				{
-					SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
-					CurrentWidget->LengthInput->SetValue(SelectedActor->GetLength());
-					CurrentWidget->WidthInput->SetValue(SelectedActor->GetWidth());
+					Cast<AFloorActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
+					CurrentWidget->LengthInput->SetValue(Cast<AFloorActor>(SelectedActor)->GetLength());
+					CurrentWidget->WidthInput->SetValue(Cast<AFloorActor>(SelectedActor)->GetWidth());
 				}
 				if (DynamicMaterial)
 				{
-					SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
+					Cast<AFloorActor>(SelectedActor)->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
 				}
-				SpawnedActor->WallState = EBuildingSubModeState::Moving;
+				
 				Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor selected for moving");
 			}
 			
@@ -250,7 +245,7 @@ void USubModeFloorCreation::WallRightClickProcess()
 {
 	if (SelectedActor && Cast<AFloorActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
 	{
-		;
+		
 		SelectedActor->Destroy();
 		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor destroyed");
 		SelectedActor = nullptr;
@@ -258,7 +253,7 @@ void USubModeFloorCreation::WallRightClickProcess()
 	
 	if (SelectedActor)
 	{
-		SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		Cast<AFloorActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
 	}
 	FHitResult HitResult;
 	PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
@@ -274,12 +269,12 @@ void USubModeFloorCreation::WallRightClickProcess()
 			SelectedActor = SpawnedActor;
 			if (DynamicMaterial)
 			{
-				SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
+				Cast<AFloorActor>(SelectedActor)->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
 			}
 			if (SelectedActor)
 			{
-				SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
-				SelectedActor->GetProceduralMeshComponent()->CustomDepthStencilValue = 2.0;
+				Cast<AFloorActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
+				Cast<AFloorActor>(SelectedActor)->GetProceduralMeshComponent()->CustomDepthStencilValue = 2.0;
 			}
 			Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor spawned and selected for moving");
 

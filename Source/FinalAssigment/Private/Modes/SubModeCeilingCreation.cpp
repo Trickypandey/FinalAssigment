@@ -122,10 +122,11 @@ void USubModeCeilingCreation::EnterSubMode(UWallConstructionWidget* CeilingConst
 			CeilingConstructionWidget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
 			CeilingConstructionWidget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
 			CeilingConstructionWidget->Ceiling->SetBackgroundColor(FColor::Black);
-			if (SelectedActor)
+			if (auto* actor = Cast<ACeilingActor>(SelectedActor) )
 			{
-				CeilingConstructionWidget->LengthInput->SetValue(SelectedActor->GetLength());
-				CeilingConstructionWidget->WidthInput->SetValue(SelectedActor->GetWidth());
+				
+				CeilingConstructionWidget->LengthInput->SetValue(actor->GetLength());
+				CeilingConstructionWidget->WidthInput->SetValue(actor->GetWidth());
 			}
 		}
 	}
@@ -200,23 +201,23 @@ void USubModeCeilingCreation::WallLeftClickProcess()
 
 			if (ACeilingActor* SpawnedActor = Cast<ACeilingActor>(HitResult.GetActor()))
 			{
-				if (SelectedActor)
+				if (auto* actor = Cast<ACeilingActor>(SelectedActor))
 				{
-					SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+					actor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
 				}
-				SpawnedActor->WallState = EBuildingSubModeState::Moving;
+				
 				SelectedActor = SpawnedActor;
 				if (SelectedActor && CurrentWidget)
 				{
-					SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
-					CurrentWidget->LengthInput->SetValue(SelectedActor->GetLength());
-					CurrentWidget->WidthInput->SetValue(SelectedActor->GetWidth());
+					Cast<ACeilingActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
+					CurrentWidget->LengthInput->SetValue(Cast<ACeilingActor>(SelectedActor)->GetLength());
+					CurrentWidget->WidthInput->SetValue(Cast<ACeilingActor>(SelectedActor)->GetWidth());
 				}
 				if (DynamicMaterial)
 				{
-					SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
+					Cast<ACeilingActor>(SelectedActor)->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
 				}
-				SpawnedActor->WallState = EBuildingSubModeState::Moving;
+			
 				Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor selected for moving");
 
 			}
@@ -243,7 +244,7 @@ void USubModeCeilingCreation::WallRightClickProcess()
 		}
 			if (SelectedActor)
 			{
-				SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+				Cast<ACeilingActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
 			}
 				FActorSpawnParameters SpawnParams;
 				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -252,16 +253,16 @@ void USubModeCeilingCreation::WallRightClickProcess()
 			{
 				SpawnedActor->WallState = EBuildingSubModeState::Moving;
 				SelectedActor = SpawnedActor;
-				SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
+				Cast<ACeilingActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
 				if (DynamicMaterial)
 				{
-					SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
+					Cast<ACeilingActor>(SelectedActor)->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
 				}
 
 				if (SelectedActor)
 				{
-					SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
-					SelectedActor->GetProceduralMeshComponent()->CustomDepthStencilValue = 2.0;
+					Cast<ACeilingActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
+					Cast<ACeilingActor>(SelectedActor)->GetProceduralMeshComponent()->CustomDepthStencilValue = 2.0;
 				}
 			}
 			Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor spawned and selected for moving");
@@ -275,7 +276,7 @@ void USubModeCeilingCreation::DeleteSelectedWallActor()
 {
 	if (SelectedActor)
 	{
-		SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		Cast<ACeilingActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
 		TArray<AActor*> AttachedActors;
 		SelectedActor->GetAttachedActors(AttachedActors);
 

@@ -35,8 +35,9 @@ enum class EModes : uint8
 UENUM(BlueprintType)
 enum class EBuildingSubModeState : uint8 {
 	Placed,
-	Moving
-};
+	Moving,
+	Constructing
+}; 
 
 
 namespace Utility

@@ -7,9 +7,9 @@ ACubeActor::ACubeActor()
     ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ProceduralMesh"));
     RootComponent = ProceduralMesh;
 
-    Length = 100.0f;
-    Width = 100.0f;
-    Height = 100.0f;
+    Length = 100;
+    Width = 100;
+    Height = 100;
 }
 
 void ACubeActor::SetLength(float length)
@@ -109,6 +109,25 @@ void ACubeActor::CreateMesh()
     AddUVs();
 
     ProceduralMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, TArray<FLinearColor>(), TArray<FProcMeshTangent>(), true);
+}
+void ACubeActor::SetDimension(int32 NewLength, int32 NewWidth, int32 NewHeight)
+{
+    Length = NewLength;
+    Width = NewWidth;
+    Height = NewHeight;
+
+    // Update the mesh or any other necessary properties
+    CreateMesh();
+}
+
+void ACubeActor::SetParentActor(AActor* parentActor)
+{
+    ParentActor = parentActor;
+}
+
+AActor* ACubeActor::GetParentActor()
+{
+    return ParentActor;
 }
 
 void ACubeActor::ResetArrays()

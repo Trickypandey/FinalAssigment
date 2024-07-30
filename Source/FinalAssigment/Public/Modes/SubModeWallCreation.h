@@ -59,5 +59,8 @@ private:
 	UPROPERTY()
 	UInputAction* OnWallDelete;
 
+	bool bFirstClickDone = false;
+	bool bIsNewWall = false;
+
 	
 };

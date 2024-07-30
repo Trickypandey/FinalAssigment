@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "ArchVizPlayerController.h"
 #include "Modes/UBuildingCreationSubMode.h"
+#include "ArchVizPlayerController.h"
 
 void UUBuildingCreationSubMode::InitParams(APlayerController* Controller) {
 	PlayerController = Controller;
@@ -10,10 +10,15 @@ void UUBuildingCreationSubMode::InitParams(APlayerController* Controller) {
 
 void UUBuildingCreationSubMode::SetMaterial(UMaterialInterface* Material)
 {
-	if (SelectedActor && SelectedActor->GetProceduralMeshComponent())
+	if (Material)
 	{
 		DynamicMaterial = Material;
-		SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, Material);
+
+		if(auto actor = Cast<AWallActor>(SelectedActor))
+		{
+			
+			actor->SetMaterial(DynamicMaterial);
+		}
 		
 	}
 }
@@ -22,7 +27,7 @@ ACubeActor* UUBuildingCreationSubMode::GetSelectedActor()
 {
 	if (SelectedActor)
 	{
-		return SelectedActor;
+		return Cast<ACubeActor>(SelectedActor) ;
 	}
 	return nullptr;
 }

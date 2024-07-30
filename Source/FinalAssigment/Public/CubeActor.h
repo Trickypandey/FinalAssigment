@@ -22,6 +22,14 @@ public:
 
 	void SetWidth(float width);
     virtual void CreateMesh();
+	void SetDimension(int32 NewLength, int32 NewWidth, int32 NewHeight);
+
+    void SetParentActor(AActor* ParentActor);
+    AActor* GetParentActor();
+    
+private:
+    UPROPERTY()
+    AActor* ParentActor;
 
 protected:
     virtual void BeginPlay() override;

@@ -3,14 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AWallDoorActor.h"
 #include "CubeActor.h"
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
+#include "UArchVizSaveGame.h"
 #include "Utility.h"
 #include "WallActor.generated.h"
 
+
 UCLASS()
-class FINALASSIGMENT_API AWallActor : public ACubeActor
+class FINALASSIGMENT_API AWallActor : public AActor
 {
 	GENERATED_BODY()
 	
@@ -22,11 +25,13 @@ protected:
     virtual void OnConstruction(const FTransform& Transform) override;
 
 public:
+	void HandleConstructingState();
     virtual void Tick(float DeltaTime) override;
 
-    UFUNCTION(BlueprintCallable, Category = "Wall")
-    void SetDoorLocation(float X);
-    FVector GetDoorLocation();
+ 
+
+    void SetWallEndLocation(FVector X);
+    void SetWallStartLocation(FVector X);
 
     UFUNCTION(BlueprintCallable, Category = "Wall")
     void SetIsDoorAdded(bool Flag);
@@ -36,40 +41,67 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Wall")
     void SetDimension(int32 _Length, int32 _Width);
 
-    void AttachDoor(UStaticMesh*& DoorStaticMesh);
 
-    void HandleMovingState();
+	void SetMaterial(UMaterialInterface* NewMaterial);
+	int GetWallIndexFromLocation(FVector Location) const;
+
+	void HandleMovingState();
     void HandlePlacedState();
 
-	virtual void CreateMesh() override;
+	void CreateWallSegment();
+	void SpawnMesh(FVector SpawnLocation);
+    void ReplaceDoorWithWall(AAWallDoorActor* DoorWallActor);
+	int GetLength() const
+	{
+        return Length;
+	}
 
-    UPROPERTY()
+	void AddDoor(const FVector& Vector);
+	void ReplaceWallWithDoor(int32 index);
+	void ReplaceWallWithDoor(FVector HitLocation);
+	void SpawnDoorActor(FVector SpawnLocation);
+	FVector GetLocationFromIndex(int32 Index) const;
+	void HighlightSelectedActor();
+	void UnhighlightDeselectedActor();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall", meta = (AllowPrivateAccess = "true"))
+    bool IsDoorAdded;
+
+	UPROPERTY()
     EBuildingCreationType ConstructionType;
 
     UPROPERTY()
     EBuildingSubModeState WallState;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall", meta = (AllowPrivateAccess = "true"))
+	int Length;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall", meta = (AllowPrivateAccess = "true"))
+	int Width;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall", meta = (AllowPrivateAccess = "true"))
+	int Height;
+    UPROPERTY()
+    int NumberOfSegment;
+
+    UPROPERTY()
+	FRotator Rotation;
+
+    UPROPERTY()
+	UMaterialInterface* Material;
+	TArray<bool> bHasDoorWall;
+    
+
+
 private:
-	virtual void ResetArrays() override;
-	virtual void AddQuad(int32 V0, int32 V1, int32 V2, int32 V3) override;
-	virtual void AddUVs() override;
-	virtual void AddNormals() override;
+    UPROPERTY()
+    TArray<ACubeActor*> WallSegments;
 
-    UPROPERTY(EditDefaultsOnly, Category = "Components")
-    UStaticMeshComponent* DoorMeshComponent;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components",meta = (AllowPrivateAccess))
-    UStaticMesh* DoorMesh;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall", meta = (AllowPrivateAccess = "true"))
-    FVector DoorLocation{0};
+    UPROPERTY()
+    TArray<AAWallDoorActor*> DoorWalls;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall", meta = (AllowPrivateAccess = "true"))
-    bool IsDoorAdded;
+    FVector Startlocation;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall", meta = (AllowPrivateAccess = "true"))
-    float DoorWidth;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall", meta = (AllowPrivateAccess = "true"))
-    float DoorHeight;
-
+    FVector Endlocation;
 };

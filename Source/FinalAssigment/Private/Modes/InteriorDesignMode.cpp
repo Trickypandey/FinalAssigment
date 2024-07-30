@@ -58,6 +58,8 @@ void UInteriorDesignMode::SetupInputMapping()
 		OnDeleteAction->ValueType = EInputActionValueType::Boolean;
 
 
+		ShowInstruction = NewObject<UInputAction>(this);
+		ShowInstruction->ValueType = EInputActionValueType::Boolean;
 
 		if (InputMappingContext)
 		{
@@ -65,6 +67,7 @@ void UInteriorDesignMode::SetupInputMapping()
 			InputMappingContext->MapKey(OnRightClickAction, EKeys::RightMouseButton);
 			InputMappingContext->MapKey(OnRotateAction, EKeys::R);
 			InputMappingContext->MapKey(OnDeleteAction, EKeys::Delete);
+			InputMappingContext->MapKey(ShowInstruction, EKeys::I);
 
 		}
 		else
@@ -78,6 +81,8 @@ void UInteriorDesignMode::SetupInputMapping()
 			EnhancedInputComponent->BindAction(OnRightClickAction, ETriggerEvent::Completed, this, &UInteriorDesignMode::HandleRightClickAction);
 			EnhancedInputComponent->BindAction(OnRotateAction, ETriggerEvent::Completed, this, &UInteriorDesignMode::RotateSelectedActor);
 			EnhancedInputComponent->BindAction(OnDeleteAction, ETriggerEvent::Completed, this, &UInteriorDesignMode::DeleteSelectedActor);
+			EnhancedInputComponent->BindAction(ShowInstruction, ETriggerEvent::Started, this, &UInteriorDesignMode::ShowInstructionTab);
+			EnhancedInputComponent->BindAction(ShowInstruction, ETriggerEvent::Completed, this, &UInteriorDesignMode::HideInstructionTab);
 		}
 		else
 		{
@@ -125,8 +130,26 @@ void UInteriorDesignMode::CleanUp()
 void UInteriorDesignMode::SetMeshData(const FFurnitureData& FurnitureData)
 {
 	InteriorCurrentData = FurnitureData;
+}
 
+void UInteriorDesignMode::ShowInstructionTab()
+{
+	auto RoadWidget = Cast<UInteriorDesignWidget>(Widget);
+	if (Widget && RoadWidget)
+	{
+		RoadWidget->InstructionBtn->SetVisibility(ESlateVisibility::Hidden);
+		RoadWidget->Allkeys->SetVisibility(ESlateVisibility::Visible);
+	}
+}
 
+void UInteriorDesignMode::HideInstructionTab()
+{
+	auto RoadWidget = Cast<UInteriorDesignWidget>(Widget);
+	if (Widget && RoadWidget)
+	{
+		RoadWidget->InstructionBtn->SetVisibility(ESlateVisibility::Visible);
+		RoadWidget->Allkeys->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 void UInteriorDesignMode::HandleLeftClickAction()
@@ -260,8 +283,6 @@ void UInteriorDesignMode::HandleRightClickAction()
 		}
 	}
 }
-
-
 
 void UInteriorDesignMode::RotateSelectedActor()
 {

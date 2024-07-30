@@ -23,7 +23,7 @@ void USubModeWallCreation::Cleanup()
 			SelectedActor = nullptr;
 			ActorToDestroy->Destroy(); 
 		}
-		ActorToDestroy->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		// ActorToDestroy->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
 	}
 	else
 	{
@@ -53,6 +53,7 @@ void USubModeWallCreation::ToggleMovementSelectedActor()
 {
 	if (SelectedActor)
 	{
+		bIsNewWall = false;
 		Cast<AWallActor>(SelectedActor)->WallState = EBuildingSubModeState::Moving;
 		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor movement started");
 
@@ -134,12 +135,10 @@ void USubModeWallCreation::EnterSubMode(UWallConstructionWidget* Widget)
 			Widget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
 			Widget->Wall->SetBackgroundColor(FColor::Black);
 			Widget->ToggleDoorButton->SetVisibility(ESlateVisibility::Visible);
-			//Widget->WidthInput->SetVisibility(ESlateVisibility::Visible);
-			/*Widget->Wall->SetBackgroundColor(FLinearColor(184.0f / 255.0f, 184.0f / 255.0f, 184.0f / 255.0f, 255.0f / 255.0f));*/
 
 			if (SelectedActor)
 			{
-				Widget->LengthInput->SetValue(SelectedActor->GetLength());
+				//Widget->LengthInput->SetValue(SelectedActor->GetLength());
 			}
 		}
 	}
@@ -158,9 +157,7 @@ void USubModeWallCreation::ExitSubMode(UWallConstructionWidget* Widget)
 			Widget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Hidden);
 			Widget->Wall->SetBackgroundColor(FColor::White);
 			Widget->ToggleDoorButton->SetVisibility(ESlateVisibility::Hidden);
-			/*Widget->Wall->SetBackgroundColor(FLinearColor(126.0f / 255.0f, 126.0f / 255.0f, 126.0f / 255.0f, 1.0f));*/
-
-			//Widget->WidthInput->SetVisibility(ESlateVisibility::Visible);
+			
 		}
 		Cleanup();
 	}
@@ -180,62 +177,84 @@ void USubModeWallCreation::WallLeftClickProcess()
 		const FVector ClickLocation = HitResult.Location;
 
 
-		if (SelectedActor && Cast<AWallActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving && !bIsDoorAdding)
+		if (SelectedActor && Cast<AWallActor>(SelectedActor)->WallState == EBuildingSubModeState::Constructing && !bIsDoorAdding && bFirstClickDone)
 		{
+			bFirstClickDone = false;
 			Cast<AWallActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
-			/*FVector SnappedLocation = Utility::SnapToGrid(ClickLocation, FVector(10));*/
-			//SelectedActor->SetActorLocation(SnappedLocation);
+			Cast<AWallActor>(SelectedActor)->SetWallEndLocation(ClickLocation);
+
+			
 		}
-		// Check if the clicked actor is a wall
-		else if (AWallActor* WallActor = Cast<AWallActor>(HitResult.GetActor()))
+		else if(SelectedActor && Cast<AWallActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
 		{
-			FVector LocalClickLocation = WallActor->GetTransform().InverseTransformPosition(ClickLocation);
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("World Clicked Location: X=%f, Y=%f, Z=%f"), ClickLocation.X, ClickLocation.Y, ClickLocation.Z));
-
-			// Deselect the previously selected actor if there is one
-			if (SelectedActor)
+			if (bIsNewWall)
 			{
-				SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
-			}
-
-			SelectedActor = WallActor;
-
-			if (bIsDoorAdding && WallActor->WallState == EBuildingSubModeState::Placed)
-			{
-				// If adding a door is requested, update the wall actor
-				WallActor->SetIsDoorAdded(true);
-				WallActor->SetDoorLocation(LocalClickLocation.X);
-				Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Door added to the wall");
-
-			}
-			else if(bIsDoorAdding && WallActor->WallState == EBuildingSubModeState::Moving)
-			{
-				WallActor->WallState = EBuildingSubModeState::Placed;
-				Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Wall placed while adding door");
-
+				bFirstClickDone = true;
+				Cast<AWallActor>(SelectedActor)->SetWallStartLocation(ClickLocation);
+				Cast<AWallActor>(SelectedActor)->WallState = EBuildingSubModeState::Constructing;
+				Cast<AWallActor>(SelectedActor)->CreateWallSegment();
 			}
 			else
 			{
-				// Select the wall actor for movement
-				//WallActor->WallState = EBuildingSubModeState::Moving;
+				bFirstClickDone = false;
+				Cast<AWallActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
+				Cast<AWallActor>(SelectedActor)->SetWallEndLocation(ClickLocation);
+			}
+			
+		}
+		else if (AActor* HitActor = HitResult.GetActor())
+		{
+			if (ACubeActor* CubeActor = Cast<ACubeActor>(HitActor))
+			{
+				
+				if (AWallActor* WallActor = Cast<AWallActor>(CubeActor->GetParentActor()))
+				{
+					FVector LocalClickLocation = WallActor->GetTransform().InverseTransformPosition(HitResult.Location);
+
+					if (SelectedActor)
+					{
+						//SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+					}
+
+					SelectedActor = WallActor;
+
+					if (bIsDoorAdding && WallActor->WallState == EBuildingSubModeState::Placed)
+					{
+						WallActor->SetIsDoorAdded(true);
+						WallActor->AddDoor(LocalClickLocation);
+						Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Door added to the wall");
+					}
+					else if (bIsDoorAdding && WallActor->WallState == EBuildingSubModeState::Moving)
+					{
+						WallActor->WallState = EBuildingSubModeState::Placed;
+						Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Wall placed while adding door");
+					}
+					else
+					{
+						// Select the wall actor for movement
+						//WallActor->WallState = EBuildingSubModeState::Moving;
+					}
+				}
+				
 			}
 		}
 
 		// Highlight the selected actor
 		if (SelectedActor)
 		{
-			SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
+			// SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
+			Cast<AWallActor>(SelectedActor)->HighlightSelectedActor();
 			if (SelectedActor)
 			{
-				CurrentWidget->LengthInput->SetValue(SelectedActor->GetLength());
+				//CurrentWidget->LengthInput->SetValue(SelectedActor->GetLength());
 			}
-			if (DynamicMaterial)
-			{
-				SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
-			}
+			
 		}
 	}
 }
+
+
+
 
 void USubModeWallCreation::WallRightClickProcess()
 {
@@ -245,42 +264,40 @@ void USubModeWallCreation::WallRightClickProcess()
 		SelectedActor->Destroy();
 		SelectedActor = nullptr;
 		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor destroyed");
-
 	}
 	
-		if (SelectedActor)
-		{
-			SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
-		}
-		// If no actor is being moved, create a new wall
-		FHitResult HitResult;
-		PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
-		if (HitResult.bBlockingHit)
-		{
-			FVector spawnLocation = HitResult.Location;
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	if (SelectedActor)
+	{
+		//SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+	}
+	// If no actor is being moved, create a new wall
+	FHitResult HitResult;
+	PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
+	if (HitResult.bBlockingHit)
+	{
+		FVector spawnLocation = HitResult.Location;
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-			if (AWallActor* SpwanedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), spawnLocation, FRotator::ZeroRotator, SpawnParams))
+		if (AWallActor* SpwanedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), spawnLocation, FRotator::ZeroRotator, SpawnParams))
+		{
+			SpwanedActor->SetIsDoorAdded(bIsDoorAdding);
+			SelectedActor = SpwanedActor;
+			bIsNewWall = true;
+
+			if (SelectedActor)
 			{
-				SpwanedActor->SetIsDoorAdded(bIsDoorAdding);
-				SpwanedActor->WallState = EBuildingSubModeState::Moving;
-				SelectedActor = SpwanedActor;
-
-				if (SelectedActor)
-				{
-					SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
-					SelectedActor->GetProceduralMeshComponent()->CustomDepthStencilValue = 2.0;
-				}
-
-				if (DynamicMaterial)
-				{
-					SelectedActor->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
-				}
-				Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor spawned and selected for moving");
-
+				//SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
+				//SelectedActor->GetProceduralMeshComponent()->CustomDepthStencilValue = 2.0;
 			}
+
+			if (DynamicMaterial)
+			{
+				Cast<AWallActor>(SelectedActor)->SetMaterial(DynamicMaterial);
+			}
+			Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor spawned and selected for moving");
 		}
+	}
 	
 }
 
@@ -299,12 +316,10 @@ void USubModeWallCreation::DeleteSelectedWallActor()
 	
 	if (SelectedActor)
 	{
-		SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		//SelectedActor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
 
 		TArray<AActor*> AttachedActors;
 		SelectedActor->GetAttachedActors(AttachedActors);
-
-		// Destroy all attached actors
 		for (AActor* AttachedActor : AttachedActors)
 		{
 			if (AttachedActor)

@@ -4,39 +4,35 @@ AWallActor::AWallActor()
 {
     PrimaryActorTick.bCanEverTick = true;
     ConstructionType = EBuildingCreationType::Wall;
-    WallState = EBuildingSubModeState::Placed;
-    Length = 400;
+    WallState = EBuildingSubModeState::Moving;
+    Length = 100;
     Width = 20;
     Height = 400;
-    IsDoorAdded = false;
-    DoorWidth = 90.0f;
-    DoorHeight = 200.0f; 
-    DoorLocation = FVector(100.0f, 0.0f, 0.0f);
-    DoorMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DoorMesh"));
-    DoorMeshComponent->SetupAttachment(RootComponent);
-
-    DoorMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/StarterContent/Props/SM_Door.SM_Door"));
+    
 }
 
 void AWallActor::BeginPlay()
 {
     Super::BeginPlay();
-    CreateMesh();
-    if (DoorMesh)
+  
+    /*if (DoorMesh && IsDoorAdded)
     {
         AttachDoor(DoorMesh);
-    }
+    }*/
 }
 
 void AWallActor::OnConstruction(const FTransform& Transform)
 {
     Super::OnConstruction(Transform);
-    CreateMesh();
-    if (DoorMesh)
+    CreateWallSegment();
+   
+    /*if (DoorMesh && IsDoorAdded)
     {
         AttachDoor(DoorMesh);
-    }
+    }*/
 }
+
+
 
 void AWallActor::Tick(float DeltaTime)
 {
@@ -49,26 +45,47 @@ void AWallActor::Tick(float DeltaTime)
 	    case EBuildingSubModeState::Moving:
 	        HandleMovingState();
 	        break;
+		case EBuildingSubModeState::Constructing:
+            HandleConstructingState();
+    	    break;
     }
 
    
 }
 
-void AWallActor::SetDoorLocation(float X)
+
+
+void AWallActor::SetWallEndLocation(FVector X)
 {
-    DoorLocation.X = X;
-    CreateMesh();
+    for (int32 i = WallSegments.Num() - 1; i >= 0; --i)
+    {
+        if (WallSegments.IsValidIndex(i))
+        {
+            auto* WallToRemove = WallSegments[i];
+            if (WallToRemove)
+            {
+                WallToRemove->Destroy();
+                WallToRemove = nullptr;
+            }
+        }
+    }
+    WallSegments.Empty();
+
+   
+
+    Endlocation = Utility::SnapToGrid(X, FVector(100));;
+    CreateWallSegment();
 }
 
-FVector AWallActor::GetDoorLocation()
+void AWallActor::SetWallStartLocation(FVector X)
 {
-    return DoorLocation;
+    Startlocation = Utility::SnapToGrid(X, FVector(100));
 }
 
 void AWallActor::SetIsDoorAdded(bool Flag)
 {
     IsDoorAdded = Flag;
-    CreateMesh();
+   
 }
 
 bool AWallActor::GetDoorFlag()
@@ -80,25 +97,86 @@ void AWallActor::SetDimension(int32 _Length, int32 _Width)
 {
     this->Length = _Length;
     this->Width = _Width;
-    CreateMesh();
+    
 }
 
-void AWallActor::AttachDoor(UStaticMesh*& DoorStaticMesh)
+
+
+void AWallActor::SetMaterial(UMaterialInterface* NewMaterial)
 {
-    if (DoorStaticMesh)
+    if (NewMaterial)
     {
-        DoorMeshComponent->SetStaticMesh(DoorStaticMesh);
+        Material = NewMaterial;
+        for (auto Wall : WallSegments)
+        {
+            if (Wall)
+            {
+                Wall->GetProceduralMeshComponent()->SetMaterial(0, Material);
+            }
+        }
+       /* for (AArchVizDoorWallActor* DoorWall : DoorWalls)
+        {
+            if (DoorWall)
+            {
+                DoorWall->SetMaterial(Material);
+            }
+        }*/
     }
 }
 
+int AWallActor::GetWallIndexFromLocation(FVector Location) const
+{
+    FVector WallDirection = (Endlocation - Startlocation).GetSafeNormal();
+    float DistanceAlongWall = FVector::DotProduct(Location - Startlocation, WallDirection);
+
+    int32 WallIndex = FMath::FloorToInt(DistanceAlongWall / Length);
+    WallIndex = FMath::Clamp(WallIndex, 0, bHasDoorWall.Num() - 1);
+    
+
+    return WallIndex;
+	
+}
 void AWallActor::HandleMovingState()
 {
     APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
     if (PlayerController)
     {
-        
         FHitResult HitResult;
-        FCollisionQueryParams TraceParams(FName(TEXT("LineTrace")), true,this);
+        FCollisionQueryParams TraceParams(FName(TEXT("LineTrace")), true);
+
+        // Ignore all actors in WallSegments
+        for (ACubeActor* WallSegment : WallSegments)
+        {
+            TraceParams.AddIgnoredActor(WallSegment);
+        }
+        TraceParams.AddIgnoredActor(this);
+
+        FVector CursorWorldLocation;
+        FVector CursorWorldDirection;
+        PlayerController->DeprojectMousePositionToWorld(CursorWorldLocation, CursorWorldDirection);
+
+        FVector Start = CursorWorldLocation;
+        FVector End = CursorWorldLocation + CursorWorldDirection * 10000;
+        if (GetWorld()->LineTraceSingleByObjectType(HitResult, Start, End, FCollisionObjectQueryParams(ECC_WorldStatic), TraceParams))
+        {
+            SetActorLocation(HitResult.Location);
+        }
+        else
+        {
+          
+            UE_LOG(LogTemp, Warning, TEXT("Line trace did not hit any actor."));
+        }
+    }
+}
+
+void AWallActor::HandleConstructingState()
+{
+    APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+    if (PlayerController)
+    {
+
+        FHitResult HitResult;
+        FCollisionQueryParams TraceParams(FName(TEXT("LineTrace")), true, this);
 
         FVector CursorWorldLocation;
         FVector CursorWorldDirection;
@@ -106,242 +184,295 @@ void AWallActor::HandleMovingState()
 
         if (GetWorld()->LineTraceSingleByChannel(HitResult, CursorWorldLocation, CursorWorldLocation + CursorWorldDirection * 10000, ECC_Visibility, TraceParams))
         {
-            FVector NewLocation =Utility::SnapToGrid(HitResult.Location,FVector(10));
-            SetActorLocation(NewLocation);
+           
+            SetWallEndLocation(HitResult.Location);
+         
+            //CreateWallSegment();
+           
         }
-        
-    }
-}
 
+    }
+
+}
 
 void AWallActor::HandlePlacedState()
 {
 }
 
-void AWallActor::CreateMesh()
+void AWallActor::CreateWallSegment()
 {
-    float L = Length;  // Full width
-    float W = Width;  // Full depth
-    float H = Height;  // Full height
-    float DoorLeft = DoorLocation.X - DoorWidth / 2;
-    float DoorRight = DoorLocation.X + DoorWidth / 2;
-    DoorWidth = FMath::Min(DoorWidth, Height);
-    DoorHeight = FMath::Min(DoorHeight, Height - 10);
-
-    // Ensure the door cut is within the wall bounds
-    if (DoorLeft < -L / 2 || DoorRight > L / 2 || DoorHeight > Height)
+    float Distance = 0;
+    FVector& StartPoint = Startlocation;
+    FVector& EndPoint = Endlocation;
+    if (FMath::Abs(StartPoint.X - EndPoint.X) > FMath::Abs(StartPoint.Y - EndPoint.Y))
     {
-        UE_LOG(LogTemp, Warning, TEXT("Door location is out of bounds!"));
-        return;
-    }
-
-    ProceduralMesh->ClearAllMeshSections();
-    ResetArrays();
-    DoorMeshComponent->SetRelativeLocation(FVector(DoorRight,DoorLocation.Y,DoorLocation.Z));
-    DoorMeshComponent->SetRelativeRotation(FRotator(0, -90, 0));
-
-    if (IsDoorAdded)
-    {
-	    Vertices.Add(FVector(-L / 2, -W / 2, 0));  // 0
-	    Vertices.Add(FVector(-L / 2, W / 2, 0));   // 1
-	    Vertices.Add(FVector(-L / 2, W / 2, H));   // 2
-	    Vertices.Add(FVector(-L / 2, -W / 2, H));  // 3
-
-	    Vertices.Add(FVector(-L / 2, -W / 2, 0));  // 4
-	    Vertices.Add(FVector(L / 2, -W / 2, 0));   // 5
-	    Vertices.Add(FVector(L / 2, W / 2, 0));    // 6
-	    Vertices.Add(FVector(-L / 2, W / 2, 0));   // 7
-
-	    Vertices.Add(FVector(L / 2, -W / 2, 0));   // 8
-	    Vertices.Add(FVector(L / 2, -W / 2, H));   // 9
-	    Vertices.Add(FVector(L / 2, W / 2, H));    // 10
-	    Vertices.Add(FVector(L / 2, W / 2, 0));    // 11
-
-	    Vertices.Add(FVector(L / 2, -W / 2, H));   // 12
-	    Vertices.Add(FVector(-L / 2, -W / 2, H));  // 13
-	    Vertices.Add(FVector(-L / 2, W / 2, H));   // 14
-	    Vertices.Add(FVector(L / 2, W / 2, H));    // 15
-
-
-        // door left
-        Vertices.Add(FVector(-L / 2, W / 2, DoorHeight));   // 16
-        Vertices.Add(FVector(DoorLeft, W / 2, DoorHeight));   // 17
-        Vertices.Add(FVector(DoorLeft, W / 2, 0));   // 18
-        Vertices.Add(FVector(-L/2 , W / 2, 0));   // 19
-
-
-        // door top
-        Vertices.Add(FVector(-L / 2, W / 2, H));   // 20
-        Vertices.Add(FVector(L / 2, W / 2, H));   // 21
-        Vertices.Add(FVector(L / 2, W / 2, DoorHeight));   // 22
-        Vertices.Add(FVector(-L / 2, W / 2, DoorHeight));//23
-
-        // door right 
-        Vertices.Add(FVector(DoorRight, W / 2, DoorHeight));   // 24
-        Vertices.Add(FVector(L/2, W / 2, DoorHeight));   // 25
-        Vertices.Add(FVector(L / 2, W / 2, 0));   // 26
-        Vertices.Add(FVector(DoorRight, W / 2, 0));   // 27
-
-        // BACK LEFT 
-        Vertices.Add(FVector(-L / 2, -W / 2, DoorHeight));   // 28
-        Vertices.Add(FVector(DoorLeft, -W / 2, DoorHeight));   // 29
-        Vertices.Add(FVector(DoorLeft, -W / 2, 0));   // 30
-        Vertices.Add(FVector(-L/2, -W / 2, 0));//31
-
-
-        // BACK RIGHT
-        Vertices.Add(FVector(DoorRight, -W / 2, DoorHeight));   // 32
-        Vertices.Add(FVector(L/2, -W / 2, DoorHeight));   // 33
-        Vertices.Add(FVector(L/2, -W / 2, 0));   // 34
-        Vertices.Add(FVector(DoorRight, -W / 2, 0));//35
-
-        // back top
-
-        Vertices.Add(FVector(-L/2, -W / 2, H));   // 36
-        Vertices.Add(FVector(L/2, -W / 2, H));   // 37
-        Vertices.Add(FVector(L/2,- W / 2, DoorHeight));   // 38
-        Vertices.Add(FVector(-L/2, -W / 2, DoorHeight));//39
-
-        Triangles = {
-            0, 1, 3, 1, 2, 3,
-            4, 5, 7, 5, 6, 7,
-            8, 9, 11, 9, 10, 11,
-            12, 13, 15, 13, 14, 15,
-// door left
-         16,19,18,16,18,17,
-
-            // door top
-            20,23,22,20,22,21,
-
-            // door ight
-            24,27,26,24,26,25,
-
-            // BACK LEFT
-
-            30,31,28,29,30,28,
-
-            // back right
-            34,35,32,33,34,32,
-
-            // back top
-
-            38,39,36,37,38,36
-
-           /* 24, 26, 39, 39, 26, 27,
-            24, 39, 28, 39, 38, 28,
-            28, 38, 30, 38, 31, 30,
-
-            22, 34, 20, 23, 34, 22,
-            16, 20, 34, 16, 34, 35,
-            16, 35, 18, 18, 35, 19*/
-        };
-
+        Distance = FMath::Abs(StartPoint.X - EndPoint.X);
+        EndPoint.Y = StartPoint.Y;
     }
     else
     {
-        
-        Super::CreateMesh();
+        Distance = FMath::Abs(StartPoint.Y - EndPoint.Y);
+        EndPoint.X = StartPoint.X;
     }
 
-    AddNormals();
-    AddUVs();
+    NumberOfSegment = FMath::CeilToInt(Distance / 100.0f);
+    //bHasDoorWall.Reserve(NumberOfWalls);
+    for (int i = 0; i < NumberOfSegment; i++)
+    {
+        bHasDoorWall.Add(false);
+    }
+    FVector Direction = (EndPoint - StartPoint).GetSafeNormal();
 
-    ProceduralMesh->CreateMeshSection_LinearColor(0, Vertices, Triangles, Normals, UVs, TArray<FLinearColor>(), TArray<FProcMeshTangent>(), true);
+    FVector RoundedDirection;
+    if (FMath::Abs(Direction.X) >= FMath::Abs(Direction.Y))
+    {
+        RoundedDirection = FVector(FMath::RoundToInt(Direction.X), 0.0f, 0.0f).GetSafeNormal();
+    }
+    else
+    {
+        RoundedDirection = FVector(0.0f, FMath::RoundToInt(Direction.Y), 0.0f).GetSafeNormal();
+    }
+
+    Rotation = RoundedDirection.Rotation();
+
+    FVector MidPoint = (StartPoint + EndPoint) / 2.0f;
+    SetActorLocation(MidPoint);
+
+    for (int i = 0; i < NumberOfSegment - 1; ++i)
+    {
+        FVector SpawnLocation = StartPoint + RoundedDirection * i * 100.0f;
+        FVector end = StartPoint + RoundedDirection * (i + 1) * 100.0f;
+
+        FVector Offset = FVector::ZeroVector;
+
+        float Yaw = Rotation.Yaw;
+
+        if (FMath::Abs(Yaw) <= 5 || FMath::Abs(Yaw - 360) <= 5)
+        {
+            Offset.X = Width / 2.0f;
+        }
+        else if (FMath::Abs(Yaw - 180) <= 5)
+        {
+            Offset.X = -Width / 2.0f;
+        }
+        else if (FMath::Abs(Yaw - 90) <= 5)
+        {
+            Offset.Y = Width / 2.0f;
+        }
+        else if (FMath::Abs(Yaw + 90) <= 5)
+        {
+            Offset.Y = -Width / 2.0f;
+        }
+
+        SpawnLocation += Offset;
+        end += Offset;
+        SpawnMesh((SpawnLocation + end )/2);
+    }
+
+}
+
+void AWallActor::SpawnMesh(FVector SpawnLocation)
+{
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    ACubeActor* NewWall = GetWorld()->SpawnActor<ACubeActor>(ACubeActor::StaticClass(), SpawnLocation, Rotation, SpawnParams);
+    if (NewWall)
+    {
+
+        NewWall->SetDimension(Length, Width, Height);
+        NewWall->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
+        NewWall->SetParentActor(this);
+        if(Material)
+        {
+            NewWall->GetProceduralMeshComponent()->SetMaterial(0, Material);
+        }
+        WallSegments.Add(NewWall);
+    }
+
+}
+
+
+void AWallActor::ReplaceDoorWithWall(AAWallDoorActor* DoorWallActor)
+{
+    if (DoorWallActor)
+    {
+        /*FVector DoorWallLocation = DoorWallActor->GetActorLocation();
+        DoorWallActor->Destroy();
+
+        int32 IndexToRemove = DoorWalls.IndexOfByKey(DoorWallActor);
+        if (IndexToRemove != INDEX_NONE)
+        {
+            DoorWalls.RemoveAt(IndexToRemove);
+        }
+        int32 doorwallI = GetWallIndexFromLocation(DoorWallLocation);
+        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Wall Index: %d"), doorwallI));
+        bHasDoorWall[doorwallI] = false;
+        SpawnMesh(DoorWallLocation);*/
+    }
+}
+
+void AWallActor::AddDoor(const FVector& Vector)
+{
+    int ReplaceIdx = GetWallIndexFromLocation(Vector);
+    ReplaceWallWithDoor(ReplaceIdx);
+
+}
+
+void AWallActor::ReplaceWallWithDoor(int32 index)
+{
+    FVector Location = GetLocationFromIndex(index);
+    ReplaceWallWithDoor(Location);
     
+
 }
 
-
-void AWallActor::ResetArrays()
+void AWallActor::ReplaceWallWithDoor(FVector HitLocation)
 {
-    Vertices.Empty();
-    Triangles.Empty();
-    Normals.Empty();
-    UVs.Empty();
-}
+    float ClosestDistance = FLT_MAX;
+    int ClosestIndex = -1;
 
-void AWallActor::AddQuad(int32 V0, int32 V1, int32 V2, int32 V3)
-{
-    Triangles.Add(V0);
-    Triangles.Add(V1);
-    Triangles.Add(V2);
-    Triangles.Add(V2);
-    Triangles.Add(V3);
-    Triangles.Add(V0);
-}
-
-void AWallActor::AddUVs()
-{
-    if (IsDoorAdded)
+    for (int32 i = 0; i < WallSegments.Num(); ++i)
     {
-        // Front face
-        UVs.Add(FVector2D(0.0f, 0.0f)); // 0
-        UVs.Add(FVector2D(1.0f, 0.0f)); // 1
-        UVs.Add(FVector2D(1.0f, 1.0f)); // 2
-        UVs.Add(FVector2D(0.0f, 1.0f)); // 3
+        float Distance = FVector::Dist(WallSegments[i]->GetActorLocation(), HitLocation);
+        if (Distance < ClosestDistance)
+        {
+            ClosestDistance = Distance;
+            ClosestIndex = i;
+        }
+    }
 
-        // Bottom face
-        UVs.Add(FVector2D(0.0f, 0.0f)); // 4
-        UVs.Add(FVector2D(1.0f, 0.0f)); // 5
-        UVs.Add(FVector2D(1.0f, 1.0f)); // 6
-        UVs.Add(FVector2D(0.0f, 1.0f)); // 7
+    FVector WallLocation = FVector::ZeroVector;
+    if (ClosestIndex != -1)
+    {
+        //bHasDoorWall.Add(ClosestIndex);
 
-        // Right face
-        UVs.Add(FVector2D(0.0f, 0.0f)); // 8
-        UVs.Add(FVector2D(1.0f, 0.0f)); // 9
-        UVs.Add(FVector2D(1.0f, 1.0f)); // 10
-        UVs.Add(FVector2D(0.0f, 1.0f)); // 11
+        ACubeActor* WallToRemove = WallSegments[ClosestIndex];
+        if (WallToRemove)
+        {
+            WallLocation = WallToRemove->GetActorLocation();
+            WallToRemove->Destroy();
+            WallToRemove = nullptr;
+            WallSegments.RemoveAt(ClosestIndex);
+        }
+        int32 wallI = GetWallIndexFromLocation(WallLocation);
 
-        // Top face
-        UVs.Add(FVector2D(0.0f, 0.0f)); // 12
-        UVs.Add(FVector2D(1.0f, 0.0f)); // 13
-        UVs.Add(FVector2D(1.0f, 1.0f)); // 14
-        UVs.Add(FVector2D(0.0f, 1.0f)); // 15
+        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Wall Index: %d"), wallI));
 
-        // Door left
-        UVs.Add(FVector2D(0.0f, 0.0f)); // 16
-        UVs.Add(FVector2D(1.0f, 0.0f)); // 17
-        UVs.Add(FVector2D(1.0f, 1.0f)); // 18
-        UVs.Add(FVector2D(0.0f, 1.0f)); // 19
+        bHasDoorWall[wallI] = true;
 
-        // Door top
-        UVs.Add(FVector2D(0.0f, 0.0f)); // 20
-        UVs.Add(FVector2D(1.0f, 0.0f)); // 21
-        UVs.Add(FVector2D(1.0f, 1.0f)); // 22
-        UVs.Add(FVector2D(0.0f, 1.0f)); // 23
+        SpawnDoorActor(WallLocation);
+    }
+}
 
-        // Door right
-        UVs.Add(FVector2D(0.0f, 0.0f)); // 24
-        UVs.Add(FVector2D(1.0f, 0.0f)); // 25
-        UVs.Add(FVector2D(1.0f, 1.0f)); // 26
-        UVs.Add(FVector2D(0.0f, 1.0f)); // 27
+void AWallActor::SpawnDoorActor(FVector SpawnLocation)
+{
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-        // Back right
-        UVs.Add(FVector2D(1.0f, 1.0f)); // 25
-        UVs.Add(FVector2D(0.0f, 1.0f)); // 24
-        UVs.Add(FVector2D(1.0f, 0.0f)); // 26
-        UVs.Add(FVector2D(0.0f, 0.0f)); // 27
+    // Spawn the door actor
+    if (AAWallDoorActor* NewDoor = GetWorld()->SpawnActor<AAWallDoorActor>(SpawnLocation, Rotation, SpawnParams))
+    {
+        // Attach the door to this wall actor
+        NewDoor->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
 
-        // Back left
-        UVs.Add(FVector2D(0.0f, 1.0f)); // 28
-        UVs.Add(FVector2D(1.0f, 1.0f)); // 29
-        UVs.Add(FVector2D(1.0f, 0.0f)); // 30
-        UVs.Add(FVector2D(0.0f, 0.0f)); // 31
+        // Set the parent actor
+        NewDoor->SetParentActor(this);
 
-        // Back top
-        UVs.Add(FVector2D(0.0f, 1.0f)); // 32
-        UVs.Add(FVector2D(1.0f, 1.0f)); // 33
-        UVs.Add(FVector2D(1.0f, 0.0f)); // 34
-        UVs.Add(FVector2D(0.0f, 0.0f)); // 35
+        // Optionally, add it to a container if needed (e.g., if you need to manage them later)
+        // WallSegments.Add(NewDoor);
+    }
+}
+
+FVector AWallActor::GetLocationFromIndex(int32 Index) const
+{
+    // Ensure the index is within bounds
+    if (Index < 0 || Index >= WallSegments.Num() -1 )
+    {
+        return FVector::ZeroVector; // Return zero vector if index is out of bounds
+    }
+
+    FVector Direction = (Endlocation - Startlocation).GetSafeNormal();
+
+    FVector RoundedDirection;
+    if (FMath::Abs(Direction.X) >= FMath::Abs(Direction.Y))
+    {
+        RoundedDirection = FVector(FMath::RoundToInt(Direction.X), 0.0f, 0.0f).GetSafeNormal();
     }
     else
     {
-        Super::AddUVs();
+        RoundedDirection = FVector(0.0f, FMath::RoundToInt(Direction.Y), 0.0f).GetSafeNormal();
     }
+
+    FVector SpawnLocation = Startlocation + RoundedDirection * Index * 100.f;
+
+    FVector Offset = FVector::ZeroVector;
+
+    float Yaw = Rotation.Yaw;
+
+    if (FMath::Abs(Yaw) <= 5 || FMath::Abs(Yaw - 360) <= 5)
+    {
+        Offset.X = Width / 2.0f;
+    }
+    else if (FMath::Abs(Yaw - 180) <= 5)
+    {
+        Offset.X = -Width / 2.0f;
+    }
+    else if (FMath::Abs(Yaw - 90) <= 5)
+    {
+        Offset.Y = Width / 2.0f;
+    }
+    else if (FMath::Abs(Yaw + 90) <= 5)
+    {
+        Offset.Y = -Width / 2.0f;
+    }
+
+    SpawnLocation += Offset;
+    return SpawnLocation;
 }
 
-
-
-void AWallActor::AddNormals()
+void AWallActor::HighlightSelectedActor()
 {
-    Super::AddNormals();
+    //TArray<UActorComponent*> ActorComponents = GetComponentsByClass(AWallActor::StaticClass());
+
+    //// Loop through each component and set custom depth
+    //for (UActorComponent* ActorComponent : ActorComponents)
+    //{
+    //    if (UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(ActorComponent))
+    //    {
+    //        PrimitiveComponent->SetRenderCustomDepth(true);
+    //        PrimitiveComponent->SetCustomDepthStencilValue(2);
+    //    }
+    //}
+
+    /*for (AAWallDoorActor* DoorWall : DoorWalls)
+    {
+        if (DoorWall)
+        {
+            DoorWall->WallComponent->SetRenderCustomDepth(true);
+            DoorWall->WallComponent->CustomDepthStencilValue = 2;
+            DoorWall->DoorActor->UnhighlightDeselectedActor();
+        }
+    }*/
 }
+
+void AWallActor::UnhighlightDeselectedActor()
+{
+    TSet<UActorComponent*> ActorComponents = GetComponents();
+
+    for (auto& ActorComponent : ActorComponents)
+    {
+        if (auto* Component = Cast<UPrimitiveComponent>(ActorComponent))
+        {
+            Component->SetRenderCustomDepth(false);
+        }
+    }
+
+   /* for (AAWallDoorActor* DoorWall : DoorWalls)
+    {
+        if (DoorWall)
+        {
+            DoorWall->WallComponent->SetRenderCustomDepth(false);
+        }
+    }*/
+}
+

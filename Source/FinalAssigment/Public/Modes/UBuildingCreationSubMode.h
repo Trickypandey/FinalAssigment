@@ -27,6 +27,7 @@ public:
 	virtual void InitParams(APlayerController* Controller);
 	void SetMaterial(UMaterialInterface* Material);
 
+
 	ACubeActor* GetSelectedActor();
 
 protected:
@@ -42,6 +43,6 @@ protected:
 	UMaterialInterface* DynamicMaterial;
 
 	UPROPERTY()
-	ACubeActor* SelectedActor = nullptr;
+	AActor* SelectedActor = nullptr;
 	
 };
