@@ -349,7 +349,7 @@ void UBuildingCreationMode::LoadBuildings(UUArchVizSaveGame*& LoadGameInstance)
                 {
 	                if(ActorData.bIsDoorAdded[i])
 	                {
-                        WallActor->ReplaceWallWithDoor(i);
+                        WallActor->AddDoor(WallActor->WallSegments[i]);
 	                }
                 }
                 if (ActorData.Material)

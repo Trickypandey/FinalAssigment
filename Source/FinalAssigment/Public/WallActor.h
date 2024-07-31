@@ -43,22 +43,17 @@ public:
 
 
 	void SetMaterial(UMaterialInterface* NewMaterial);
-	int GetWallIndexFromLocation(FVector Location) const;
 	void HandleMovingState();
     void HandlePlacedState();
 	void CreateWallSegment();
 	void SpawnMesh(FVector SpawnLocation);
-    void ReplaceDoorWithWall(AAWallDoorActor* DoorWallActor);
+    void ReplaceDoorWithWall();
 	int GetLength() const
 	{
         return Length;
 	}
 
-	void AddDoor(const FVector& Vector);
-	void ReplaceWallWithDoor(int32 index);
-	void ReplaceWallWithDoor(FVector HitLocation);
-	void SpawnDoorActor(FVector SpawnLocation);
-	FVector GetLocationFromIndex(int32 Index) const;
+	void AddDoor(ACubeActor*& actor);
 	void HighlightSelectedActor();
 	void UnhighlightDeselectedActor();
 	void RotateWall(float Angle);
@@ -88,12 +83,14 @@ public:
     UPROPERTY()
 	UMaterialInterface* Material;
 	TArray<bool> bHasDoorWall;
-	int SelectedDoorIdx = 0;
 
-private:
-    
+    UPROPERTY()
+    AAWallDoorActor* currentDoorActor;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall", meta = (AllowPrivateAccess = "true"))
     TArray<ACubeActor*> WallSegments;
+private:
+    
 
     UPROPERTY()
     TArray<AAWallDoorActor*> DoorWalls;

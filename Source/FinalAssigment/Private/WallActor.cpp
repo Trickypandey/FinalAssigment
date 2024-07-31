@@ -8,6 +8,7 @@ AWallActor::AWallActor()
     Length = 100;
     Width = 20;
     Height = 400;
+    
     SceneComponent = CreateDefaultSubobject<USceneComponent>("SceneComponent");
     SceneComponent->RegisterComponentWithWorld(GetWorld());
     RootComponent = SceneComponent;
@@ -72,6 +73,7 @@ void AWallActor::SetWallEndLocation(FVector X)
         }
     }
     WallSegments.Empty();
+    bHasDoorWall.Empty();
 
    
 
@@ -136,18 +138,6 @@ void AWallActor::SetMaterial(UMaterialInterface* NewMaterial)
     }
 }
 
-int AWallActor::GetWallIndexFromLocation(FVector Location) const
-{
-    FVector WallDirection = (Endlocation - Startlocation).GetSafeNormal();
-    float DistanceAlongWall = FVector::DotProduct(Location - Startlocation, WallDirection);
-
-    int32 WallIndex = FMath::FloorToInt(DistanceAlongWall / Length);
-    WallIndex = FMath::Clamp(WallIndex, 0, bHasDoorWall.Num() - 1);
-    
-
-    return WallIndex;
-	
-}
 void AWallActor::HandleMovingState()
 {
     APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
@@ -315,148 +305,80 @@ void AWallActor::SpawnMesh(FVector SpawnLocation)
 }
 
 
-void AWallActor::ReplaceDoorWithWall(AAWallDoorActor* DoorWallActor)
+void AWallActor::ReplaceDoorWithWall()
 {
-    if (DoorWallActor)
+    if (currentDoorActor)
     {
-        /*FVector DoorWallLocation = DoorWallActor->GetActorLocation();
-        DoorWallActor->Destroy();
-
-        int32 IndexToRemove = DoorWalls.IndexOfByKey(DoorWallActor);
-        if (IndexToRemove != INDEX_NONE)
+        // Find the index of the current door actor in the DoorWalls array
+        int32 DoorIndex = DoorWalls.IndexOfByKey(currentDoorActor);
+        if (DoorIndex != INDEX_NONE)
         {
-            DoorWalls.RemoveAt(IndexToRemove);
+            // Set the corresponding bHasDoorWall entry to false (no door)
+            bHasDoorWall.RemoveAt(DoorIndex);
+            bHasDoorWall.Add( false);
         }
-        int32 doorwallI = GetWallIndexFromLocation(DoorWallLocation);
-        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Wall Index: %d"), doorwallI));
-        bHasDoorWall[doorwallI] = false;
-        SpawnMesh(DoorWallLocation);*/
+
+    	currentDoorActor->ProceduralMesh->SetRenderCustomDepth(false);
+        FVector DoorLocation = currentDoorActor->GetActorLocation();
+        currentDoorActor->Destroy();
+        currentDoorActor = nullptr;
+
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        //ACubeActor* NewWall = GetWorld()->SpawnActor<ACubeActor>(ACubeActor::StaticClass(), SpawnLocation, Rotation, SpawnParams);
+        ACubeActor* NewWall = NewObject<ACubeActor>(this);
+        if (NewWall)
+        {
+
+            NewWall->SetDimension(Length, Width, Height);
+            NewWall->AttachToComponent(SceneComponent, FAttachmentTransformRules::KeepRelativeTransform);
+            NewWall->SetActorLocation(DoorLocation);
+            NewWall->SetActorRotation(Rotation);
+            NewWall->RegisterAllComponents();
+            if (Material)
+            {
+                NewWall->GetProceduralMeshComponent()->SetMaterial(0, Material);
+            }
+            WallSegments.Add(NewWall);
+        }
     }
 }
 
-void AWallActor::AddDoor(const FVector& Vector)
-{
-    int ReplaceIdx = GetWallIndexFromLocation(Vector);
-    ReplaceWallWithDoor(ReplaceIdx);
 
-}
-
-void AWallActor::ReplaceWallWithDoor(int32 index)
+void AWallActor::AddDoor(ACubeActor*& actor)
 {
-    FVector Location = GetLocationFromIndex(index);
-    ReplaceWallWithDoor(Location);
     
-
-}
-
-void AWallActor::ReplaceWallWithDoor(FVector HitLocation)
-{
-    float ClosestDistance = FLT_MAX;
-    int ClosestIndex = -1;
-
-    for (int32 i = 0; i < WallSegments.Num(); ++i)
+    for (int i = 0; i < WallSegments.Num(); i++)
     {
-        float Distance = FVector::Dist(WallSegments[i]->GetActorLocation(), HitLocation);
-        if (Distance < ClosestDistance)
+        if (WallSegments[i] == actor)
         {
-            ClosestDistance = Distance;
-            ClosestIndex = i;
+             bHasDoorWall[i] = true;
+            break;
         }
     }
-
-    FVector WallLocation = FVector::ZeroVector;
-    if (ClosestIndex != -1)
-    {
-        //bHasDoorWall.Add(ClosestIndex);
-
-        ACubeActor* WallToRemove = WallSegments[ClosestIndex];
-        if (WallToRemove)
-        {
-            WallLocation = WallToRemove->GetActorLocation();
-            WallToRemove->Destroy();
-            WallToRemove = nullptr;
-            WallSegments.RemoveAt(ClosestIndex);
-        }
-        int32 wallI = GetWallIndexFromLocation(WallLocation);
-
-        GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Wall Index: %d"), wallI));
-
-        bHasDoorWall[wallI] = true;
-        SelectedDoorIdx = wallI;
-
-        SpawnDoorActor(WallLocation);
-    }
-}
-
-void AWallActor::SpawnDoorActor(FVector SpawnLocation)
-{
+    FVector location = actor->GetActorLocation();
+    actor->Destroy();
+    actor = nullptr;
     FActorSpawnParameters SpawnParams;
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
     // Spawn the door actor
-    if (AAWallDoorActor* NewDoor = GetWorld()->SpawnActor<AAWallDoorActor>(SpawnLocation, Rotation, SpawnParams))
+    if (AAWallDoorActor* NewDoor = GetWorld()->SpawnActor<AAWallDoorActor>(location, Rotation, SpawnParams))
     {
-        // Attach the door to this wall actor
         NewDoor->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
-
-        // Set the parent actor
         NewDoor->SetParentActor(this);
+        
+        currentDoorActor = NewDoor;
 
-        // Optionally, add it to a container if needed (e.g., if you need to manage them later)
-        if(Material)
+        if (Material)
         {
             NewDoor->SetMaterial(Material);
         }
         DoorWalls.Add(NewDoor);
     }
+
 }
 
-FVector AWallActor::GetLocationFromIndex(int32 Index) const
-{
-    // Ensure the index is within bounds
-    if (Index < 0 || Index >= WallSegments.Num() -1 )
-    {
-        return FVector::ZeroVector; // Return zero vector if index is out of bounds
-    }
-
-    FVector Direction = (Endlocation - Startlocation).GetSafeNormal();
-
-    FVector RoundedDirection;
-    if (FMath::Abs(Direction.X) >= FMath::Abs(Direction.Y))
-    {
-        RoundedDirection = FVector(FMath::RoundToInt(Direction.X), 0.0f, 0.0f).GetSafeNormal();
-    }
-    else
-    {
-        RoundedDirection = FVector(0.0f, FMath::RoundToInt(Direction.Y), 0.0f).GetSafeNormal();
-    }
-
-    FVector SpawnLocation = Startlocation + RoundedDirection * Index * 100.f;
-
-    FVector Offset = FVector::ZeroVector;
-
-    float Yaw = Rotation.Yaw;
-
-    if (FMath::Abs(Yaw) <= 5 || FMath::Abs(Yaw - 360) <= 5)
-    {
-        Offset.X = Width / 2.0f;
-    }
-    else if (FMath::Abs(Yaw - 180) <= 5)
-    {
-        Offset.X = -Width / 2.0f;
-    }
-    else if (FMath::Abs(Yaw - 90) <= 5)
-    {
-        Offset.Y = Width / 2.0f;
-    }
-    else if (FMath::Abs(Yaw + 90) <= 5)
-    {
-        Offset.Y = -Width / 2.0f;
-    }
-
-    SpawnLocation += Offset;
-    return SpawnLocation;
-}
 void AWallActor::HighlightSelectedActor()
 {
     // Highlight this actor's components
@@ -473,32 +395,23 @@ void AWallActor::HighlightSelectedActor()
     }
 
     // Highlight the attached door walls' procedural meshes
-    if (IsDoorAdded)
+	if (currentDoorActor && IsDoorAdded)
     {
-        /*AAWallDoorActor* DoorWall = DoorWalls[SelectedDoorIdx];
-        if (DoorWall && DoorWall->ProceduralMesh)
-        {
-            DoorWall->ProceduralMesh->SetRenderCustomDepth(true);
-            DoorWall->ProceduralMesh->SetCustomDepthStencilValue(2);
-        }*/
+        currentDoorActor->ProceduralMesh->SetRenderCustomDepth(true);
+        currentDoorActor->ProceduralMesh->SetCustomDepthStencilValue(2);
     }
-    else
-    {
-	    for (AAWallDoorActor* DoorWall : DoorWalls)
-	    {
-	        if (DoorWall && DoorWall->ProceduralMesh)
-	        {
-	            DoorWall->ProceduralMesh->SetRenderCustomDepth(true);
-	            DoorWall->ProceduralMesh->SetCustomDepthStencilValue(2);
-	        }
-	    }
-    }
+    
 }
-
 
 void AWallActor::UnhighlightDeselectedActor()
 {
     TSet<UActorComponent*> ActorComponents = GetComponents();
+
+    if (currentDoorActor && IsDoorAdded)
+    {
+        currentDoorActor->ProceduralMesh->SetRenderCustomDepth(false);
+        
+    }
 
     for (auto* ActorComponent : WallSegments)
     {
@@ -508,13 +421,6 @@ void AWallActor::UnhighlightDeselectedActor()
         }
     }
 
-    for (AAWallDoorActor* DoorWall : DoorWalls)
-    {
-        if (DoorWall)
-        {
-            DoorWall->ProceduralMesh->SetRenderCustomDepth(false);
-        }
-    }
 }
 
 void AWallActor::RotateWall(float Angle)

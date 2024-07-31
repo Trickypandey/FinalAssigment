@@ -186,7 +186,7 @@ void USubModeWallCreation::WallLeftClickProcess()
 
 			
 		}
-		else if(SelectedActor && Cast<AWallActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
+		else if(SelectedActor && Cast<AWallActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving && !bIsDoorAdding)
 		{
 			if (bIsNewWall)
 			{
@@ -204,11 +204,22 @@ void USubModeWallCreation::WallLeftClickProcess()
 			}
 			
 		}
-		else if (ACubeActor* CubeActor = Cast<ACubeActor>(HitResult.GetActor()))
+		else 
 		{
-			
-			auto* parent = CubeActor->GetDefaultAttachComponent()->GetAttachParentActor();
-			if (AWallActor* WallActor = Cast<AWallActor>(parent))
+			ACubeActor* CubeActor = Cast<ACubeActor>(HitResult.GetActor());
+			AAWallDoorActor* WallDoorActor = Cast<AAWallDoorActor>(HitResult.GetActor());
+			AWallActor* WallActor = nullptr;
+
+			if (CubeActor)
+			{
+				WallActor = Cast<AWallActor>(CubeActor->GetDefaultAttachComponent()->GetAttachParentActor());
+			}
+			else if (WallDoorActor)
+			{
+				WallActor = Cast<AWallActor>(WallDoorActor->GetDefaultAttachComponent()->GetAttachParentActor());
+			}
+
+			if (WallActor)
 			{
 				FVector LocalClickLocation = WallActor->GetTransform().InverseTransformPosition(HitResult.Location);
 
@@ -219,20 +230,13 @@ void USubModeWallCreation::WallLeftClickProcess()
 
 				SelectedActor = WallActor;
 
-				if (bIsDoorAdding && WallActor->WallState == EBuildingSubModeState::Placed)
+				if (bIsDoorAdding && CubeActor)
 				{
 					WallActor->SetIsDoorAdded(true);
-					WallActor->AddDoor(LocalClickLocation);
+					WallActor->AddDoor(CubeActor);
 					Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Door added to the wall");
 				}
-				else if (bIsDoorAdding && WallActor->WallState == EBuildingSubModeState::Moving)
-				{
-					WallActor->WallState = EBuildingSubModeState::Placed;
-					Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Wall placed while adding door");
-				}
 			}
-				
-			
 		}
 
 		// Highlight the selected actor
@@ -250,64 +254,66 @@ void USubModeWallCreation::WallLeftClickProcess()
 void USubModeWallCreation::WallRightClickProcess()
 {
 	// Deselect the current actor if it is in moving state
-	if (SelectedActor && (Cast<AWallActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving || Cast<AWallActor>(SelectedActor)->WallState == EBuildingSubModeState::Constructing))
-	{
+	if(!bIsDoorAdding){
+		if (SelectedActor && (Cast<AWallActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving || Cast<AWallActor>(SelectedActor)->WallState == EBuildingSubModeState::Constructing))
+		{
 		
-		TArray<AActor*> AttachedActors;
-		SelectedActor->GetAttachedActors(AttachedActors);
-		for (AActor* AttachedActor : AttachedActors)
-		{
-			AttachedActor->Destroy();
-		}
-
-		// Destroy all attached scene components
-		TArray<USceneComponent*> AttachedComponents;
-		SelectedActor->GetComponents(AttachedComponents);
-		for (USceneComponent* Component : AttachedComponents)
-		{
-			if (Component->GetAttachParent())
+			TArray<AActor*> AttachedActors;
+			SelectedActor->GetAttachedActors(AttachedActors);
+			for (AActor* AttachedActor : AttachedActors)
 			{
-				Component->DestroyComponent();
+				AttachedActor->Destroy();
 			}
+
+			// Destroy all attached scene components
+			TArray<USceneComponent*> AttachedComponents;
+			SelectedActor->GetComponents(AttachedComponents);
+			for (USceneComponent* Component : AttachedComponents)
+			{
+				if (Component->GetAttachParent())
+				{
+					Component->DestroyComponent();
+				}
+			}
+
+			// Destroy the selected actor itself
+			SelectedActor->Destroy();
+			SelectedActor = nullptr;
+
+			// Broadcast toast notification
+			Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor destroyed");
 		}
-
-		// Destroy the selected actor itself
-		SelectedActor->Destroy();
-		SelectedActor = nullptr;
-
-		// Broadcast toast notification
-		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor destroyed");
-	}
 	
-	if (SelectedActor)
-	{
-		Cast<AWallActor>(SelectedActor)->UnhighlightDeselectedActor();
-	}
-	// If no actor is being moved, create a new wall
-	FHitResult HitResult;
-	PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
-	if (HitResult.bBlockingHit)
-	{
-		FVector spawnLocation = HitResult.Location;
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-		if (AWallActor* SpwanedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), spawnLocation, FRotator::ZeroRotator, SpawnParams))
+		if (SelectedActor)
 		{
-			SpwanedActor->SetIsDoorAdded(bIsDoorAdding);
-			SelectedActor = SpwanedActor;
-			bIsNewWall = true;
+			Cast<AWallActor>(SelectedActor)->UnhighlightDeselectedActor();
+		}
+		// If no actor is being moved, create a new wall
+		FHitResult HitResult;
+		PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
+		if (HitResult.bBlockingHit)
+		{
+			FVector spawnLocation = HitResult.Location;
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-			if (SelectedActor)
+			if (AWallActor* SpwanedActor = GetWorld()->SpawnActor<AWallActor>(AWallActor::StaticClass(), spawnLocation, FRotator::ZeroRotator, SpawnParams))
 			{
-				SpwanedActor->HighlightSelectedActor();
-			}
+				SpwanedActor->SetIsDoorAdded(bIsDoorAdding);
+				SelectedActor = SpwanedActor;
+				bIsNewWall = true;
 
-			if (DynamicMaterial)
-			{
-				SpwanedActor->SetMaterial(DynamicMaterial);
+				if (SelectedActor)
+				{
+					SpwanedActor->HighlightSelectedActor();
+				}
+
+				if (DynamicMaterial)
+				{
+					SpwanedActor->SetMaterial(DynamicMaterial);
+				}
+				Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor spawned and selected for moving");
 			}
-			Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor spawned and selected for moving");
 		}
 	}
 	
@@ -317,24 +323,17 @@ void USubModeWallCreation::RotateSelectedActor()
 {
 	if (SelectedActor)
 	{
-		/*FRotator currentRotation = SelectedActor->rotation();
-
-		double newYaw = fmod(currentRotation.Yaw + 90.0, 360.0);
-		if (newYaw < 0)
-		{
-			newYaw += 360.0;
-		}
-
-		FRotator newRotation = FRotator(currentRotation.Pitch, newYaw, currentRotation.Roll);*/
-
-		
 		Cast<AWallActor>(SelectedActor)->RotateWall(90);;
 	}
 }
 
 void USubModeWallCreation::DeleteSelectedWallActor()
 {
-
+	if(bIsDoorAdding && SelectedActor)
+	{
+		Cast<AWallActor>(SelectedActor)->ReplaceDoorWithWall();
+		return;
+	}
 	
 	if (SelectedActor)
 	{
@@ -360,5 +359,22 @@ void USubModeWallCreation::DeleteSelectedWallActor()
 
 void USubModeWallCreation::SetIsDoorAddingFlag(bool flag)
 {
-	bIsDoorAdding = flag;
+	if(bIsDoorAdding && SelectedActor && (Cast<AWallActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving || Cast<AWallActor>(SelectedActor)->WallState == EBuildingSubModeState::Constructing))
+	{
+		bIsNewWall = true;
+		TArray<AActor*> AttachedActors;
+		SelectedActor->GetAttachedActors(AttachedActors);
+		for (AActor* AttachedActor : AttachedActors)
+		{
+			if (AttachedActor)
+			{
+				AttachedActor->Destroy();
+			}
+		}
+
+		SelectedActor->Destroy();
+		SelectedActor = nullptr;
+		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Selected actor and its attached actors destroyed");
+	}
+		bIsDoorAdding = flag;
 }
