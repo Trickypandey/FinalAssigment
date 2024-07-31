@@ -38,6 +38,8 @@ public:
     void SetMaterial(UMaterialInterface* NewMaterial);
     void HighlightSelectedActor();
     void UnhighlightDeselectedActor();
+    FVector GetWallEndLocation();
+    FVector GetWallStartLocation();
 
     UPROPERTY()
     UMaterialInterface* Material;

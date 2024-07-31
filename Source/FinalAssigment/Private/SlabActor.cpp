@@ -380,3 +380,13 @@ void ASlabActor::HandleMovingState()
 
     }
 }
+
+FVector ASlabActor::GetWallEndLocation()
+{
+    return EndLocation;
+}
+
+FVector ASlabActor::GetWallStartLocation()
+{
+    return StartLocation;
+}

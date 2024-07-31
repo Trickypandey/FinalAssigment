@@ -159,18 +159,17 @@ void UBuildingCreationMode::SaveBuildings(UUArchVizSaveGame*& SaveGameInstance)
             FBuildingActorData ActorData;
             ActorData.ActorClass = WallActor->GetClass();
             ActorData.ActorTransform = WallActor->GetActorTransform();
-            ActorData.Length = WallActor->GetLength();
+            ActorData.StartLocation = WallActor->GetWallStartLocation();
+            ActorData.EndLocation = WallActor->GetWallEndLocation();
             //ActorData.ActorName = WallActor->GetName();
-            ActorData.bIsDoorAdded = WallActor->GetDoorFlag();
-            if (WallActor->GetDoorFlag())
-            {
-               // ActorData.DoorLocation = WallActor->GetDoorLocation();
-            }
+            ActorData.bIsDoorAdded = WallActor->bHasDoorWall;
+            ActorData.WallState = WallActor->WallState;
+           
 
-           /* if (UMaterialInterface* CurrentMaterial = WallActor->GetProceduralMeshComponent()->GetMaterial(0))
+            if (UMaterialInterface* CurrentMaterial = WallActor->Material)
             {
                 ActorData.Material = CurrentMaterial;
-            }*/
+            }
 
             // Save attached interior actors
             TArray<AActor*> AttachedActors;
@@ -211,13 +210,14 @@ void UBuildingCreationMode::SaveBuildings(UUArchVizSaveGame*& SaveGameInstance)
             ActorData.ActorClass = FloorActor->GetClass();
             ActorData.ActorTransform = FloorActor->GetActorTransform();
             //ActorData.ActorName = FloorActor->GetName();
-            /*ActorData.Length = FloorActor->GetLength();
-            ActorData.Width = FloorActor->GetWidth();*/
+            ActorData.StartLocation = FloorActor->GetWallStartLocation();
+            ActorData.EndLocation = FloorActor->GetWallEndLocation();
+            ActorData.WallState = FloorActor->WallState;
 
-            /*if (UMaterialInterface* CurrentMaterial = FloorActor->GetProceduralMeshComponent()->GetMaterial(0))
+            if (UMaterialInterface* CurrentMaterial = FloorActor->Material)
             {
                 ActorData.Material = CurrentMaterial;
-            }*/
+            }
             // Save attached interior actors
             TArray<AActor*> AttachedActors;
             FloorActor->GetAttachedActors(AttachedActors);
@@ -257,16 +257,17 @@ void UBuildingCreationMode::SaveBuildings(UUArchVizSaveGame*& SaveGameInstance)
             ActorData.ActorTransform = CeilingActor->GetActorTransform();
             //ActorData.ActorName = CeilingActor->GetName();
 
-           /* ActorData.Length = CeilingActor->GetLength();
-            ActorData.Width = CeilingActor->GetWidth();
+            ActorData.StartLocation = CeilingActor->GetWallStartLocation();
+            ActorData.EndLocation = CeilingActor->GetWallEndLocation();
+            ActorData.WallState = CeilingActor->WallState;
 
-            if (UMaterialInterface* CurrentMaterial = CeilingActor->GetProceduralMeshComponent()->GetMaterial(0))
+            if (UMaterialInterface* CurrentMaterial = CeilingActor->Material)
             {
                 ActorData.Material = CurrentMaterial;
-            }*/
+            }
             // Save attached interior actors
             TArray<AActor*> AttachedActors;
-            //CeilingActor->GetAttachedActors(AttachedActors);
+            CeilingActor->GetAttachedActors(AttachedActors);
             for (AActor* AttachedActor : AttachedActors)
             {
                 if (AInteriorDesignActor* InteriorActor = Cast<AInteriorDesignActor>(AttachedActor))
@@ -286,11 +287,11 @@ void UBuildingCreationMode::SaveBuildings(UUArchVizSaveGame*& SaveGameInstance)
                         }
                     }
 
-                    //ActorData.AttachedInteriorActors.Add(InteriorData);
+                    ActorData.AttachedInteriorActors.Add(InteriorData);
                 }
             }
 
-            //SaveGameInstance->SaveData.CeilingActors.Add(ActorData);
+            SaveGameInstance->SaveData.CeilingActors.Add(ActorData);
         }
     }
 }
@@ -308,7 +309,7 @@ void UBuildingCreationMode::LoadBuildings(UUArchVizSaveGame*& LoadGameInstance)
 
     // Clear existing actors if necessary
     TArray<AActor*> ExistingActors;
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACubeActor::StaticClass(), ExistingActors);
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), ExistingActors);
     for (AActor* Actor : ExistingActors)
     {
 	    if (Cast<ACubeActor>(Actor))
@@ -336,27 +337,39 @@ void UBuildingCreationMode::LoadBuildings(UUArchVizSaveGame*& LoadGameInstance)
             FActorSpawnParameters SpawnParams;
             /*SpawnParams.Name = FName(*ActorData.ActorName);*/
 
-            ACubeActor* SpawnedActor = GetWorld()->SpawnActor<ACubeActor>(ActorData.ActorClass, ActorData.ActorTransform, SpawnParams);
+            AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(ActorData.ActorClass, ActorData.ActorTransform, SpawnParams);
             if (auto WallActor = Cast<AWallActor>(SpawnedActor))
             {
-                WallActor->SetIsDoorAdded(ActorData.bIsDoorAdded);
-                if (WallActor->GetDoorFlag())
+                WallActor->bHasDoorWall  = ActorData.bIsDoorAdded;
+                WallActor->SetWallStartLocation(ActorData.StartLocation);
+                WallActor->SetWallEndLocation(ActorData.EndLocation);
+                WallActor->WallState = ActorData.WallState ;
+
+                for(int i  = 0 ; i < ActorData.bIsDoorAdded.Num() ; i ++)
                 {
-                    //WallActor->SetDoorLocation(ActorData.DoorLocation.X);
+	                if(ActorData.bIsDoorAdded[i])
+	                {
+                        WallActor->ReplaceWallWithDoor(i);
+	                }
                 }
-               
+                if (ActorData.Material)
+                {
+                    WallActor->SetMaterial( ActorData.Material);
+                }
             }
 
             if (auto SlabActor = Cast<ASlabActor>(SpawnedActor))
             {
-                //SlabActor->SetWidth(ActorData.Width);
+            	if (ActorData.Material)
+	            {
+	                SlabActor->SetMaterial(ActorData.Material);
+	            }
+                SlabActor->SetStartLocation(ActorData.StartLocation);
+                SlabActor->SetEndLocation(ActorData.EndLocation);
+                SlabActor->WallState = ActorData.WallState;
             }
-            SpawnedActor->SetLength(ActorData.Length);
-            if (ActorData.Material)
-            {
-                SpawnedActor->GetProceduralMeshComponent()->SetMaterial(0, ActorData.Material);
-            }
-			
+            
+           
 
             if (SpawnedActor)
             {

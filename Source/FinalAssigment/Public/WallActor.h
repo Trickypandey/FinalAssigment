@@ -30,6 +30,9 @@ public:
     void SetWallEndLocation(FVector X);
     void SetWallStartLocation(FVector X);
 
+	FVector GetWallEndLocation();
+    FVector GetWallStartLocation();
+
     UFUNCTION(BlueprintCallable, Category = "Wall")
     void SetIsDoorAdded(bool Flag);
 

@@ -38,10 +38,10 @@ struct FBuildingActorData
     TSubclassOf<AActor> ActorClass;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-    bool bIsDoorAdded = false;
+    EBuildingSubModeState WallState;
 
-    UPROPERTY()
-    FVector DoorLocation {0};
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+    TArray<bool> bIsDoorAdded ;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     FTransform ActorTransform;
@@ -49,10 +49,10 @@ struct FBuildingActorData
     //UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
     //FString ActorName; // Unique name for the actor
     UPROPERTY()
-    float Width;
+    FVector StartLocation;
 
 	UPROPERTY()
-    float Length;
+    FVector EndLocation;
 
     UPROPERTY()
     UMaterialInterface* Material = nullptr;

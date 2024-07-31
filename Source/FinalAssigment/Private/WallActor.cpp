@@ -84,6 +84,16 @@ void AWallActor::SetWallStartLocation(FVector X)
     Startlocation = Utility::SnapToGrid(X, FVector(100,100,10));
 }
 
+FVector AWallActor::GetWallEndLocation()
+{
+    return Endlocation;
+}
+
+FVector AWallActor::GetWallStartLocation()
+{
+    return Startlocation;
+}
+
 void AWallActor::SetIsDoorAdded(bool Flag)
 {
     IsDoorAdded = Flag;
