@@ -8,7 +8,9 @@ AWallActor::AWallActor()
     Length = 100;
     Width = 20;
     Height = 400;
-    
+    SceneComponent = CreateDefaultSubobject<USceneComponent>("SceneComponent");
+    SceneComponent->RegisterComponentWithWorld(GetWorld());
+    RootComponent = SceneComponent;
 }
 
 void AWallActor::BeginPlay()
@@ -73,13 +75,13 @@ void AWallActor::SetWallEndLocation(FVector X)
 
    
 
-    Endlocation = Utility::SnapToGrid(X, FVector(100));;
+    Endlocation = Utility::SnapToGrid(X, FVector(100,100,10));;
     CreateWallSegment();
 }
 
 void AWallActor::SetWallStartLocation(FVector X)
 {
-    Startlocation = Utility::SnapToGrid(X, FVector(100));
+    Startlocation = Utility::SnapToGrid(X, FVector(100,100,10));
 }
 
 void AWallActor::SetIsDoorAdded(bool Flag)
@@ -114,13 +116,13 @@ void AWallActor::SetMaterial(UMaterialInterface* NewMaterial)
                 Wall->GetProceduralMeshComponent()->SetMaterial(0, Material);
             }
         }
-       /* for (AArchVizDoorWallActor* DoorWall : DoorWalls)
+        for (auto* DoorWall : DoorWalls)
         {
             if (DoorWall)
             {
-                DoorWall->SetMaterial(Material);
+                DoorWall->GetProceduralMeshComponent()->SetMaterial(0, Material);
             }
-        }*/
+        }
     }
 }
 
@@ -144,12 +146,12 @@ void AWallActor::HandleMovingState()
         FHitResult HitResult;
         FCollisionQueryParams TraceParams(FName(TEXT("LineTrace")), true);
 
-        // Ignore all actors in WallSegments
-        for (ACubeActor* WallSegment : WallSegments)
+        // Ignore this actor and its segments
+        TraceParams.AddIgnoredActor(this);
+    /*    for (ACubeActor* WallSegment : WallSegments)
         {
             TraceParams.AddIgnoredActor(WallSegment);
-        }
-        TraceParams.AddIgnoredActor(this);
+        }*/
 
         FVector CursorWorldLocation;
         FVector CursorWorldDirection;
@@ -157,17 +159,22 @@ void AWallActor::HandleMovingState()
 
         FVector Start = CursorWorldLocation;
         FVector End = CursorWorldLocation + CursorWorldDirection * 10000;
+
         if (GetWorld()->LineTraceSingleByObjectType(HitResult, Start, End, FCollisionObjectQueryParams(ECC_WorldStatic), TraceParams))
         {
-            SetActorLocation(HitResult.Location);
+            FVector NewLocation = Utility::SnapToGrid(HitResult.Location,FVector(20)); ;
+            SetActorLocation(NewLocation);
+
+
         }
         else
         {
-          
             UE_LOG(LogTemp, Warning, TEXT("Line trace did not hit any actor."));
         }
     }
 }
+
+
 
 void AWallActor::HandleConstructingState()
 {
@@ -200,7 +207,7 @@ void AWallActor::HandlePlacedState()
 }
 
 void AWallActor::CreateWallSegment()
-{
+{   
     float Distance = 0;
     FVector& StartPoint = Startlocation;
     FVector& EndPoint = Endlocation;
@@ -236,7 +243,7 @@ void AWallActor::CreateWallSegment()
     Rotation = RoundedDirection.Rotation();
 
     FVector MidPoint = (StartPoint + EndPoint) / 2.0f;
-    SetActorLocation(MidPoint);
+    //SetActorLocation(MidPoint);
 
     for (int i = 0; i < NumberOfSegment - 1; ++i)
     {
@@ -267,21 +274,27 @@ void AWallActor::CreateWallSegment()
         SpawnLocation += Offset;
         end += Offset;
         SpawnMesh((SpawnLocation + end )/2);
+        //SpawnMesh(SpawnLocation);
     }
 
 }
+
+
 
 void AWallActor::SpawnMesh(FVector SpawnLocation)
 {
     FActorSpawnParameters SpawnParams;
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-    ACubeActor* NewWall = GetWorld()->SpawnActor<ACubeActor>(ACubeActor::StaticClass(), SpawnLocation, Rotation, SpawnParams);
+    //ACubeActor* NewWall = GetWorld()->SpawnActor<ACubeActor>(ACubeActor::StaticClass(), SpawnLocation, Rotation, SpawnParams);
+    ACubeActor* NewWall = NewObject<ACubeActor>(this);
     if (NewWall)
     {
 
         NewWall->SetDimension(Length, Width, Height);
-        NewWall->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
-        NewWall->SetParentActor(this);
+        NewWall->AttachToComponent(SceneComponent, FAttachmentTransformRules::KeepRelativeTransform);
+        NewWall->SetActorLocation(SpawnLocation);
+        NewWall->SetActorRotation(Rotation);
+	    NewWall->RegisterAllComponents();
         if(Material)
         {
             NewWall->GetProceduralMeshComponent()->SetMaterial(0, Material);
@@ -359,6 +372,7 @@ void AWallActor::ReplaceWallWithDoor(FVector HitLocation)
         GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Wall Index: %d"), wallI));
 
         bHasDoorWall[wallI] = true;
+        SelectedDoorIdx = wallI;
 
         SpawnDoorActor(WallLocation);
     }
@@ -379,7 +393,11 @@ void AWallActor::SpawnDoorActor(FVector SpawnLocation)
         NewDoor->SetParentActor(this);
 
         // Optionally, add it to a container if needed (e.g., if you need to manage them later)
-        // WallSegments.Add(NewDoor);
+        if(Material)
+        {
+            NewDoor->SetMaterial(Material);
+        }
+        DoorWalls.Add(NewDoor);
     }
 }
 
@@ -429,50 +447,69 @@ FVector AWallActor::GetLocationFromIndex(int32 Index) const
     SpawnLocation += Offset;
     return SpawnLocation;
 }
-
 void AWallActor::HighlightSelectedActor()
 {
-    //TArray<UActorComponent*> ActorComponents = GetComponentsByClass(AWallActor::StaticClass());
+    // Highlight this actor's components
+    
 
-    //// Loop through each component and set custom depth
-    //for (UActorComponent* ActorComponent : ActorComponents)
-    //{
-    //    if (UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(ActorComponent))
-    //    {
-    //        PrimitiveComponent->SetRenderCustomDepth(true);
-    //        PrimitiveComponent->SetCustomDepthStencilValue(2);
-    //    }
-    //}
-
-    /*for (AAWallDoorActor* DoorWall : DoorWalls)
+    // Loop through each component and set custom depth
+    for (auto* ActorComponent : WallSegments)
     {
-        if (DoorWall)
+        if (ActorComponent && ActorComponent->GetProceduralMeshComponent())
         {
-            DoorWall->WallComponent->SetRenderCustomDepth(true);
-            DoorWall->WallComponent->CustomDepthStencilValue = 2;
-            DoorWall->DoorActor->UnhighlightDeselectedActor();
+            ActorComponent->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
+            ActorComponent->GetProceduralMeshComponent()->SetCustomDepthStencilValue(2);
         }
-    }*/
+    }
+
+    // Highlight the attached door walls' procedural meshes
+    if (IsDoorAdded)
+    {
+        /*AAWallDoorActor* DoorWall = DoorWalls[SelectedDoorIdx];
+        if (DoorWall && DoorWall->ProceduralMesh)
+        {
+            DoorWall->ProceduralMesh->SetRenderCustomDepth(true);
+            DoorWall->ProceduralMesh->SetCustomDepthStencilValue(2);
+        }*/
+    }
+    else
+    {
+	    for (AAWallDoorActor* DoorWall : DoorWalls)
+	    {
+	        if (DoorWall && DoorWall->ProceduralMesh)
+	        {
+	            DoorWall->ProceduralMesh->SetRenderCustomDepth(true);
+	            DoorWall->ProceduralMesh->SetCustomDepthStencilValue(2);
+	        }
+	    }
+    }
 }
+
 
 void AWallActor::UnhighlightDeselectedActor()
 {
     TSet<UActorComponent*> ActorComponents = GetComponents();
 
-    for (auto& ActorComponent : ActorComponents)
+    for (auto* ActorComponent : WallSegments)
     {
-        if (auto* Component = Cast<UPrimitiveComponent>(ActorComponent))
+        if (ActorComponent && ActorComponent->GetProceduralMeshComponent())
         {
-            Component->SetRenderCustomDepth(false);
+            ActorComponent->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
         }
     }
 
-   /* for (AAWallDoorActor* DoorWall : DoorWalls)
+    for (AAWallDoorActor* DoorWall : DoorWalls)
     {
         if (DoorWall)
         {
-            DoorWall->WallComponent->SetRenderCustomDepth(false);
+            DoorWall->ProceduralMesh->SetRenderCustomDepth(false);
         }
-    }*/
+    }
 }
+
+void AWallActor::RotateWall(float Angle)
+{
+    SetActorRotation(GetActorRotation() + FRotator(0,Angle,0));
+}
+
 

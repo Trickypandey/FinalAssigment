@@ -16,8 +16,10 @@ public:
 	
 	AAWallDoorActor();
 	void SetDoorLocation(float X);
+	UProceduralMeshComponent* GetProceduralMeshComponent();
 	FVector GetDoorLocation();
 	void AttachDoor(UStaticMesh*& DoorStaticMesh);
+	void SetMaterial(UMaterialInterface* material);
 
 protected:
 	

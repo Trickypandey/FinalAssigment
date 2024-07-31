@@ -25,7 +25,7 @@ void USubModeFloorCreation::Cleanup()
 			SelectedActor = nullptr; // Reset the selected actor
 			ActorToDestroy->Destroy(); // Destroy the actor
 		}
-		ActorToDestroy->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		ActorToDestroy->UnhighlightDeselectedActor();
 
 	}
 	else
@@ -39,6 +39,7 @@ void USubModeFloorCreation::ToggleMovementSelectedActor()
 {
 	if (SelectedActor)
 	{
+		bIsNewWall = false;
 		Cast<AFloorActor>(SelectedActor)->WallState = EBuildingSubModeState::Moving;
 		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor movement started");
 	}
@@ -48,7 +49,7 @@ void USubModeFloorCreation::DeleteSelectedActor()
 	if (SelectedActor)
 	{
 		// Disable custom depth rendering for the selected actor
-		Cast<AFloorActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		Cast<AFloorActor>(SelectedActor)->UnhighlightDeselectedActor();
 
 		// Collect all attached actors
 		TArray<AActor*> AttachedActors;
@@ -66,6 +67,8 @@ void USubModeFloorCreation::DeleteSelectedActor()
 		// Destroy the selected actor
 		SelectedActor->Destroy();
 		SelectedActor = nullptr;
+		bIsNewWall = false;
+		bFirstClickDone = false;
 		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Selected actor and attached actors destroyed");
 
 	}
@@ -133,6 +136,7 @@ void USubModeFloorCreation::RotateSelectedActor()
 	if (SelectedActor)
 	{
 		SelectedActor->AddActorLocalRotation(FRotator(0.f, 90.f, 0.f));
+		bIsNewWall = false;
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Blue, TEXT("Actor rotated by 80 degrees"));
 	}
 }
@@ -150,11 +154,7 @@ void USubModeFloorCreation::EnterSubMode(UWallConstructionWidget* Widget)
 			Widget->LengthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
 			Widget->WidthInput->GetParent()->SetVisibility(ESlateVisibility::Visible);
 			Widget->Floor->SetBackgroundColor(FColor::Black);
-			if (SelectedActor)
-			{
-				Widget->LengthInput->SetValue(Cast<AFloorActor>(SelectedActor)->GetLength());
-				Widget->WidthInput->SetValue(Cast<AFloorActor>(SelectedActor)->GetWidth());
-			}
+			
 		}
 	}
 }
@@ -202,34 +202,50 @@ void USubModeFloorCreation::WallLeftClickProcess()
 	{
 		const FVector ClickLocation = HitResult.Location;
 
-		if (SelectedActor && Cast<AFloorActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
+		if (SelectedActor && Cast<AFloorActor>(SelectedActor)->WallState == EBuildingSubModeState::Constructing && bFirstClickDone)
 		{
+			bFirstClickDone = false;
 			Cast<AFloorActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
+			Cast<AFloorActor>(SelectedActor)->SetEndLocation(ClickLocation);
 			Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor placed");
 		}
-		else
+		else if(SelectedActor && Cast<AFloorActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving && !bFirstClickDone)
 		{
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			
+
+
+
+			if (bIsNewWall)
+			{
+				bFirstClickDone = true;
+				Cast<AFloorActor>(SelectedActor)->SetStartLocation(ClickLocation);
+				Cast<AFloorActor>(SelectedActor)->SetActorLocation(Utility::SnapToGrid(ClickLocation, FVector(10, 10, 0)));
+				Cast<AFloorActor>(SelectedActor)->WallState = EBuildingSubModeState::Constructing;
+			}
+			else
+			{
+				bFirstClickDone = false;
+				Cast<AFloorActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
+				Cast<AFloorActor>(SelectedActor)->SetStartLocation(Utility::SnapToGrid(ClickLocation, FVector(20)));
+			}
+
+			/*FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;*/
+
 
 			if (AFloorActor* SpawnedActor = Cast<AFloorActor>(HitResult.GetActor()))
 			{
 				if (SelectedActor)
 				{
-					Cast<AFloorActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+					Cast<AFloorActor>(SelectedActor)->UnhighlightDeselectedActor();
 				}
 				
 				SelectedActor = SpawnedActor;
 
 				if (SelectedActor)
 				{
-					Cast<AFloorActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
-					CurrentWidget->LengthInput->SetValue(Cast<AFloorActor>(SelectedActor)->GetLength());
-					CurrentWidget->WidthInput->SetValue(Cast<AFloorActor>(SelectedActor)->GetWidth());
-				}
-				if (DynamicMaterial)
-				{
-					Cast<AFloorActor>(SelectedActor)->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
+					Cast<AFloorActor>(SelectedActor)->HighlightSelectedActor();
+					
 				}
 				
 				Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor selected for moving");
@@ -243,38 +259,37 @@ void USubModeFloorCreation::WallLeftClickProcess()
 
 void USubModeFloorCreation::WallRightClickProcess()
 {
-	if (SelectedActor && Cast<AFloorActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
-	{
-		
-		SelectedActor->Destroy();
-		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor destroyed");
-		SelectedActor = nullptr;
-	}
-	
-	if (SelectedActor)
-	{
-		Cast<AFloorActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
-	}
 	FHitResult HitResult;
 	PlayerController->GetHitResultUnderCursor(ECC_Visibility, true, HitResult);
 	if (HitResult.bBlockingHit)
 	{
-		FVector SpawnLocation = Utility::SnapToGrid(HitResult.Location, FVector(10.0f, 10.0f, 10.0f));
+		if (SelectedActor && Cast<AFloorActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
+		{
+			
+			SelectedActor->Destroy();
+			Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor destroyed");
+			SelectedActor = nullptr;
+		}
+		
+		if (SelectedActor)
+		{
+			Cast<AFloorActor>(SelectedActor)->UnhighlightDeselectedActor();
+		}
+		
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-		if (AFloorActor* SpawnedActor = GetWorld()->SpawnActor<AFloorActor>(AFloorActor::StaticClass(), SpawnLocation, FRotator::ZeroRotator, SpawnParams))
+		if (AFloorActor* SpawnedActor = GetWorld()->SpawnActor<AFloorActor>(AFloorActor::StaticClass(), FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams))
 		{
-			SpawnedActor->WallState = EBuildingSubModeState::Moving;
+			bIsNewWall = true;
 			SelectedActor = SpawnedActor;
 			if (DynamicMaterial)
 			{
-				Cast<AFloorActor>(SelectedActor)->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
+				Cast<AFloorActor>(SelectedActor)->SetMaterial(DynamicMaterial);
 			}
 			if (SelectedActor)
 			{
-				Cast<AFloorActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
-				Cast<AFloorActor>(SelectedActor)->GetProceduralMeshComponent()->CustomDepthStencilValue = 2.0;
+				Cast<AFloorActor>(SelectedActor)->HighlightSelectedActor();
 			}
 			Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor spawned and selected for moving");
 

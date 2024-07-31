@@ -27,9 +27,6 @@ protected:
 public:
 	void HandleConstructingState();
     virtual void Tick(float DeltaTime) override;
-
- 
-
     void SetWallEndLocation(FVector X);
     void SetWallStartLocation(FVector X);
 
@@ -44,10 +41,8 @@ public:
 
 	void SetMaterial(UMaterialInterface* NewMaterial);
 	int GetWallIndexFromLocation(FVector Location) const;
-
 	void HandleMovingState();
     void HandlePlacedState();
-
 	void CreateWallSegment();
 	void SpawnMesh(FVector SpawnLocation);
     void ReplaceDoorWithWall(AAWallDoorActor* DoorWallActor);
@@ -63,6 +58,7 @@ public:
 	FVector GetLocationFromIndex(int32 Index) const;
 	void HighlightSelectedActor();
 	void UnhighlightDeselectedActor();
+	void RotateWall(float Angle);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall", meta = (AllowPrivateAccess = "true"))
     bool IsDoorAdded;
 
@@ -89,11 +85,11 @@ public:
     UPROPERTY()
 	UMaterialInterface* Material;
 	TArray<bool> bHasDoorWall;
-    
-
+	int SelectedDoorIdx = 0;
 
 private:
-    UPROPERTY()
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall", meta = (AllowPrivateAccess = "true"))
     TArray<ACubeActor*> WallSegments;
 
     UPROPERTY()
@@ -104,4 +100,7 @@ private:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall", meta = (AllowPrivateAccess = "true"))
     FVector Endlocation;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wall", meta = (AllowPrivateAccess = "true"))
+    USceneComponent* SceneComponent;
 };

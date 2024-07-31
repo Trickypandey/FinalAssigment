@@ -58,7 +58,7 @@ struct FBuildingActorData
     UMaterialInterface* Material = nullptr;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-    TArray<FInteriorActorData> AttachedInteriorActors; // List of attached interior actors
+    TArray<FInteriorActorData> AttachedInteriorActors; 
 };
 
 USTRUCT(BlueprintType)

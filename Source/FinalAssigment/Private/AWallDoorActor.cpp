@@ -24,6 +24,11 @@ void AAWallDoorActor::SetDoorLocation(float X)
 	DoorLocation.X = X;
 
 }
+UProceduralMeshComponent* AAWallDoorActor::GetProceduralMeshComponent()
+{
+    return ProceduralMesh;
+}
+
 
 FVector AAWallDoorActor::GetDoorLocation()
 {
@@ -35,6 +40,15 @@ void AAWallDoorActor::AttachDoor(UStaticMesh*& DoorStaticMesh)
 	{
 		DoorMeshComponent->SetStaticMesh(DoorStaticMesh);
 	}
+}
+
+void AAWallDoorActor::SetMaterial(UMaterialInterface* material)
+{
+    if(material)
+    {
+        Material = material;
+        ProceduralMesh->SetMaterial(0, Material);
+    }
 }
 
 // Called when the game starts or when spawned

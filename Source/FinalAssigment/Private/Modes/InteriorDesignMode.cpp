@@ -187,10 +187,14 @@ void UInteriorDesignMode::HandleLeftClickAction()
 				break;
 
 			case EBuildingAttachable::WallAttachable:
-				if (AWallActor* WallActor = Cast<AWallActor>(HitActor))
+				if (ACubeActor* CubeActor = Cast<ACubeActor>(HitResult.GetActor()))
 				{
-					bCanAttach = true;
-					InteriorDesignActor->AttachToActor(WallActor, FAttachmentTransformRules::KeepWorldTransform);
+					auto* parent = CubeActor->GetDefaultAttachComponent()->GetAttachParentActor();
+					if (AWallActor* WallActor = Cast<AWallActor>(parent))
+					{
+						bCanAttach = true;
+						InteriorDesignActor->AttachToActor(WallActor, FAttachmentTransformRules::KeepWorldTransform);
+					}
 				}
 				break;
 

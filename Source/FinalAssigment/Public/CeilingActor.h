@@ -16,11 +16,8 @@ class FINALASSIGMENT_API ACeilingActor : public ASlabActor
 	GENERATED_BODY()
 
 public:
-	virtual void Tick(float DeltaSeconds) override;
-	ACeilingActor();
-	void HandlePlacedState();
-	void HandleMovingState();
 
+	ACeilingActor();
 	UPROPERTY()
 	EBuildingCreationType ConstructionType;
 	

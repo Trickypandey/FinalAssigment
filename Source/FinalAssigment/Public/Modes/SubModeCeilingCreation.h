@@ -51,4 +51,6 @@ private:
 
 	UPROPERTY()
 	UInputAction* OnActorRotate;
+	bool bFirstClickDone;
+	bool bIsNewWall = false;
 };

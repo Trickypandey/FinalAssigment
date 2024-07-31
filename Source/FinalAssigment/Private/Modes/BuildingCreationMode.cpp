@@ -211,13 +211,13 @@ void UBuildingCreationMode::SaveBuildings(UUArchVizSaveGame*& SaveGameInstance)
             ActorData.ActorClass = FloorActor->GetClass();
             ActorData.ActorTransform = FloorActor->GetActorTransform();
             //ActorData.ActorName = FloorActor->GetName();
-            ActorData.Length = FloorActor->GetLength();
-            ActorData.Width = FloorActor->GetWidth();
+            /*ActorData.Length = FloorActor->GetLength();
+            ActorData.Width = FloorActor->GetWidth();*/
 
-            if (UMaterialInterface* CurrentMaterial = FloorActor->GetProceduralMeshComponent()->GetMaterial(0))
+            /*if (UMaterialInterface* CurrentMaterial = FloorActor->GetProceduralMeshComponent()->GetMaterial(0))
             {
                 ActorData.Material = CurrentMaterial;
-            }
+            }*/
             // Save attached interior actors
             TArray<AActor*> AttachedActors;
             FloorActor->GetAttachedActors(AttachedActors);
@@ -257,16 +257,16 @@ void UBuildingCreationMode::SaveBuildings(UUArchVizSaveGame*& SaveGameInstance)
             ActorData.ActorTransform = CeilingActor->GetActorTransform();
             //ActorData.ActorName = CeilingActor->GetName();
 
-            ActorData.Length = CeilingActor->GetLength();
+           /* ActorData.Length = CeilingActor->GetLength();
             ActorData.Width = CeilingActor->GetWidth();
 
             if (UMaterialInterface* CurrentMaterial = CeilingActor->GetProceduralMeshComponent()->GetMaterial(0))
             {
                 ActorData.Material = CurrentMaterial;
-            }
+            }*/
             // Save attached interior actors
             TArray<AActor*> AttachedActors;
-            CeilingActor->GetAttachedActors(AttachedActors);
+            //CeilingActor->GetAttachedActors(AttachedActors);
             for (AActor* AttachedActor : AttachedActors)
             {
                 if (AInteriorDesignActor* InteriorActor = Cast<AInteriorDesignActor>(AttachedActor))
@@ -286,11 +286,11 @@ void UBuildingCreationMode::SaveBuildings(UUArchVizSaveGame*& SaveGameInstance)
                         }
                     }
 
-                    ActorData.AttachedInteriorActors.Add(InteriorData);
+                    //ActorData.AttachedInteriorActors.Add(InteriorData);
                 }
             }
 
-            SaveGameInstance->SaveData.CeilingActors.Add(ActorData);
+            //SaveGameInstance->SaveData.CeilingActors.Add(ActorData);
         }
     }
 }
@@ -349,7 +349,7 @@ void UBuildingCreationMode::LoadBuildings(UUArchVizSaveGame*& LoadGameInstance)
 
             if (auto SlabActor = Cast<ASlabActor>(SpawnedActor))
             {
-                SlabActor->SetWidth(ActorData.Width);
+                //SlabActor->SetWidth(ActorData.Width);
             }
             SpawnedActor->SetLength(ActorData.Length);
             if (ActorData.Material)

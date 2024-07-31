@@ -28,7 +28,7 @@ void USubModeCeilingCreation::Cleanup()
 			SelectedActor = nullptr;
 			ActorToDestroy->Destroy(); 
 		}
-		ActorToDestroy->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		ActorToDestroy->UnhighlightDeselectedActor();
 
 	}
 	else
@@ -125,8 +125,8 @@ void USubModeCeilingCreation::EnterSubMode(UWallConstructionWidget* CeilingConst
 			if (auto* actor = Cast<ACeilingActor>(SelectedActor) )
 			{
 				
-				CeilingConstructionWidget->LengthInput->SetValue(actor->GetLength());
-				CeilingConstructionWidget->WidthInput->SetValue(actor->GetWidth());
+				/*CeilingConstructionWidget->LengthInput->SetValue(actor->GetLength());
+				CeilingConstructionWidget->WidthInput->SetValue(actor->GetWidth());*/
 			}
 		}
 	}
@@ -164,6 +164,7 @@ void USubModeCeilingCreation::ToggleMovementSelectedActor()
 {
 	if (SelectedActor)
 	{
+		bIsNewWall = false;
 		Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Moving;
 		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor movement started");
 	}
@@ -186,13 +187,45 @@ void USubModeCeilingCreation::WallLeftClickProcess()
 	{
 		const FVector ClickLocation = HitResult.Location;
 
-		if (SelectedActor && Cast<ACeilingActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving)
+		if (SelectedActor && Cast<ACeilingActor>(SelectedActor)->WallState == EBuildingSubModeState::Constructing && bFirstClickDone)
 		{
-			if (Cast<AWallActor>(HitResult.GetActor()))
+			if (ACubeActor* CubeActor = Cast<ACubeActor>(HitResult.GetActor()))
 			{
-				Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor movement started");
-				Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
+				auto* parent = CubeActor->GetDefaultAttachComponent()->GetAttachParentActor();
+				if (AWallActor* WallActor = Cast<AWallActor>(parent))
+				{
+
+					Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor Placed");
+					bFirstClickDone = false;
+					Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
+					Cast<ACeilingActor>(SelectedActor)->SetEndLocation(ClickLocation);
+				}
 			}
+		}
+		else if(SelectedActor && Cast<ACeilingActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving && !bFirstClickDone)
+		{
+			if (ACubeActor* CubeActor = Cast<ACubeActor>(HitResult.GetActor()))
+			{
+				auto* parent = CubeActor->GetDefaultAttachComponent()->GetAttachParentActor();
+				if (AWallActor* WallActor = Cast<AWallActor>(parent))
+				{
+					if (bIsNewWall)
+					{
+						bFirstClickDone = true;
+						Cast<ACeilingActor>(SelectedActor)->SetStartLocation(ClickLocation);
+						Cast<ACeilingActor>(SelectedActor)->SetActorLocation(Utility::SnapToGrid(ClickLocation, FVector(10, 10, 0)));
+						Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Constructing;
+					}
+					else
+					{
+						bFirstClickDone = false;
+						Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
+						Cast<ACeilingActor>(SelectedActor)->SetStartLocation(Utility::SnapToGrid(ClickLocation, FVector(20)));
+					}
+
+				}
+			}
+
 		}
 		else
 		{
@@ -203,25 +236,23 @@ void USubModeCeilingCreation::WallLeftClickProcess()
 			{
 				if (auto* actor = Cast<ACeilingActor>(SelectedActor))
 				{
-					actor->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+					actor->UnhighlightDeselectedActor();
 				}
 				
 				SelectedActor = SpawnedActor;
-				if (SelectedActor && CurrentWidget)
-				{
-					Cast<ACeilingActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
-					CurrentWidget->LengthInput->SetValue(Cast<ACeilingActor>(SelectedActor)->GetLength());
-					CurrentWidget->WidthInput->SetValue(Cast<ACeilingActor>(SelectedActor)->GetWidth());
-				}
-				if (DynamicMaterial)
-				{
-					Cast<ACeilingActor>(SelectedActor)->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
-				}
 			
 				Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor selected for moving");
 
 			}
-
+			
+			if (SelectedActor)
+			{
+				Cast<ACeilingActor>(SelectedActor)->HighlightSelectedActor();
+			}
+			if (DynamicMaterial)
+			{
+				Cast<ACeilingActor>(SelectedActor)->SetMaterial(DynamicMaterial);
+			}
 		}
 
 	}
@@ -242,30 +273,31 @@ void USubModeCeilingCreation::WallRightClickProcess()
 			Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor destroyed");
 
 		}
+		if (SelectedActor)
+		{
+			Cast<ACeilingActor>(SelectedActor)->UnhighlightDeselectedActor();
+		}
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		if (ACeilingActor* SpawnedActor = GetWorld()->SpawnActor<ACeilingActor>(ACeilingActor::StaticClass(), spawnLocation, FRotator::ZeroRotator, SpawnParams))
+		{
+			
+			SelectedActor = SpawnedActor;
+			bIsNewWall = true;
+			Cast<ACeilingActor>(SelectedActor)->HighlightSelectedActor();
+			if (DynamicMaterial)
+			{
+				Cast<ACeilingActor>(SelectedActor)->SetMaterial( DynamicMaterial);
+			}
+
 			if (SelectedActor)
 			{
-				Cast<ACeilingActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+				Cast<ACeilingActor>(SelectedActor)->HighlightSelectedActor();
 			}
-				FActorSpawnParameters SpawnParams;
-				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-			if (ACeilingActor* SpawnedActor = GetWorld()->SpawnActor<ACeilingActor>(ACeilingActor::StaticClass(), spawnLocation, FRotator::ZeroRotator, SpawnParams))
-			{
-				SpawnedActor->WallState = EBuildingSubModeState::Moving;
-				SelectedActor = SpawnedActor;
-				Cast<ACeilingActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
-				if (DynamicMaterial)
-				{
-					Cast<ACeilingActor>(SelectedActor)->GetProceduralMeshComponent()->SetMaterial(0, DynamicMaterial);
-				}
-
-				if (SelectedActor)
-				{
-					Cast<ACeilingActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(true);
-					Cast<ACeilingActor>(SelectedActor)->GetProceduralMeshComponent()->CustomDepthStencilValue = 2.0;
-				}
-			}
-			Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor spawned and selected for moving");
+		}
+		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor spawned and selected for moving");
 
 			
 	}
@@ -276,7 +308,7 @@ void USubModeCeilingCreation::DeleteSelectedWallActor()
 {
 	if (SelectedActor)
 	{
-		Cast<ACeilingActor>(SelectedActor)->GetProceduralMeshComponent()->SetRenderCustomDepth(false);
+		Cast<ACeilingActor>(SelectedActor)->UnhighlightDeselectedActor();
 		TArray<AActor*> AttachedActors;
 		SelectedActor->GetAttachedActors(AttachedActors);
 
@@ -290,7 +322,8 @@ void USubModeCeilingCreation::DeleteSelectedWallActor()
 		}
 		SelectedActor->Destroy();
 		SelectedActor = nullptr;
-
+		bIsNewWall = false;
+		bFirstClickDone = false;
 		Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Selected actor and attached actors destroyed");
 
 
