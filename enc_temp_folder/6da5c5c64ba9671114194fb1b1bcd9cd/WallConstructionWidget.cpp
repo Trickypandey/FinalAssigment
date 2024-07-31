@@ -55,48 +55,24 @@ void UWallConstructionWidget::NativeConstruct()
 
 void UWallConstructionWidget::SpawnWall()
 {
-	
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		if (bIsAddingDoor)
-		{
-			bIsAddingDoor = false;
-			ToggleDoorButton->SetBackgroundColor(FColor::White);
-			PlayerController->SetIsAddingDoor(bIsAddingDoor);
-
-		}
 		PlayerController->BuildingConstructionMode->SpawnSelectedActor(EBuildingCreationType::Wall);
 	}
 }
 
 void UWallConstructionWidget::SpawnFloor()
 {
-	
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		if (bIsAddingDoor)
-		{
-			bIsAddingDoor = false;
-			ToggleDoorButton->SetBackgroundColor(FColor::White);
-			PlayerController->SetIsAddingDoor(bIsAddingDoor);
-
-		}
 		PlayerController->BuildingConstructionMode->SpawnSelectedActor(EBuildingCreationType::Floor);
 	}
 }
 
 void UWallConstructionWidget::SpawnCeiling()
 {
-	
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
-		if (bIsAddingDoor)
-		{
-			bIsAddingDoor = false;
-			ToggleDoorButton->SetBackgroundColor(FColor::White);
-			PlayerController->SetIsAddingDoor(bIsAddingDoor);
-
-		}
 		PlayerController->BuildingConstructionMode->SpawnSelectedActor(EBuildingCreationType::Ceiling);
 	}
 }
@@ -108,16 +84,14 @@ void UWallConstructionWidget::OnToggleDoorClicked()
 	if (AArchVizPlayerController* PlayerController = Cast<AArchVizPlayerController>(GetOwningPlayer()))
 	{
 		PlayerController->SetIsAddingDoor(bIsAddingDoor);
-		if (bIsAddingDoor){
-
-			Wall->SetBackgroundColor(FColor::White);
-			ToggleDoorButton->SetBackgroundColor(FColor::Black);
-		}
-		else
-		{
-			ToggleDoorButton->SetBackgroundColor(FColor::White);
-			PlayerController->BuildingConstructionMode->SpawnSelectedActor(EBuildingCreationType::Wall);
-		}
+	}
+	if (bIsAddingDoor)
+	{
+		ToggleDoorButton->SetBackgroundColor(FColor::Black);
+	}
+	else
+	{
+		ToggleDoorButton->SetBackgroundColor(FColor::White);
 	}
 }
 

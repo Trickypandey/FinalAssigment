@@ -233,24 +233,24 @@ void USubModeFloorCreation::WallLeftClickProcess()
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;*/
 
 
-			if (AFloorActor* SpawnedActor = Cast<AFloorActor>(HitResult.GetActor()))
+			
+		}
+		else if(AFloorActor* SpawnedActor = Cast<AFloorActor>(HitResult.GetActor()))
+		{
+			if (SelectedActor)
 			{
-				if (SelectedActor)
-				{
-					Cast<AFloorActor>(SelectedActor)->UnhighlightDeselectedActor();
-				}
-				
-				SelectedActor = SpawnedActor;
-
-				if (SelectedActor)
-				{
-					Cast<AFloorActor>(SelectedActor)->HighlightSelectedActor();
-					
-				}
-				
-				Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor selected for moving");
+				Cast<AFloorActor>(SelectedActor)->UnhighlightDeselectedActor();
 			}
 			
+			SelectedActor = SpawnedActor;
+
+			if (SelectedActor)
+			{
+				Cast<AFloorActor>(SelectedActor)->HighlightSelectedActor();
+				
+			}
+			
+			Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor selected for moving");
 		}
 		
 	}

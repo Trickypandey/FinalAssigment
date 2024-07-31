@@ -3,6 +3,7 @@
 
 #include "Modes/UBuildingCreationSubMode.h"
 #include "ArchVizPlayerController.h"
+#include "SlabActor.h"
 
 void UUBuildingCreationSubMode::InitParams(APlayerController* Controller) {
 	PlayerController = Controller;
@@ -15,6 +16,12 @@ void UUBuildingCreationSubMode::SetMaterial(UMaterialInterface* Material)
 		DynamicMaterial = Material;
 
 		if(auto actor = Cast<AWallActor>(SelectedActor))
+		{
+			
+			actor->SetMaterial(DynamicMaterial);
+		}
+
+		if(auto actor = Cast<ASlabActor>(SelectedActor))
 		{
 			
 			actor->SetMaterial(DynamicMaterial);

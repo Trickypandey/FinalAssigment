@@ -189,55 +189,25 @@ void USubModeCeilingCreation::WallLeftClickProcess()
 
 		if (SelectedActor && Cast<ACeilingActor>(SelectedActor)->WallState == EBuildingSubModeState::Constructing && bFirstClickDone)
 		{
-			AActor* HitActor = HitResult.GetActor();
-			ACubeActor* CubeActor = Cast<ACubeActor>(HitActor);
-			AAWallDoorActor* WallDoorActor = Cast<AAWallDoorActor>(HitActor);
-
-			if (CubeActor || WallDoorActor)
+			if (ACubeActor* CubeActor = Cast<ACubeActor>(HitResult.GetActor()))
 			{
-				AActor* ParentActor = nullptr;
-				if (CubeActor)
+				auto* parent = CubeActor->GetDefaultAttachComponent()->GetAttachParentActor();
+				if (AWallActor* WallActor = Cast<AWallActor>(parent))
 				{
-					ParentActor = CubeActor->GetDefaultAttachComponent()->GetAttachParentActor();
-				}
-				else if (WallDoorActor)
-				{
-					ParentActor = WallDoorActor->GetDefaultAttachComponent()->GetAttachParentActor();
-				}
 
-				if (AWallActor* WallActor = Cast<AWallActor>(ParentActor))
-				{
 					Cast<AArchVizPlayerController>(PlayerController)->BroadcastToast("Actor Placed");
 					bFirstClickDone = false;
-
-					// Ensure SelectedActor is a valid ACeilingActor before casting and accessing it
-					if (ACeilingActor* CeilingActor = Cast<ACeilingActor>(SelectedActor))
-					{
-						CeilingActor->WallState = EBuildingSubModeState::Placed;
-						CeilingActor->SetEndLocation(ClickLocation);
-					}
+					Cast<ACeilingActor>(SelectedActor)->WallState = EBuildingSubModeState::Placed;
+					Cast<ACeilingActor>(SelectedActor)->SetEndLocation(ClickLocation);
 				}
 			}
 		}
 		else if(SelectedActor && Cast<ACeilingActor>(SelectedActor)->WallState == EBuildingSubModeState::Moving && !bFirstClickDone)
 		{
-			AActor* HitActor = HitResult.GetActor();
-			ACubeActor* CubeActor = Cast<ACubeActor>(HitActor);
-			AAWallDoorActor* WallDoorActor = Cast<AAWallDoorActor>(HitActor);
-
-			if (CubeActor || WallDoorActor)
+			if (ACubeActor* CubeActor = Cast<ACubeActor>(HitResult.GetActor()))
 			{
-				AActor* ParentActor = nullptr;
-				if (CubeActor)
-				{
-					ParentActor = CubeActor->GetDefaultAttachComponent()->GetAttachParentActor();
-				}
-				else if (WallDoorActor)
-				{
-					ParentActor = WallDoorActor->GetDefaultAttachComponent()->GetAttachParentActor();
-				}
-
-				if (AWallActor* WallActor = Cast<AWallActor>(ParentActor))
+				auto* parent = CubeActor->GetDefaultAttachComponent()->GetAttachParentActor();
+				if (AWallActor* WallActor = Cast<AWallActor>(parent))
 				{
 					if (bIsNewWall)
 					{
