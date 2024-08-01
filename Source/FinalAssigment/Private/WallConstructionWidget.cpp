@@ -132,24 +132,32 @@ void UWallConstructionWidget::LengthInputChangeHandle(float InputValue)
 			if (BuildingCreationMode && BuildingCreationMode->GetSelectedActor())
 			{
 				ACubeActor* Actor = BuildingCreationMode->GetSelectedActor();
+
 				if (Actor)
 				{
+
 					Actor->SetLength(InputValue);
-					
+
 				}
 				else
 				{
+
 					GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Selected actor is null."));
+
 				}
 			}
 			else
 			{
+
 				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("No selected actor found or BuildingCreationMode is not valid."));
+
 			}
 		}
 		else
 		{
+
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("BuildingConstructionMode is not initialized or PlayerController is not valid."));
+
 		}
 	}
 	else
